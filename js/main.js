@@ -178,10 +178,47 @@ const CATEGORIES = [
     id: "photography",
     index: "03",
     title: "Photography",
-    description: "Placeholder category description — a short line of context on Sivan's photography goes here.",
-    items: [
-      { title: "Untitled Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
-      { title: "Untitled Series", year: "2021", desc: "Placeholder description of the project, format, and context." },
+    type: "gallery",
+    description: "",
+    // Photography uses its own swipe/zoom gallery viewer (see
+    // renderGallery in this file) instead of the standard work-grid —
+    // `series` replaces `items`/`groups` for this category. Each
+    // series' `photoCount` placeholder slides stand in for real
+    // photos, which will be supplied separately; `year`/`note` left
+    // as "" render as visible TBD placeholders rather than being
+    // hidden, so they're easy to fill in later.
+    series: [
+      {
+        title: "Strangers",
+        year: "",
+        note: "",
+        photoCount: 3,
+      },
+      {
+        title: "ThE StAr",
+        model: "Eden Degany",
+        year: "",
+        note: "",
+        photoCount: 3,
+      },
+      {
+        title: "Magic Realism",
+        year: "",
+        note: "",
+        photoCount: 3,
+      },
+      {
+        title: "When in Heaven",
+        year: "",
+        note: "Magical fairies of \"heaven\", a special secret spot by the Jordan River.",
+        photoCount: 3,
+      },
+      {
+        title: "All This Crazy Gift Of Time",
+        year: "",
+        note: "Early adulthood memoir.",
+        photoCount: 3,
+      },
     ],
   },
   {
@@ -343,6 +380,16 @@ function slugify(str) {
 }
 
 // ---------------------------------------------------------------
+// Item count for a category with `groups` or a flat `items` list
+// (gallery categories count their `series` separately, inline).
+// ---------------------------------------------------------------
+function getCategoryCount(cat) {
+  return cat.groups
+    ? cat.groups.reduce((sum, g) => sum + g.items.length, 0)
+    : cat.items.length;
+}
+
+// ---------------------------------------------------------------
 // Build the overlay's scrollable content for one category: either
 // grouped subsections (Editing) or a flat grid (everything else).
 // Each group/item gets a stable id so the overlay's own subnav can
@@ -416,31 +463,42 @@ function openCategoryOverlay(categoryId, triggerEl) {
     descEl.hidden = true;
   }
 
-  // Internal nav: one pill per project (flat categories) or per
-  // subsection (grouped categories like Editing), so visitors can
-  // jump between them without closing the overlay.
-  const navTargets = cat.groups
-    ? cat.groups.map((g) => ({ label: g.title, id: `ov-${cat.id}-${slugify(g.title)}` }))
-    : cat.items.map((it) => ({ label: it.title, id: `ov-${cat.id}-${slugify(it.title)}` }));
-
   subnavEl.innerHTML = "";
-  navTargets.forEach((t, i) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "overlay-subnav-pill";
-    btn.textContent = t.label;
-    if (i === 0) btn.classList.add("is-active");
-    btn.addEventListener("click", () => {
-      const target = document.getElementById(t.id);
-      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      subnavEl.querySelectorAll(".overlay-subnav-pill").forEach((p) => p.classList.remove("is-active"));
-      btn.classList.add("is-active");
-    });
-    subnavEl.appendChild(btn);
-  });
-
   bodyEl.innerHTML = "";
-  bodyEl.appendChild(renderOverlayBody(cat));
+  bodyEl.classList.remove("overlay-body--gallery");
+  activeGalleryStep = null;
+  activeGalleryUnzoom = null;
+
+  if (cat.type === "gallery") {
+    // Photography: a dedicated swipe/zoom photo viewer, not the
+    // standard work-grid. renderGallery builds both the subnav pills
+    // (series switcher) and the body itself.
+    renderGallery(cat, subnavEl, bodyEl);
+  } else {
+    // Internal nav: one pill per project (flat categories) or per
+    // subsection (grouped categories like Editing), so visitors can
+    // jump between them without closing the overlay.
+    const navTargets = cat.groups
+      ? cat.groups.map((g) => ({ label: g.title, id: `ov-${cat.id}-${slugify(g.title)}` }))
+      : cat.items.map((it) => ({ label: it.title, id: `ov-${cat.id}-${slugify(it.title)}` }));
+
+    navTargets.forEach((t, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "overlay-subnav-pill";
+      btn.textContent = t.label;
+      if (i === 0) btn.classList.add("is-active");
+      btn.addEventListener("click", () => {
+        const target = document.getElementById(t.id);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        subnavEl.querySelectorAll(".overlay-subnav-pill").forEach((p) => p.classList.remove("is-active"));
+        btn.classList.add("is-active");
+      });
+      subnavEl.appendChild(btn);
+    });
+
+    bodyEl.appendChild(renderOverlayBody(cat));
+  }
 
   lockBodyScroll();
 
@@ -458,6 +516,8 @@ function closeCategoryOverlay() {
   overlay.classList.remove("is-open");
   overlay.setAttribute("aria-hidden", "true");
   unlockBodyScroll();
+  activeGalleryStep = null;
+  activeGalleryUnzoom = null;
 
   if (overlayLastFocused && typeof overlayLastFocused.focus === "function") {
     overlayLastFocused.focus();
@@ -496,8 +556,190 @@ function unlockBodyScroll() {
 function initCategoryOverlay() {
   document.getElementById("overlayClose").addEventListener("click", closeCategoryOverlay);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeCategoryOverlay();
+    if (e.key === "Escape") {
+      // If a gallery photo is zoomed in, the first Escape backs out of
+      // the zoom rather than closing the whole overlay.
+      if (activeGalleryUnzoom && activeGalleryUnzoom()) return;
+      closeCategoryOverlay();
+      return;
+    }
+    if (!activeGalleryStep) return;
+    if (e.key === "ArrowRight") activeGalleryStep(1);
+    if (e.key === "ArrowLeft") activeGalleryStep(-1);
   });
+}
+
+// ---------------------------------------------------------------
+// Photography's dedicated gallery viewer: one large photo at a time,
+// with swipe/arrow navigation that moves through a series' photos
+// and rolls over into the next/previous series at the ends, a
+// click-to-zoom stage, and a persistent caption (title/year/note/
+// model) that stays visible while browsing. Placeholder photos stand
+// in for real images (per series `photoCount`) until real photos are
+// supplied. `activeGalleryStep`/`activeGalleryUnzoom` are module-level
+// so the single global keydown handler (see initCategoryOverlay) can
+// reach whichever gallery instance is currently open.
+// ---------------------------------------------------------------
+let activeGalleryStep = null;
+let activeGalleryUnzoom = null;
+
+function renderGallery(cat, subnavEl, bodyEl) {
+  bodyEl.classList.add("overlay-body--gallery");
+
+  const state = { seriesIndex: 0, photoIndex: 0 };
+
+  const viewer = document.createElement("div");
+  viewer.className = "gallery-viewer";
+
+  const stage = document.createElement("div");
+  stage.className = "gallery-stage";
+
+  const photoEl = document.createElement("div");
+  photoEl.className = "gallery-photo";
+  stage.appendChild(photoEl);
+
+  const prevBtn = document.createElement("button");
+  prevBtn.type = "button";
+  prevBtn.className = "gallery-nav gallery-nav--prev";
+  prevBtn.setAttribute("aria-label", "Previous photo");
+  prevBtn.innerHTML = '<span aria-hidden="true">&#8249;</span>';
+  stage.appendChild(prevBtn);
+
+  const nextBtn = document.createElement("button");
+  nextBtn.type = "button";
+  nextBtn.className = "gallery-nav gallery-nav--next";
+  nextBtn.setAttribute("aria-label", "Next photo");
+  nextBtn.innerHTML = '<span aria-hidden="true">&#8250;</span>';
+  stage.appendChild(nextBtn);
+
+  const dotsEl = document.createElement("div");
+  dotsEl.className = "gallery-dots";
+
+  const caption = document.createElement("div");
+  caption.className = "gallery-caption";
+
+  viewer.appendChild(stage);
+  viewer.appendChild(dotsEl);
+  viewer.appendChild(caption);
+  bodyEl.appendChild(viewer);
+
+  const pills = cat.series.map((series, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "overlay-subnav-pill";
+    btn.textContent = series.title;
+    btn.addEventListener("click", () => setSeries(i));
+    subnavEl.appendChild(btn);
+    return btn;
+  });
+
+  function render() {
+    const series = cat.series[state.seriesIndex];
+    const photoCount = series.photoCount || 1;
+
+    photoEl.classList.remove("is-zoomed");
+    photoEl.innerHTML = "";
+    const placeholder = document.createElement("div");
+    placeholder.className = "gallery-photo-placeholder";
+    const label = document.createElement("span");
+    label.textContent = `Image Placeholder — ${series.title} (${state.photoIndex + 1}/${photoCount})`;
+    placeholder.appendChild(label);
+    photoEl.appendChild(placeholder);
+
+    dotsEl.innerHTML = "";
+    dotsEl.style.display = photoCount > 1 ? "flex" : "none";
+    for (let i = 0; i < photoCount; i++) {
+      const dot = document.createElement("span");
+      dot.className = "gallery-dot" + (i === state.photoIndex ? " is-active" : "");
+      dotsEl.appendChild(dot);
+    }
+
+    caption.innerHTML = "";
+    const titleEl = document.createElement("h3");
+    titleEl.className = "gallery-caption-title";
+    titleEl.textContent = series.title;
+    caption.appendChild(titleEl);
+
+    const metaRow = document.createElement("div");
+    metaRow.className = "gallery-caption-meta";
+
+    const yearEl = document.createElement("span");
+    yearEl.className = "gallery-caption-field" + (series.year ? "" : " is-placeholder");
+    yearEl.textContent = series.year ? series.year : "Year — TBD";
+    metaRow.appendChild(yearEl);
+
+    if (series.model) {
+      const modelEl = document.createElement("span");
+      modelEl.className = "gallery-caption-field";
+      modelEl.textContent = `Model — ${series.model}`;
+      metaRow.appendChild(modelEl);
+    }
+    caption.appendChild(metaRow);
+
+    const noteEl = document.createElement("p");
+    noteEl.className = "gallery-caption-note" + (series.note ? "" : " is-placeholder");
+    noteEl.textContent = series.note ? series.note : "Note — TBD";
+    caption.appendChild(noteEl);
+
+    pills.forEach((p, i) => p.classList.toggle("is-active", i === state.seriesIndex));
+  }
+
+  function setSeries(i) {
+    const count = cat.series.length;
+    state.seriesIndex = ((i % count) + count) % count;
+    state.photoIndex = 0;
+    render();
+  }
+
+  // Stepping past the last/first photo of a series rolls over into
+  // the next/previous series — one continuous swipe/arrow gesture
+  // covers both "move within a series" and "move between series".
+  function step(direction) {
+    const series = cat.series[state.seriesIndex];
+    const photoCount = series.photoCount || 1;
+    const newPhoto = state.photoIndex + direction;
+
+    if (newPhoto >= photoCount) {
+      setSeries(state.seriesIndex + 1);
+    } else if (newPhoto < 0) {
+      const count = cat.series.length;
+      state.seriesIndex = ((state.seriesIndex - 1) % count + count) % count;
+      state.photoIndex = (cat.series[state.seriesIndex].photoCount || 1) - 1;
+      render();
+    } else {
+      state.photoIndex = newPhoto;
+      render();
+    }
+  }
+
+  function unzoom() {
+    if (!photoEl.classList.contains("is-zoomed")) return false;
+    photoEl.classList.remove("is-zoomed");
+    return true;
+  }
+
+  prevBtn.addEventListener("click", () => step(-1));
+  nextBtn.addEventListener("click", () => step(1));
+  photoEl.addEventListener("click", () => {
+    const nowZoomed = photoEl.classList.toggle("is-zoomed");
+    if (nowZoomed) stage.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  let touchStartX = null;
+  stage.addEventListener("touchstart", (e) => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  stage.addEventListener("touchend", (e) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
+    touchStartX = null;
+  }, { passive: true });
+
+  activeGalleryStep = step;
+  activeGalleryUnzoom = unzoom;
+
+  render();
 }
 
 // ---------------------------------------------------------------
@@ -510,9 +752,9 @@ function renderCategories() {
   const list = document.getElementById("categoryList");
 
   CATEGORIES.forEach((cat) => {
-    const totalWorks = cat.groups
-      ? cat.groups.reduce((sum, g) => sum + g.items.length, 0)
-      : cat.items.length;
+    const countLabel = cat.type === "gallery"
+      ? `${cat.series.length} series`
+      : `${getCategoryCount(cat)} works`;
 
     const row = document.createElement("button");
     row.type = "button";
@@ -522,7 +764,7 @@ function renderCategories() {
         <h3 class="category-title">${cat.title}</h3>
       </span>
       <span class="category-row-right">
-        <span class="category-count">${totalWorks} works</span>
+        <span class="category-count">${countLabel}</span>
         <span class="category-arrow" aria-hidden="true">→</span>
       </span>
     `;
