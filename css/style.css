@@ -230,16 +230,33 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   padding: calc(var(--nav-h) + 24px) clamp(20px, 5vw, 56px) 80px;
   z-index: 2;
+  overflow: hidden;
 }
 
-.hero-intro { max-width: 760px; }
+/* Full-bleed background video, edge to edge regardless of hero padding */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  background: #0a0a0a;
+}
 
-.eyebrow {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--accent);
-  margin: 0 0 18px;
+.hero-video-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to right, rgba(10, 10, 10, 0.82) 0%, rgba(10, 10, 10, 0.5) 45%, rgba(10, 10, 10, 0.38) 100%),
+    linear-gradient(to top, rgba(10, 10, 10, 0.55) 0%, rgba(10, 10, 10, 0) 30%);
+}
+
+.hero-intro {
+  position: relative;
+  z-index: 2;
+  max-width: 620px;
 }
 
 .hero-name {
@@ -248,83 +265,145 @@ img { max-width: 100%; display: block; }
   font-size: clamp(3.2rem, 10vw, 7.5rem);
   line-height: 0.95;
   letter-spacing: -0.01em;
-  margin: 0 0 20px;
+  margin: 0 0 24px;
 }
 
-.hero-line {
-  font-size: clamp(1rem, 1.6vw, 1.2rem);
+.hero-bio {
+  font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+  line-height: 1.75;
   color: var(--bone-dim);
-  max-width: 480px;
+  max-width: 560px;
   margin: 0;
 }
 
-/* Floating category index — the signature headline interaction */
-.hero-index {
-  margin-top: clamp(48px, 8vh, 96px);
+/* Category nav — organic circular scatter of image thumbnails over the video */
+.hero-orbit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.floating-list {
+.orbit-list {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.orbit-item {
+  position: absolute;
+  /* base centering offset, plus a magnetic-pull offset the JS drives via --mx/--my */
+  transform: translate(calc(-50% + var(--mx, 0px)), calc(-50% + var(--my, 0px)));
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.orbit-item--1 { top: 20%; left: 63%; --thumb-size: 132px; }
+.orbit-item--2 { top: 17%; left: 87%; --thumb-size: 92px; }
+.orbit-item--3 { top: 46%; left: 91%; --thumb-size: 112px; }
+.orbit-item--4 { top: 73%; left: 80%; --thumb-size: 100px; }
+.orbit-item--5 { top: 87%; left: 58%; --thumb-size: 86px; }
+
+.orbit-link {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--line);
+  align-items: center;
+  gap: 10px;
 }
 
-.floating-item {
-  border-bottom: 1px solid var(--line);
-}
-
-.floating-link {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(16px, 3vw, 32px);
-  padding: clamp(14px, 2.4vw, 22px) 4px;
-  transition: padding-left 0.4s var(--ease);
-}
-
-.floating-index {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  color: var(--accent);
-  letter-spacing: 0.08em;
-  min-width: 22px;
-}
-
-.floating-word {
-  display: inline-block;
-  font-family: var(--font-head);
-  font-weight: 400;
-  font-size: clamp(1.6rem, 4.6vw, 3.4rem);
-  letter-spacing: -0.01em;
-  transition: color 0.4s var(--ease), font-weight 0.3s var(--ease);
+.orbit-thumb-wrap {
+  display: block;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  transition: border-color 0.4s var(--ease), transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
   will-change: transform;
   animation: float-breathe 7s ease-in-out infinite;
   animation-delay: calc(var(--float-delay, 0) * 1s);
 }
 
-.floating-item:nth-child(1) .floating-word { --float-delay: 0; }
-.floating-item:nth-child(2) .floating-word { --float-delay: 0.6; }
-.floating-item:nth-child(3) .floating-word { --float-delay: 1.2; }
-.floating-item:nth-child(4) .floating-word { --float-delay: 1.8; }
-.floating-item:nth-child(5) .floating-word { --float-delay: 2.4; }
+.orbit-item--1 .orbit-thumb-wrap { --float-delay: 0; }
+.orbit-item--2 .orbit-thumb-wrap { --float-delay: 0.7; }
+.orbit-item--3 .orbit-thumb-wrap { --float-delay: 1.4; }
+.orbit-item--4 .orbit-thumb-wrap { --float-delay: 2.1; }
+.orbit-item--5 .orbit-thumb-wrap { --float-delay: 2.8; }
 
 @keyframes float-breathe {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-10px); }
 }
 
-.floating-link:hover .floating-word,
-.floating-link:focus-visible .floating-word {
-  color: var(--accent);
+.orbit-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.floating-link:hover { padding-left: 14px; }
+.orbit-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bone-dim);
+  text-align: center;
+  /* explicit width (not just max-width) forces wrap inside the flex
+     column — a bare max-width lets the text overflow its box instead */
+  width: calc(var(--thumb-size) + 30px);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.orbit-link:hover .orbit-label,
+.orbit-link:focus-visible .orbit-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.orbit-link:hover .orbit-thumb-wrap,
+.orbit-link:focus-visible .orbit-thumb-wrap {
+  border-color: var(--accent);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55), 0 0 0 6px var(--accent-soft);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .floating-word { animation: none; }
+  .orbit-thumb-wrap { animation: none; }
+}
+
+/* Mobile: organic scatter doesn't work without a cursor or much space —
+   collapse to a centered, evenly spaced row instead. */
+@media (max-width: 860px) {
+  .hero-orbit {
+    position: static;
+    margin-top: 56px;
+  }
+
+  .orbit-list {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 28px 22px;
+  }
+
+  .orbit-item {
+    position: static;
+    transform: none;
+    --thumb-size: 76px !important;
+  }
+
+  .orbit-label {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .scroll-cue {
   position: absolute;
+  z-index: 2;
   right: clamp(20px, 5vw, 56px);
   bottom: 32px;
   display: flex;

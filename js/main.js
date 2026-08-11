@@ -410,9 +410,9 @@ function renderHighlights() {
 // Deep-link from hero index into the matching category + open it
 // ---------------------------------------------------------------
 function wireHeroLinks() {
-  document.querySelectorAll(".floating-link").forEach((link) => {
+  document.querySelectorAll(".orbit-link").forEach((link) => {
     link.addEventListener("click", (e) => {
-      const targetId = link.closest(".floating-item").dataset.target;
+      const targetId = link.closest(".orbit-item").dataset.target;
       const block = document.getElementById(targetId);
       if (!block) return;
       e.preventDefault();
@@ -468,20 +468,23 @@ function initCursor() {
 }
 
 // ---------------------------------------------------------------
-// Magnetic pull for hero floating headlines (desktop only)
+// Magnetic pull for the hero orbit nav items (desktop only).
+// Offsets are written to --mx/--my custom properties rather than
+// the transform property directly, since .orbit-item already uses
+// transform for its centering offset (see css/style.css).
 // ---------------------------------------------------------------
 function initMagneticHeadlines() {
   const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  const words = Array.from(document.querySelectorAll("[data-float]"));
-  if (!isFinePointer || !words.length) return;
+  const items = Array.from(document.querySelectorAll(".orbit-item"));
+  if (!isFinePointer || !items.length) return;
 
-  const state = words.map(() => ({ x: 0, y: 0, tx: 0, ty: 0 }));
-  const radius = 140;
-  const strength = 0.35;
+  const state = items.map(() => ({ x: 0, y: 0, tx: 0, ty: 0 }));
+  const radius = 130;
+  const strength = 0.4;
 
   window.addEventListener("mousemove", (e) => {
-    words.forEach((word, i) => {
-      const rect = word.getBoundingClientRect();
+    items.forEach((item, i) => {
+      const rect = item.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const dx = e.clientX - cx;
@@ -500,11 +503,12 @@ function initMagneticHeadlines() {
   }, { passive: true });
 
   function raf() {
-    words.forEach((word, i) => {
+    items.forEach((item, i) => {
       const s = state[i];
       s.x += (s.tx - s.x) * 0.12;
       s.y += (s.ty - s.y) * 0.12;
-      word.style.transform = `translate(${s.x}px, ${s.y}px)`;
+      item.style.setProperty("--mx", `${s.x}px`);
+      item.style.setProperty("--my", `${s.y}px`);
     });
     requestAnimationFrame(raf);
   }
@@ -512,10 +516,10 @@ function initMagneticHeadlines() {
 }
 
 // ---------------------------------------------------------------
-// Scroll reveal (also drives mobile "float in" for hero headlines)
+// Scroll reveal (also drives mobile "float in" for hero orbit items)
 // ---------------------------------------------------------------
 function initReveal() {
-  const targets = document.querySelectorAll(".reveal, .floating-item");
+  const targets = document.querySelectorAll(".reveal, .orbit-item");
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {

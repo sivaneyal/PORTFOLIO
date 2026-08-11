@@ -40,42 +40,81 @@
 
   <!-- ========== HERO ========== -->
   <section class="hero" id="hero">
+    <!-- Full-screen background video. NOTE: videos/silent-trailer.mp4 in this
+         repo is currently an empty placeholder file — swap in the real export
+         (same filename/path) and this wires up automatically. poster shows
+         until the video can play, and is also the fallback if it never loads. -->
+    <video
+      class="hero-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      poster="assets/images/hero-poster-placeholder.svg"
+      aria-hidden="true"
+    >
+      <source src="videos/silent-trailer.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-scrim" aria-hidden="true"></div>
+
     <div class="hero-intro">
-      <p class="eyebrow reveal">Berlin — Filmmaker &amp; Multidisciplinary Artist</p>
       <h1 class="hero-name reveal">Sivan&nbsp;Eyal</h1>
-      <p class="hero-line reveal">Directing. Editing. Curation. Strategy for the image in motion.</p>
+      <p class="hero-bio reveal">
+        Sivan Eyal is a filmmaker, performer, alien, anarchist and the most ordinary human
+        walking on earth. She has good sense of humor and an OK style, not sure why she can
+        also be shy. Now she's coming out of her persona closet and reveals online she
+        literally has some experience and a distinguished point of view. Shocking. She wrote
+        this by herself but the message was approved by colleagues, bosses, friends, mom and
+        of course, her agent.
+      </p>
     </div>
 
-    <nav class="hero-index" aria-label="Work categories">
-      <ul class="floating-list" id="floatingList">
-        <li class="floating-item" data-target="directing">
-          <a href="#directing" class="floating-link">
-            <span class="floating-index">01</span>
-            <span class="floating-word" data-float>Directing&nbsp;/&nbsp;Film</span>
+    <!-- Category nav as an organic, circular scatter of image thumbnails over
+         the video (desktop). On mobile this collapses to a centered row —
+         see .hero-orbit responsive rules in css/style.css.
+         Thumbnails are generated placeholders (assets/images/thumb-*-placeholder.svg);
+         swap each src for a real still frame per category when available. -->
+    <nav class="hero-orbit" aria-label="Work categories">
+      <ul class="orbit-list" id="orbitList">
+        <li class="orbit-item orbit-item--1" data-target="directing">
+          <a href="#directing" class="orbit-link">
+            <span class="orbit-thumb-wrap" data-float>
+              <img class="orbit-thumb" src="assets/images/thumb-directing-placeholder.svg" alt="Directing / Film">
+            </span>
+            <span class="orbit-label">Directing&nbsp;/&nbsp;Film</span>
           </a>
         </li>
-        <li class="floating-item" data-target="editing">
-          <a href="#editing" class="floating-link">
-            <span class="floating-index">02</span>
-            <span class="floating-word" data-float>Editing</span>
+        <li class="orbit-item orbit-item--2" data-target="editing">
+          <a href="#editing" class="orbit-link">
+            <span class="orbit-thumb-wrap" data-float>
+              <img class="orbit-thumb" src="assets/images/thumb-editing-placeholder.svg" alt="Editing">
+            </span>
+            <span class="orbit-label">Editing</span>
           </a>
         </li>
-        <li class="floating-item" data-target="curation">
-          <a href="#curation" class="floating-link">
-            <span class="floating-index">03</span>
-            <span class="floating-word" data-float>Curation</span>
+        <li class="orbit-item orbit-item--3" data-target="curation">
+          <a href="#curation" class="orbit-link">
+            <span class="orbit-thumb-wrap" data-float>
+              <img class="orbit-thumb" src="assets/images/thumb-curation-placeholder.svg" alt="Curation">
+            </span>
+            <span class="orbit-label">Curation</span>
           </a>
         </li>
-        <li class="floating-item" data-target="social">
-          <a href="#social" class="floating-link">
-            <span class="floating-index">04</span>
-            <span class="floating-word" data-float>Social&nbsp;Media&nbsp;&amp;&nbsp;Strategy</span>
+        <li class="orbit-item orbit-item--4" data-target="social">
+          <a href="#social" class="orbit-link">
+            <span class="orbit-thumb-wrap" data-float>
+              <img class="orbit-thumb" src="assets/images/thumb-social-placeholder.svg" alt="Social Media & Strategy">
+            </span>
+            <span class="orbit-label">Social&nbsp;Media&nbsp;&amp;&nbsp;Strategy</span>
           </a>
         </li>
-        <li class="floating-item" data-target="photography">
-          <a href="#photography" class="floating-link">
-            <span class="floating-index">05</span>
-            <span class="floating-word" data-float>Photography</span>
+        <li class="orbit-item orbit-item--5" data-target="photography">
+          <a href="#photography" class="orbit-link">
+            <span class="orbit-thumb-wrap" data-float>
+              <img class="orbit-thumb" src="assets/images/thumb-photography-placeholder.svg" alt="Photography">
+            </span>
+            <span class="orbit-label">Photography</span>
           </a>
         </li>
       </ul>
