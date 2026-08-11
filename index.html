@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sivan Eyal — Filmmaker &amp; Multidisciplinary Artist</title>
+<meta name="description" content="Sivan Eyal is a Berlin based filmmaker and multidisciplinary artist working across directing, editing, curation, and social media strategy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Custom cursor (desktop only, see CSS/JS for pointer:fine gating) -->
+<div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+
+<!-- Grain / noise overlay -->
+<div class="grain" aria-hidden="true"></div>
+
+<!-- Ambient cursor-reactive glow -->
+<div class="glow-field" id="glowField" aria-hidden="true"></div>
+
+<!-- ========== NAV ========== -->
+<header class="site-nav" id="siteNav">
+  <a href="#top" class="nav-mark">Sivan&nbsp;Eyal</a>
+  <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="nav-links" id="navLinks">
+    <a href="#about" class="nav-link">About</a>
+    <a href="#work" class="nav-link">Work</a>
+    <a href="#highlights" class="nav-link">Selected</a>
+    <a href="#contact" class="nav-link">Contact</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-intro">
+      <p class="eyebrow reveal">Berlin — Filmmaker &amp; Multidisciplinary Artist</p>
+      <h1 class="hero-name reveal">Sivan&nbsp;Eyal</h1>
+      <p class="hero-line reveal">Directing. Editing. Curation. Strategy for the image in motion.</p>
+    </div>
+
+    <nav class="hero-index" aria-label="Work categories">
+      <ul class="floating-list" id="floatingList">
+        <li class="floating-item" data-target="directing">
+          <a href="#directing" class="floating-link">
+            <span class="floating-index">01</span>
+            <span class="floating-word" data-float>Directing&nbsp;/&nbsp;Film</span>
+          </a>
+        </li>
+        <li class="floating-item" data-target="editing">
+          <a href="#editing" class="floating-link">
+            <span class="floating-index">02</span>
+            <span class="floating-word" data-float>Editing</span>
+          </a>
+        </li>
+        <li class="floating-item" data-target="curation">
+          <a href="#curation" class="floating-link">
+            <span class="floating-index">03</span>
+            <span class="floating-word" data-float>Curation</span>
+          </a>
+        </li>
+        <li class="floating-item" data-target="social">
+          <a href="#social" class="floating-link">
+            <span class="floating-index">04</span>
+            <span class="floating-word" data-float>Social&nbsp;Media&nbsp;&amp;&nbsp;Strategy</span>
+          </a>
+        </li>
+        <li class="floating-item" data-target="photography">
+          <a href="#photography" class="floating-link">
+            <span class="floating-index">05</span>
+            <span class="floating-word" data-float>Photography</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <a href="#about" class="scroll-cue" aria-label="Scroll to about section">
+      <span class="scroll-cue-line"></span>
+      <span>Scroll</span>
+    </a>
+  </section>
+
+  <!-- ========== ABOUT ========== -->
+  <section class="about" id="about">
+    <div class="section-frame">
+      <p class="section-kicker reveal">About</p>
+      <div class="about-grid">
+        <p class="about-bio reveal">
+          <!-- PLACEHOLDER COPY — replace with Sivan's supplied bio paragraph. -->
+          Placeholder bio copy. Sivan Eyal is a Berlin based filmmaker and multidisciplinary
+          artist whose work moves between directing, editing, curation, and social strategy.
+          Her practice is concerned with image, rhythm, and the spaces between disciplines —
+          replace this paragraph with the final bio text from the supplied content document.
+        </p>
+        <dl class="about-meta reveal">
+          <div class="about-meta-row">
+            <dt>Based</dt><dd>Berlin, Germany</dd>
+          </div>
+          <div class="about-meta-row">
+            <dt>Practice</dt><dd>Directing, Editing, Curation, Strategy</dd>
+          </div>
+          <div class="about-meta-row">
+            <dt>Available for</dt><dd>Commissions &amp; collaboration</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== WORK / CATEGORIES ========== -->
+  <section class="work" id="work">
+    <div class="section-frame">
+      <p class="section-kicker reveal">Selected Categories</p>
+      <h2 class="section-title reveal">Work</h2>
+    </div>
+
+    <div class="category-list" id="categoryList">
+      <!-- Category blocks are rendered dynamically from js/main.js (see CATEGORIES data array)
+           so categories can be added or removed without touching this markup. -->
+    </div>
+  </section>
+
+  <!-- ========== SELECTED HIGHLIGHTS ========== -->
+  <section class="highlights" id="highlights">
+    <div class="section-frame">
+      <p class="section-kicker reveal">Highlights</p>
+      <h2 class="section-title reveal">Selected Work</h2>
+    </div>
+    <div class="highlight-grid" id="highlightGrid">
+      <!-- Rendered dynamically from js/main.js (see HIGHLIGHTS data array) -->
+    </div>
+  </section>
+
+  <!-- ========== CONTACT / FOOTER ========== -->
+  <footer class="contact" id="contact">
+    <div class="section-frame contact-frame">
+      <p class="section-kicker reveal">Contact</p>
+      <a class="contact-email reveal" href="mailto:hello@sivaneyal.com">hello@sivaneyal.com</a>
+      <div class="contact-links reveal">
+        <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://vimeo.com/" target="_blank" rel="noopener noreferrer">Vimeo</a>
+        <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </div>
+      <p class="contact-foot">&copy; <span id="year"></span> Sivan Eyal. All rights reserved.</p>
+    </div>
+  </footer>
+
+</main>
+
+<!-- ========== CATEGORY OVERLAY TEMPLATE (cloned by JS) ========== -->
+<template id="workItemTemplate">
+  <article class="work-item">
+    <div class="work-thumb" data-media>
+      <span class="work-thumb-label">Image / Video Placeholder</span>
+    </div>
+    <div class="work-item-meta">
+      <h3 class="work-item-title" data-title></h3>
+      <span class="work-item-year" data-year></span>
+    </div>
+    <p class="work-item-desc" data-desc></p>
+  </article>
+</template>
+
+<script src="js/main.js" defer></script>
+</body>
+</html>
