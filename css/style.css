@@ -164,6 +164,18 @@ img { max-width: 100%; display: block; }
   padding: 0 clamp(20px, 5vw, 56px);
   height: var(--nav-h);
   background: linear-gradient(to bottom, rgba(10, 10, 10, 0.92), rgba(10, 10, 10, 0));
+  transition: background 0.3s var(--ease);
+}
+
+/* The gradient above fades to fully transparent at the nav's own
+   bottom edge — fine at rest, but as soon as the page scrolls, the
+   hero name/bio (large type, positioned right below the nav) scrolls
+   up behind it and shows straight through, colliding visually with
+   the nav's own wordmark/links. Swap to a fully opaque background
+   the moment any scrolling happens (see initNavScrollState in
+   js/main.js) so nothing can ever show through underneath it. */
+.site-nav.is-scrolled {
+  background: var(--bg);
 }
 
 .nav-mark {
@@ -531,72 +543,6 @@ section {
   line-height: 1.75;
   color: var(--bone-dim);
   max-width: 620px;
-}
-
-/* ============================================================
-   Work / Categories — list rows that open the full-screen overlay
-   ============================================================ */
-.category-list {
-  border-top: 1px solid var(--line);
-}
-
-.category-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: clamp(24px, 4vw, 40px) clamp(20px, 5vw, 56px);
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  color: var(--bone);
-  transition: background 0.4s var(--ease), padding-left 0.4s var(--ease);
-}
-
-.category-row:hover,
-.category-row:focus-visible {
-  background: rgba(242, 240, 236, 0.03);
-  padding-left: calc(clamp(20px, 5vw, 56px) + 10px);
-}
-
-.category-row-left {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(16px, 3vw, 36px);
-}
-
-.category-title {
-  font-family: var(--font-head);
-  font-weight: 400;
-  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
-  margin: 0;
-}
-
-.category-row-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.category-count {
-  font-size: 0.78rem;
-  color: var(--bone-faint);
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-}
-
-.category-arrow {
-  font-size: 1.2rem;
-  color: var(--bone-dim);
-  transition: transform 0.4s var(--ease), color 0.4s var(--ease);
-}
-
-.category-row:hover .category-arrow,
-.category-row:focus-visible .category-arrow {
-  transform: translateX(6px);
-  color: var(--accent);
 }
 
 /* ============================================================
@@ -1473,9 +1419,4 @@ section {
   .site-nav.is-open .nav-toggle span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
   .site-nav.is-open .nav-toggle span:nth-child(2) { opacity: 0; }
   .site-nav.is-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-}
-
-@media (max-width: 560px) {
-  .category-row-left { gap: 14px; }
-  .category-count { display: none; }
 }

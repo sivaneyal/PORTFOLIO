@@ -470,16 +470,6 @@ function buildProjectPanel(item) {
 }
 
 // ---------------------------------------------------------------
-// Item count for a category with `groups` or a flat `items` list
-// (gallery categories count their `series` separately, inline).
-// ---------------------------------------------------------------
-function getCategoryCount(cat) {
-  return cat.groups
-    ? cat.groups.reduce((sum, g) => sum + g.items.length, 0)
-    : cat.items.length;
-}
-
-// ---------------------------------------------------------------
 // True tab isolation for non-gallery categories: builds one subnav
 // pill + one content panel per group (Editing's subsections) or per
 // project (Directing, Curation, Performance Artist, Production), and
@@ -879,37 +869,6 @@ function renderGallery(cat, subnavEl, bodyEl) {
   pills[0].classList.add("is-active");
 }
 
-// ---------------------------------------------------------------
-// Render the Work section as simple list rows (title + count).
-// Clicking a row opens the same full-screen overlay as the hero's
-// circular nav — there is no in-page expansion here, and no work
-// item content lives on the landing page itself.
-// ---------------------------------------------------------------
-function renderCategories() {
-  const list = document.getElementById("categoryList");
-
-  CATEGORIES.forEach((cat) => {
-    const countLabel = cat.type === "gallery"
-      ? `${cat.series.length} series`
-      : `${getCategoryCount(cat)} works`;
-
-    const row = document.createElement("button");
-    row.type = "button";
-    row.className = "category-row";
-    row.innerHTML = `
-      <span class="category-row-left">
-        <h3 class="category-title">${cat.title}</h3>
-      </span>
-      <span class="category-row-right">
-        <span class="category-count">${countLabel}</span>
-        <span class="category-arrow" aria-hidden="true">→</span>
-      </span>
-    `;
-    row.addEventListener("click", () => openCategoryOverlay(cat.id, row));
-    list.appendChild(row);
-  });
-}
-
 function renderHighlights() {
   const grid = document.getElementById("highlightGrid");
   HIGHLIGHTS.forEach((h) => {
@@ -1074,10 +1033,29 @@ function initMobileNav() {
 }
 
 // ---------------------------------------------------------------
+// Nav goes fully opaque as soon as the page scrolls at all. At rest
+// (scrollY 0) it's a soft gradient that fades to transparent by
+// design, over the hero video — but that same transparency let the
+// large hero name/bio scroll up and show straight through it,
+// visually colliding with the nav's own wordmark/links. Swapping to
+// a solid background the instant scrolling starts closes that gap
+// at every scroll position, not just past the hero.
+// ---------------------------------------------------------------
+function initNavScrollState() {
+  const nav = document.getElementById("siteNav");
+
+  function update() {
+    nav.classList.toggle("is-scrolled", window.scrollY > 4);
+  }
+
+  update();
+  window.addEventListener("scroll", update, { passive: true });
+}
+
+// ---------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  renderCategories();
   renderHighlights();
   wireHeroLinks();
   initCategoryOverlay();
@@ -1085,6 +1063,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMagneticHeadlines();
   initReveal();
   initMobileNav();
+  initNavScrollState();
 
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
