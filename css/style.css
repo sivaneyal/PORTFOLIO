@@ -51,6 +51,11 @@ img { max-width: 100%; display: block; }
 
 .is-hidden { display: none !important; }
 
+/* The native `hidden` attribute has the same specificity as a class
+   selector, so any element with its own `display` rule (grid/flex
+   tab panels, etc.) would silently ignore `hidden` without this. */
+[hidden] { display: none !important; }
+
 ::selection {
   background: var(--accent);
   color: var(--bone);
@@ -479,17 +484,53 @@ section {
    About
    ============================================================ */
 .about-grid {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
 }
 
+@media (max-width: 720px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.about-photo {
+  aspect-ratio: 3 / 4;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.about-photo span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bone-faint);
+}
+
+/* Body copy set in the site's body font (matching hero-bio,
+   work-item-desc, etc.) rather than the headline serif — the
+   italic-Bodoni treatment this used to have read as a different,
+   unrelated typeface next to the rest of the site. */
 .about-bio {
-  font-family: var(--font-head);
-  font-style: italic;
-  font-size: clamp(1.3rem, 2.4vw, 1.9rem);
-  line-height: 1.5;
-  color: var(--bone);
-  font-weight: 300;
-  max-width: 780px;
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  line-height: 1.75;
+  color: var(--bone-dim);
+  max-width: 620px;
 }
 
 /* ============================================================
@@ -669,8 +710,6 @@ section {
   margin: 0;
 }
 
-.overlay-desc[hidden] { display: none; }
-
 .overlay-subnav {
   max-width: 1180px;
   margin: 40px auto 0;
@@ -732,12 +771,6 @@ section {
 
 .work-group + .work-group {
   margin-top: clamp(48px, 6vw, 64px);
-}
-
-.work-group,
-.work-item {
-  /* keeps the sticky overlay subnav from covering a jumped-to target */
-  scroll-margin-top: 110px;
 }
 
 .work-group-title {
@@ -911,11 +944,146 @@ section {
 }
 
 /* ============================================================
+   Project panel — the full detail view for a single tab-isolated
+   project (Directing, Curation, Performance Artist, Production):
+   a small image gallery beside a stack of labeled sections
+   (Synopsis / Technical Details / Awards & Screening History).
+   ============================================================ */
+.project-panel {
+  display: grid;
+  grid-template-columns: minmax(240px, 380px) 1fr;
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .project-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.project-gallery-main {
+  aspect-ratio: 4 / 3;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.project-gallery-main span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bone-faint);
+}
+
+.project-gallery-thumbs {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.project-gallery-thumb {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+  border: 1px solid var(--line);
+  transition: border-color 0.3s var(--ease);
+}
+
+.project-gallery-thumb:hover,
+.project-gallery-thumb.is-active {
+  border-color: var(--accent);
+}
+
+.project-header {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.project-title {
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  margin: 0;
+}
+
+.project-year {
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.project-year.is-placeholder {
+  color: var(--bone-faint);
+  font-style: italic;
+}
+
+.project-section {
+  margin-top: 26px;
+}
+
+.project-section:first-of-type {
+  margin-top: 0;
+}
+
+.project-section-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin: 0 0 10px;
+}
+
+.project-section-body {
+  font-size: 0.95rem;
+  color: var(--bone-dim);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.project-section-body.is-placeholder {
+  color: var(--bone-faint);
+  font-style: italic;
+}
+
+.project-info .work-item-specs,
+.project-info .work-item-screenings {
+  margin-top: 0;
+}
+
+.project-info .work-item-links {
+  margin-top: 30px;
+}
+
+/* ============================================================
    Photography — dedicated swipe/zoom gallery viewer, used only
    inside the overlay when a category's `type` is "gallery".
    ============================================================ */
 .overlay-body--gallery {
-  max-width: 860px;
+  max-width: 1100px;
 }
 
 .gallery-viewer {
@@ -924,14 +1092,88 @@ section {
   align-items: center;
 }
 
+/* Series-as-a-gallery: a grid of thumbnails represents the whole
+   series at a glance. Clicking any of them opens .gallery-browse
+   (the one-by-one stage) at that photo. */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.gallery-grid-thumb {
+  aspect-ratio: 1;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bone-faint);
+  font-size: 0.9rem;
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.gallery-grid-thumb:hover,
+.gallery-grid-thumb:focus-visible {
+  border-color: var(--accent);
+  color: var(--bone);
+  transform: translateY(-3px);
+}
+
+.gallery-browse {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gallery-back {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone-dim);
+  transition: color 0.3s var(--ease);
+}
+
+.gallery-back:hover,
+.gallery-back:focus-visible {
+  color: var(--accent);
+}
+
+.gallery-back span {
+  font-size: 1.1rem;
+}
+
 .gallery-stage {
   position: relative;
   width: 100%;
-  max-width: 640px;
-  aspect-ratio: 4 / 5;
+  max-width: 920px;
+  aspect-ratio: 3 / 2;
   margin: 0 auto;
   touch-action: pan-y;
   transition: max-width 0.5s var(--ease), aspect-ratio 0.5s var(--ease);
+}
+
+@media (max-width: 640px) {
+  .gallery-stage {
+    aspect-ratio: 3 / 4;
+  }
 }
 
 .gallery-photo {

@@ -260,9 +260,11 @@ const HIGHLIGHTS = [
 ];
 
 // ---------------------------------------------------------------
-// Build a single work-item card from an item data object.
-// Supports optional year, desc, screenings, specs, and links —
-// only the fields present in the data are rendered.
+// Build a single work-item card from an item data object. Used for
+// items inside a grouped category's tab panel (e.g. Editing's
+// subsections) — flat-item categories use buildProjectPanel instead,
+// which has room for the fuller synopsis/technical/awards/gallery
+// layout since only one project is ever on screen at a time.
 // ---------------------------------------------------------------
 function buildWorkItem(item) {
   const el = document.createElement("article");
@@ -312,71 +314,159 @@ function buildWorkItem(item) {
     el.appendChild(linksWrap);
   }
 
-  // Screenings + full technical specs are secondary detail — collapsed
-  // behind a "Details" toggle rather than shown by default.
-  const hasDetails = (item.screenings && item.screenings.length) || (item.specs && item.specs.length);
-  if (hasDetails) {
-    const detailsWrap = document.createElement("div");
-    detailsWrap.className = "work-item-details";
-
-    if (item.screenings && item.screenings.length) {
-      const subhead = document.createElement("p");
-      subhead.className = "work-item-subhead";
-      subhead.textContent = "Screenings";
-      detailsWrap.appendChild(subhead);
-
-      const list = document.createElement("ul");
-      list.className = "work-item-screenings";
-      item.screenings.forEach((s) => {
-        const li = document.createElement("li");
-        li.textContent = s;
-        list.appendChild(li);
-      });
-      detailsWrap.appendChild(list);
-    }
-
-    if (item.specs && item.specs.length) {
-      const dl = document.createElement("dl");
-      dl.className = "work-item-specs";
-      item.specs.forEach(([k, v]) => {
-        const dt = document.createElement("dt");
-        dt.textContent = k;
-        const dd = document.createElement("dd");
-        dd.textContent = v;
-        dl.appendChild(dt);
-        dl.appendChild(dd);
-      });
-      detailsWrap.appendChild(dl);
-    }
-
-    const toggleBtn = document.createElement("button");
-    toggleBtn.type = "button";
-    toggleBtn.className = "work-item-details-toggle";
-    toggleBtn.textContent = "Details";
-    toggleBtn.setAttribute("aria-expanded", "false");
-    toggleBtn.addEventListener("click", () => {
-      const isOpen = detailsWrap.classList.toggle("is-open");
-      toggleBtn.classList.toggle("is-open", isOpen);
-      toggleBtn.setAttribute("aria-expanded", String(isOpen));
-      toggleBtn.textContent = isOpen ? "Hide Details" : "Details";
-      detailsWrap.style.maxHeight = isOpen ? detailsWrap.scrollHeight + "px" : "0px";
-    });
-
-    el.appendChild(toggleBtn);
-    el.appendChild(detailsWrap);
-  }
-
   return el;
 }
 
 // ---------------------------------------------------------------
-// Slugify a title into a stable id fragment for overlay jump-links
+// A single labeled text block ("Synopsis", "Technical Details", …)
+// that renders a light placeholder ("Synopsis — TBD") when the
+// field is missing, rather than being omitted — every project panel
+// keeps the same shape whether or not its content has been filled in.
 // ---------------------------------------------------------------
-function slugify(str) {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+function buildProjectSection(label, text) {
+  const section = document.createElement("div");
+  section.className = "project-section";
+
+  const labelEl = document.createElement("h4");
+  labelEl.className = "project-section-label";
+  labelEl.textContent = label;
+  section.appendChild(labelEl);
+
+  const body = document.createElement("p");
+  body.className = "project-section-body" + (text ? "" : " is-placeholder");
+  body.textContent = text || `${label} — TBD`;
+  section.appendChild(body);
+
+  return section;
+}
+
+// ---------------------------------------------------------------
+// Small image gallery for a single project: a main placeholder frame
+// plus a row of thumbnails; clicking a thumbnail swaps the main
+// frame's label. Placeholder-only until real photos are supplied.
+// ---------------------------------------------------------------
+function buildProjectGallery(count, title) {
+  const wrap = document.createElement("div");
+  wrap.className = "project-gallery";
+
+  const main = document.createElement("div");
+  main.className = "project-gallery-main";
+  const mainLabel = document.createElement("span");
+  mainLabel.textContent = `Image Placeholder — ${title} (1/${count})`;
+  main.appendChild(mainLabel);
+  wrap.appendChild(main);
+
+  if (count > 1) {
+    const thumbs = document.createElement("div");
+    thumbs.className = "project-gallery-thumbs";
+    for (let i = 0; i < count; i++) {
+      const t = document.createElement("button");
+      t.type = "button";
+      t.className = "project-gallery-thumb" + (i === 0 ? " is-active" : "");
+      t.setAttribute("aria-label", `View image ${i + 1} of ${count}`);
+      t.addEventListener("click", () => {
+        mainLabel.textContent = `Image Placeholder — ${title} (${i + 1}/${count})`;
+        thumbs.querySelectorAll(".project-gallery-thumb").forEach((el) => el.classList.remove("is-active"));
+        t.classList.add("is-active");
+      });
+      thumbs.appendChild(t);
+    }
+    wrap.appendChild(thumbs);
+  }
+
+  return wrap;
+}
+
+// ---------------------------------------------------------------
+// The full detail view for a single project (Directing, Curation,
+// Performance Artist, Production): a small image gallery plus
+// Synopsis / Technical Details / Awards &amp; Screening History,
+// always shown in full — no collapse toggle, since only one project
+// is ever visible at a time in the tab-isolated overlay.
+// ---------------------------------------------------------------
+function buildProjectPanel(item) {
+  const el = document.createElement("article");
+  el.className = "project-panel";
+
+  el.appendChild(buildProjectGallery(item.photoCount || 3, item.title));
+
+  const info = document.createElement("div");
+  info.className = "project-info";
+
+  const header = document.createElement("div");
+  header.className = "project-header";
+  const titleEl = document.createElement("h3");
+  titleEl.className = "project-title";
+  titleEl.textContent = item.title;
+  header.appendChild(titleEl);
+  const yearEl = document.createElement("span");
+  yearEl.className = "project-year" + (item.year ? "" : " is-placeholder");
+  yearEl.textContent = item.year ? item.year : "Year — TBD";
+  header.appendChild(yearEl);
+  info.appendChild(header);
+
+  info.appendChild(buildProjectSection("Synopsis", item.desc));
+
+  if (item.specs && item.specs.length) {
+    const section = document.createElement("div");
+    section.className = "project-section";
+    const label = document.createElement("h4");
+    label.className = "project-section-label";
+    label.textContent = "Technical Details";
+    section.appendChild(label);
+    const dl = document.createElement("dl");
+    dl.className = "work-item-specs";
+    item.specs.forEach(([k, v]) => {
+      const dt = document.createElement("dt");
+      dt.textContent = k;
+      const dd = document.createElement("dd");
+      dd.textContent = v;
+      dl.appendChild(dt);
+      dl.appendChild(dd);
+    });
+    section.appendChild(dl);
+    info.appendChild(section);
+  } else {
+    info.appendChild(buildProjectSection("Technical Details", ""));
+  }
+
+  if (item.screenings && item.screenings.length) {
+    const section = document.createElement("div");
+    section.className = "project-section";
+    const label = document.createElement("h4");
+    label.className = "project-section-label";
+    label.textContent = "Awards / Screening History";
+    section.appendChild(label);
+    const ul = document.createElement("ul");
+    ul.className = "work-item-screenings";
+    item.screenings.forEach((s) => {
+      const li = document.createElement("li");
+      li.textContent = s;
+      ul.appendChild(li);
+    });
+    section.appendChild(ul);
+    info.appendChild(section);
+  } else {
+    info.appendChild(buildProjectSection("Awards / Screening History", ""));
+  }
+
+  if (item.links && item.links.length) {
+    const linksWrap = document.createElement("div");
+    linksWrap.className = "work-item-links";
+    item.links.forEach((link) => {
+      const a = document.createElement("a");
+      a.href = link.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.className = "work-item-link";
+      a.textContent = link.password ? `${link.label} (password: ${link.password})` : link.label;
+      linksWrap.appendChild(a);
+    });
+    info.appendChild(linksWrap);
+  }
+
+  el.appendChild(info);
+  return el;
 }
 
 // ---------------------------------------------------------------
@@ -390,44 +480,47 @@ function getCategoryCount(cat) {
 }
 
 // ---------------------------------------------------------------
-// Build the overlay's scrollable content for one category: either
-// grouped subsections (Editing) or a flat grid (everything else).
-// Each group/item gets a stable id so the overlay's own subnav can
-// jump to it within the overlay's internal scroll container.
+// True tab isolation for non-gallery categories: builds one subnav
+// pill + one content panel per group (Editing's subsections) or per
+// project (Directing, Curation, Performance Artist, Production), and
+// shows exactly one panel at a time. Switching tabs only ever
+// toggles which panel is visible — it never scrolls anything.
 // ---------------------------------------------------------------
-function renderOverlayBody(cat) {
-  const body = document.createElement("div");
+function renderTabbedContent(cat, subnavEl, bodyEl) {
+  const tabs = cat.groups
+    ? cat.groups.map((group) => ({
+        label: group.title,
+        build: () => {
+          const grid = document.createElement("div");
+          grid.className = "work-grid";
+          group.items.forEach((item) => grid.appendChild(buildWorkItem(item)));
+          return grid;
+        },
+      }))
+    : cat.items.map((item) => ({
+        label: item.title,
+        build: () => buildProjectPanel(item),
+      }));
 
-  if (cat.groups) {
-    cat.groups.forEach((group) => {
-      const groupEl = document.createElement("div");
-      groupEl.className = "work-group";
-      groupEl.id = `ov-${cat.id}-${slugify(group.title)}`;
+  const panels = tabs.map((t) => t.build());
+  panels.forEach((panel) => bodyEl.appendChild(panel));
 
-      const groupTitle = document.createElement("h4");
-      groupTitle.className = "work-group-title";
-      groupTitle.textContent = group.title;
-      groupEl.appendChild(groupTitle);
+  const pills = tabs.map((t, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "overlay-subnav-pill";
+    btn.textContent = t.label;
+    btn.addEventListener("click", () => showTab(i));
+    subnavEl.appendChild(btn);
+    return btn;
+  });
 
-      const grid = document.createElement("div");
-      grid.className = "work-grid";
-      group.items.forEach((item) => grid.appendChild(buildWorkItem(item)));
-      groupEl.appendChild(grid);
-
-      body.appendChild(groupEl);
-    });
-  } else {
-    const grid = document.createElement("div");
-    grid.className = "work-grid";
-    cat.items.forEach((item) => {
-      const card = buildWorkItem(item);
-      card.id = `ov-${cat.id}-${slugify(item.title)}`;
-      grid.appendChild(card);
-    });
-    body.appendChild(grid);
+  function showTab(i) {
+    panels.forEach((panel, j) => { panel.hidden = j !== i; });
+    pills.forEach((btn, j) => btn.classList.toggle("is-active", j === i));
   }
 
-  return body;
+  showTab(0);
 }
 
 // ---------------------------------------------------------------
@@ -475,29 +568,11 @@ function openCategoryOverlay(categoryId, triggerEl) {
     // (series switcher) and the body itself.
     renderGallery(cat, subnavEl, bodyEl);
   } else {
-    // Internal nav: one pill per project (flat categories) or per
-    // subsection (grouped categories like Editing), so visitors can
-    // jump between them without closing the overlay.
-    const navTargets = cat.groups
-      ? cat.groups.map((g) => ({ label: g.title, id: `ov-${cat.id}-${slugify(g.title)}` }))
-      : cat.items.map((it) => ({ label: it.title, id: `ov-${cat.id}-${slugify(it.title)}` }));
-
-    navTargets.forEach((t, i) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "overlay-subnav-pill";
-      btn.textContent = t.label;
-      if (i === 0) btn.classList.add("is-active");
-      btn.addEventListener("click", () => {
-        const target = document.getElementById(t.id);
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-        subnavEl.querySelectorAll(".overlay-subnav-pill").forEach((p) => p.classList.remove("is-active"));
-        btn.classList.add("is-active");
-      });
-      subnavEl.appendChild(btn);
-    });
-
-    bodyEl.appendChild(renderOverlayBody(cat));
+    // Every other category: true tab isolation. Clicking a subnav
+    // pill (one per project, or per subsection for grouped
+    // categories like Editing) shows only that panel and hides the
+    // rest — no scrolling involved.
+    renderTabbedContent(cat, subnavEl, bodyEl);
   }
 
   lockBodyScroll();
@@ -586,10 +661,26 @@ let activeGalleryUnzoom = null;
 function renderGallery(cat, subnavEl, bodyEl) {
   bodyEl.classList.add("overlay-body--gallery");
 
-  const state = { seriesIndex: 0, photoIndex: 0 };
+  // mode: "grid" shows the active series as a gallery of thumbnails
+  // (what a series *is*, at a glance); "browse" is the one-by-one
+  // swipe/zoom viewer, entered by clicking any thumbnail.
+  const state = { seriesIndex: 0, photoIndex: 0, mode: "grid" };
 
   const viewer = document.createElement("div");
   viewer.className = "gallery-viewer";
+
+  const gridEl = document.createElement("div");
+  gridEl.className = "gallery-grid";
+
+  const browseEl = document.createElement("div");
+  browseEl.className = "gallery-browse";
+
+  const backBtn = document.createElement("button");
+  backBtn.type = "button";
+  backBtn.className = "gallery-back";
+  backBtn.innerHTML = '<span aria-hidden="true">&#8249;</span> Back to Gallery';
+  backBtn.addEventListener("click", () => setMode("grid"));
+  browseEl.appendChild(backBtn);
 
   const stage = document.createElement("div");
   stage.className = "gallery-stage";
@@ -611,15 +702,17 @@ function renderGallery(cat, subnavEl, bodyEl) {
   nextBtn.setAttribute("aria-label", "Next photo");
   nextBtn.innerHTML = '<span aria-hidden="true">&#8250;</span>';
   stage.appendChild(nextBtn);
+  browseEl.appendChild(stage);
 
   const dotsEl = document.createElement("div");
   dotsEl.className = "gallery-dots";
+  browseEl.appendChild(dotsEl);
 
   const caption = document.createElement("div");
   caption.className = "gallery-caption";
 
-  viewer.appendChild(stage);
-  viewer.appendChild(dotsEl);
+  viewer.appendChild(gridEl);
+  viewer.appendChild(browseEl);
   viewer.appendChild(caption);
   bodyEl.appendChild(viewer);
 
@@ -633,7 +726,27 @@ function renderGallery(cat, subnavEl, bodyEl) {
     return btn;
   });
 
-  function render() {
+  function renderGrid() {
+    const series = cat.series[state.seriesIndex];
+    const photoCount = series.photoCount || 1;
+    gridEl.innerHTML = "";
+    for (let i = 0; i < photoCount; i++) {
+      const thumb = document.createElement("button");
+      thumb.type = "button";
+      thumb.className = "gallery-grid-thumb";
+      const label = document.createElement("span");
+      label.textContent = String(i + 1);
+      thumb.appendChild(label);
+      thumb.setAttribute("aria-label", `Open photo ${i + 1} of ${photoCount}`);
+      thumb.addEventListener("click", () => {
+        state.photoIndex = i;
+        setMode("browse");
+      });
+      gridEl.appendChild(thumb);
+    }
+  }
+
+  function renderStage() {
     const series = cat.series[state.seriesIndex];
     const photoCount = series.photoCount || 1;
 
@@ -653,7 +766,10 @@ function renderGallery(cat, subnavEl, bodyEl) {
       dot.className = "gallery-dot" + (i === state.photoIndex ? " is-active" : "");
       dotsEl.appendChild(dot);
     }
+  }
 
+  function renderCaption() {
+    const series = cat.series[state.seriesIndex];
     caption.innerHTML = "";
     const titleEl = document.createElement("h3");
     titleEl.className = "gallery-caption-title";
@@ -680,35 +796,54 @@ function renderGallery(cat, subnavEl, bodyEl) {
     noteEl.className = "gallery-caption-note" + (series.note ? "" : " is-placeholder");
     noteEl.textContent = series.note ? series.note : "Note — TBD";
     caption.appendChild(noteEl);
+  }
 
-    pills.forEach((p, i) => p.classList.toggle("is-active", i === state.seriesIndex));
+  // Caption (title/year/note/model) stays visible in both modes;
+  // only the grid-vs-single-photo view underneath it swaps.
+  function setMode(mode) {
+    state.mode = mode;
+    gridEl.style.display = mode === "grid" ? "grid" : "none";
+    browseEl.style.display = mode === "browse" ? "block" : "none";
+    if (mode === "grid") renderGrid();
+    else renderStage();
   }
 
   function setSeries(i) {
     const count = cat.series.length;
     state.seriesIndex = ((i % count) + count) % count;
     state.photoIndex = 0;
-    render();
+    renderCaption();
+    setMode("grid");
+    pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
   }
 
   // Stepping past the last/first photo of a series rolls over into
   // the next/previous series — one continuous swipe/arrow gesture
   // covers both "move within a series" and "move between series".
+  // Only active in browse mode.
   function step(direction) {
+    if (state.mode !== "browse") return;
     const series = cat.series[state.seriesIndex];
     const photoCount = series.photoCount || 1;
     const newPhoto = state.photoIndex + direction;
 
     if (newPhoto >= photoCount) {
-      setSeries(state.seriesIndex + 1);
+      const count = cat.series.length;
+      state.seriesIndex = (state.seriesIndex + 1) % count;
+      state.photoIndex = 0;
+      renderCaption();
+      pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
+      renderStage();
     } else if (newPhoto < 0) {
       const count = cat.series.length;
       state.seriesIndex = ((state.seriesIndex - 1) % count + count) % count;
       state.photoIndex = (cat.series[state.seriesIndex].photoCount || 1) - 1;
-      render();
+      renderCaption();
+      pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
+      renderStage();
     } else {
       state.photoIndex = newPhoto;
-      render();
+      renderStage();
     }
   }
 
@@ -739,7 +874,9 @@ function renderGallery(cat, subnavEl, bodyEl) {
   activeGalleryStep = step;
   activeGalleryUnzoom = unzoom;
 
-  render();
+  renderCaption();
+  setMode("grid");
+  pills[0].classList.add("is-active");
 }
 
 // ---------------------------------------------------------------
