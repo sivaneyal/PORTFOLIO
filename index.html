@@ -7,7 +7,7 @@
 <meta name="description" content="Sivan Eyal is a Berlin based filmmaker and multidisciplinary artist working across directing, editing, curation, and social media strategy.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;0,6..96,700;1,6..96,400;1,6..96,500&family=Archivo:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -31,7 +31,6 @@
   <nav class="nav-links" id="navLinks">
     <a href="#about" class="nav-link">About</a>
     <a href="#work" class="nav-link">Work</a>
-    <a href="#highlights" class="nav-link">Selected</a>
     <a href="#contact" class="nav-link">Contact</a>
   </nav>
 </header>
@@ -93,7 +92,15 @@
             <span class="orbit-label">Editing</span>
           </a>
         </li>
-        <li class="orbit-item orbit-item--3" data-target="curation">
+        <li class="orbit-item orbit-item--3" data-target="photography">
+          <a href="#photography" class="orbit-link">
+            <span class="orbit-thumb-wrap" data-float>
+              <img class="orbit-thumb" src="assets/images/thumb-photography-placeholder.svg" alt="Photography">
+            </span>
+            <span class="orbit-label">Photography</span>
+          </a>
+        </li>
+        <li class="orbit-item orbit-item--4" data-target="curation">
           <a href="#curation" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
               <img class="orbit-thumb" src="assets/images/thumb-curation-placeholder.svg" alt="Curation">
@@ -101,20 +108,20 @@
             <span class="orbit-label">Curation</span>
           </a>
         </li>
-        <li class="orbit-item orbit-item--4" data-target="social">
-          <a href="#social" class="orbit-link">
+        <li class="orbit-item orbit-item--5" data-target="performance">
+          <a href="#performance" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-social-placeholder.svg" alt="Social Media & Strategy">
+              <img class="orbit-thumb" src="assets/images/thumb-performance-placeholder.svg" alt="Performance Artist">
             </span>
-            <span class="orbit-label">Social&nbsp;Media&nbsp;&amp;&nbsp;Strategy</span>
+            <span class="orbit-label">Performance&nbsp;Artist</span>
           </a>
         </li>
-        <li class="orbit-item orbit-item--5" data-target="photography">
-          <a href="#photography" class="orbit-link">
+        <li class="orbit-item orbit-item--6" data-target="production">
+          <a href="#production" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-photography-placeholder.svg" alt="Photography">
+              <img class="orbit-thumb" src="assets/images/thumb-production-placeholder.svg" alt="Production">
             </span>
-            <span class="orbit-label">Photography</span>
+            <span class="orbit-label">Production</span>
           </a>
         </li>
       </ul>
@@ -138,17 +145,6 @@
           Her practice is concerned with image, rhythm, and the spaces between disciplines —
           replace this paragraph with the final bio text from the supplied content document.
         </p>
-        <dl class="about-meta reveal">
-          <div class="about-meta-row">
-            <dt>Based</dt><dd>Berlin, Germany</dd>
-          </div>
-          <div class="about-meta-row">
-            <dt>Practice</dt><dd>Directing, Editing, Curation, Strategy</dd>
-          </div>
-          <div class="about-meta-row">
-            <dt>Available for</dt><dd>Commissions &amp; collaboration</dd>
-          </div>
-        </dl>
       </div>
     </div>
   </section>
@@ -167,7 +163,8 @@
   </section>
 
   <!-- ========== SELECTED HIGHLIGHTS ========== -->
-  <section class="highlights" id="highlights">
+  <!-- Hidden for now per request — remove "is-hidden" to bring back. -->
+  <section class="highlights is-hidden" id="highlights">
     <div class="section-frame">
       <p class="section-kicker reveal">Highlights</p>
       <h2 class="section-title reveal">Selected Work</h2>

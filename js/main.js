@@ -16,11 +16,6 @@ const CATEGORIES = [
     description: "",
     items: [
       {
-        title: "WIN",
-        year: "2026",
-        desc: "Experimental video art.",
-      },
-      {
         title: "Venus Sucks",
         year: "2025",
         desc: "Yana is determined to leave her innocent days behind. Together with her sharp and shady friend Sheli, she sets out for an afternoon of mischief at the mall: in search of a blue movie, fast food, and male attention. What begins as a light hearted adventure slowly derails into a series of borderline encounters with strangers, and an unexpected lesson in the praises of the arts of seduction.",
@@ -36,6 +31,11 @@ const CATEGORIES = [
           ["Resolution", "4K DCI Scope, Color"],
           ["Subtitles", "Hebrew, English"],
         ],
+      },
+      {
+        title: "WIN",
+        year: "2026",
+        desc: "Experimental video art.",
       },
       {
         title: "Sun's Too Hot",
@@ -111,14 +111,14 @@ const CATEGORIES = [
         title: "Curation & Artistic Direction",
         items: [
           {
-            title: "Snail Cinema Streaming",
+            title: "Shablulim Films Streaming Platform",
             desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
-            links: [{ label: "Site", url: "https://shablulimfilm.com/" }],
+            links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
           },
           {
             title: "Content Editing — Outline Festival 2025",
             desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
-            links: [{ label: "Site", url: "https://outlinejerusalem.com/" }],
+            links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
           },
         ],
       },
@@ -175,8 +175,18 @@ const CATEGORIES = [
     ],
   },
   {
-    id: "curation",
+    id: "photography",
     index: "03",
+    title: "Photography",
+    description: "Placeholder category description — a short line of context on Sivan's photography goes here.",
+    items: [
+      { title: "Untitled Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
+      { title: "Untitled Series", year: "2021", desc: "Placeholder description of the project, format, and context." },
+    ],
+  },
+  {
+    id: "curation",
+    index: "04",
     title: "Curation",
     description: "Placeholder category description — a short line of context on Sivan's curatorial work goes here.",
     items: [
@@ -185,23 +195,23 @@ const CATEGORIES = [
     ],
   },
   {
-    id: "social",
-    index: "04",
-    title: "Social Media & Strategy",
-    description: "Placeholder category description — a short line of context on Sivan's strategy work goes here.",
+    id: "performance",
+    index: "05",
+    title: "Performance Artist",
+    description: "Placeholder category description — a short line of context on Sivan's performance work goes here.",
     items: [
-      { title: "Untitled Brand Campaign", year: "2024", desc: "Placeholder description of the project, format, and context." },
-      { title: "Untitled Content Strategy", year: "2023", desc: "Placeholder description of the project, format, and context." },
+      { title: "Untitled Performance", year: "2024", desc: "Placeholder description of the project, format, and context." },
+      { title: "Untitled Performance", year: "2022", desc: "Placeholder description of the project, format, and context." },
     ],
   },
   {
-    id: "photography",
-    index: "05",
-    title: "Photography",
-    description: "Placeholder category description — a short line of context on Sivan's photography goes here.",
+    id: "production",
+    index: "06",
+    title: "Production",
+    description: "Placeholder category description — a short line of context on Sivan's production work goes here.",
     items: [
-      { title: "Untitled Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
-      { title: "Untitled Series", year: "2021", desc: "Placeholder description of the project, format, and context." },
+      { title: "Untitled Production", year: "2024", desc: "Placeholder description of the project, format, and context." },
+      { title: "Untitled Production", year: "2023", desc: "Placeholder description of the project, format, and context." },
     ],
   },
 ];
@@ -320,7 +330,6 @@ function renderCategories() {
     block.innerHTML = `
       <button class="category-header" aria-expanded="false" aria-controls="${panelId}">
         <span class="category-header-left">
-          <span class="category-index">${cat.index}</span>
           <h3 class="category-title">${cat.title}</h3>
         </span>
         <span class="category-header-right" style="display:flex;align-items:center;gap:20px;">

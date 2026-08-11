@@ -1,7 +1,8 @@
 /* ============================================================
    Sivan Eyal — Portfolio
    Palette: near-black ground, bone text, single oxblood accent.
-   Headline: Fraunces (editorial serif). Body: Inter (neutral sans).
+   Headline: Bodoni Moda (high-contrast, cinematic editorial serif).
+   Body: Archivo (neutral grotesk with more character than a system sans).
    ============================================================ */
 
 :root {
@@ -14,8 +15,8 @@
   --accent-soft: rgba(156, 59, 46, 0.35);
   --line: rgba(242, 240, 236, 0.12);
 
-  --font-head: "Fraunces", "Times New Roman", serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-head: "Bodoni Moda", "Didot", "Times New Roman", serif;
+  --font-body: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --nav-h: 84px;
@@ -47,6 +48,8 @@ a {
 ul, dl, dd { margin: 0; padding: 0; list-style: none; }
 
 img { max-width: 100%; display: block; }
+
+.is-hidden { display: none !important; }
 
 ::selection {
   background: var(--accent);
@@ -298,11 +301,12 @@ img { max-width: 100%; display: block; }
   will-change: transform;
 }
 
-.orbit-item--1 { top: 20%; left: 63%; --thumb-size: 132px; }
-.orbit-item--2 { top: 17%; left: 87%; --thumb-size: 92px; }
-.orbit-item--3 { top: 46%; left: 91%; --thumb-size: 112px; }
-.orbit-item--4 { top: 73%; left: 80%; --thumb-size: 100px; }
-.orbit-item--5 { top: 87%; left: 58%; --thumb-size: 86px; }
+.orbit-item--1 { top: 18%; left: 61%; --thumb-size: 128px; }
+.orbit-item--2 { top: 16%; left: 82%; --thumb-size: 84px; }
+.orbit-item--3 { top: 36%; left: 92%; --thumb-size: 100px; }
+.orbit-item--4 { top: 58%; left: 90%; --thumb-size: 96px; }
+.orbit-item--5 { top: 77%; left: 76%; --thumb-size: 88px; }
+.orbit-item--6 { top: 88%; left: 54%; --thumb-size: 74px; }
 
 .orbit-link {
   display: flex;
@@ -326,10 +330,11 @@ img { max-width: 100%; display: block; }
 }
 
 .orbit-item--1 .orbit-thumb-wrap { --float-delay: 0; }
-.orbit-item--2 .orbit-thumb-wrap { --float-delay: 0.7; }
-.orbit-item--3 .orbit-thumb-wrap { --float-delay: 1.4; }
-.orbit-item--4 .orbit-thumb-wrap { --float-delay: 2.1; }
-.orbit-item--5 .orbit-thumb-wrap { --float-delay: 2.8; }
+.orbit-item--2 .orbit-thumb-wrap { --float-delay: 0.6; }
+.orbit-item--3 .orbit-thumb-wrap { --float-delay: 1.2; }
+.orbit-item--4 .orbit-thumb-wrap { --float-delay: 1.8; }
+.orbit-item--5 .orbit-thumb-wrap { --float-delay: 2.4; }
+.orbit-item--6 .orbit-thumb-wrap { --float-delay: 3.0; }
 
 @keyframes float-breathe {
   0%, 100% { transform: translateY(0); }
@@ -350,8 +355,12 @@ img { max-width: 100%; display: block; }
   color: var(--bone-dim);
   text-align: center;
   /* explicit width (not just max-width) forces wrap inside the flex
-     column — a bare max-width lets the text overflow its box instead */
+     column — a bare max-width lets the text overflow its box instead.
+     min-width:0 overrides the flex item's default min-width:auto,
+     which otherwise keeps sizing at the unwrapped (max-content) width
+     and lets text overflow into the next item regardless. */
   width: calc(var(--thumb-size) + 30px);
+  min-width: 0;
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
@@ -464,10 +473,7 @@ section {
    About
    ============================================================ */
 .about-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: clamp(40px, 6vw, 100px);
-  align-items: start;
+  display: block;
 }
 
 .about-bio {
@@ -477,31 +483,7 @@ section {
   line-height: 1.5;
   color: var(--bone);
   font-weight: 300;
-}
-
-.about-meta-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.about-meta-row dt {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--bone-faint);
-}
-
-.about-meta-row dd {
-  font-size: 0.92rem;
-  text-align: right;
-  color: var(--bone-dim);
-}
-
-@media (max-width: 760px) {
-  .about-grid { grid-template-columns: 1fr; }
+  max-width: 780px;
 }
 
 /* ============================================================
@@ -538,12 +520,6 @@ section {
   display: flex;
   align-items: baseline;
   gap: clamp(16px, 3vw, 36px);
-}
-
-.category-index {
-  font-size: 0.75rem;
-  color: var(--accent);
-  min-width: 22px;
 }
 
 .category-title {
