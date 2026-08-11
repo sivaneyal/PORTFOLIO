@@ -260,36 +260,6 @@ function buildWorkItem(item) {
     el.appendChild(desc);
   }
 
-  if (item.screenings && item.screenings.length) {
-    const subhead = document.createElement("p");
-    subhead.className = "work-item-subhead";
-    subhead.textContent = "Screenings";
-    el.appendChild(subhead);
-
-    const list = document.createElement("ul");
-    list.className = "work-item-screenings";
-    item.screenings.forEach((s) => {
-      const li = document.createElement("li");
-      li.textContent = s;
-      list.appendChild(li);
-    });
-    el.appendChild(list);
-  }
-
-  if (item.specs && item.specs.length) {
-    const dl = document.createElement("dl");
-    dl.className = "work-item-specs";
-    item.specs.forEach(([k, v]) => {
-      const dt = document.createElement("dt");
-      dt.textContent = k;
-      const dd = document.createElement("dd");
-      dd.textContent = v;
-      dl.appendChild(dt);
-      dl.appendChild(dd);
-    });
-    el.appendChild(dl);
-  }
-
   if (item.links && item.links.length) {
     const linksWrap = document.createElement("div");
     linksWrap.className = "work-item-links";
@@ -305,99 +275,260 @@ function buildWorkItem(item) {
     el.appendChild(linksWrap);
   }
 
+  // Screenings + full technical specs are secondary detail — collapsed
+  // behind a "Details" toggle rather than shown by default.
+  const hasDetails = (item.screenings && item.screenings.length) || (item.specs && item.specs.length);
+  if (hasDetails) {
+    const detailsWrap = document.createElement("div");
+    detailsWrap.className = "work-item-details";
+
+    if (item.screenings && item.screenings.length) {
+      const subhead = document.createElement("p");
+      subhead.className = "work-item-subhead";
+      subhead.textContent = "Screenings";
+      detailsWrap.appendChild(subhead);
+
+      const list = document.createElement("ul");
+      list.className = "work-item-screenings";
+      item.screenings.forEach((s) => {
+        const li = document.createElement("li");
+        li.textContent = s;
+        list.appendChild(li);
+      });
+      detailsWrap.appendChild(list);
+    }
+
+    if (item.specs && item.specs.length) {
+      const dl = document.createElement("dl");
+      dl.className = "work-item-specs";
+      item.specs.forEach(([k, v]) => {
+        const dt = document.createElement("dt");
+        dt.textContent = k;
+        const dd = document.createElement("dd");
+        dd.textContent = v;
+        dl.appendChild(dt);
+        dl.appendChild(dd);
+      });
+      detailsWrap.appendChild(dl);
+    }
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.type = "button";
+    toggleBtn.className = "work-item-details-toggle";
+    toggleBtn.textContent = "Details";
+    toggleBtn.setAttribute("aria-expanded", "false");
+    toggleBtn.addEventListener("click", () => {
+      const isOpen = detailsWrap.classList.toggle("is-open");
+      toggleBtn.classList.toggle("is-open", isOpen);
+      toggleBtn.setAttribute("aria-expanded", String(isOpen));
+      toggleBtn.textContent = isOpen ? "Hide Details" : "Details";
+      detailsWrap.style.maxHeight = isOpen ? detailsWrap.scrollHeight + "px" : "0px";
+    });
+
+    el.appendChild(toggleBtn);
+    el.appendChild(detailsWrap);
+  }
+
   return el;
 }
 
 // ---------------------------------------------------------------
-// Render categories (accordion) + highlights from data above.
-// A category holds either a flat `items` array or a `groups`
-// array (each with its own title + items), so editorial content
-// with natural subsections (e.g. Editing) can render grouped.
+// Slugify a title into a stable id fragment for overlay jump-links
+// ---------------------------------------------------------------
+function slugify(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+// ---------------------------------------------------------------
+// Build the overlay's scrollable content for one category: either
+// grouped subsections (Editing) or a flat grid (everything else).
+// Each group/item gets a stable id so the overlay's own subnav can
+// jump to it within the overlay's internal scroll container.
+// ---------------------------------------------------------------
+function renderOverlayBody(cat) {
+  const body = document.createElement("div");
+
+  if (cat.groups) {
+    cat.groups.forEach((group) => {
+      const groupEl = document.createElement("div");
+      groupEl.className = "work-group";
+      groupEl.id = `ov-${cat.id}-${slugify(group.title)}`;
+
+      const groupTitle = document.createElement("h4");
+      groupTitle.className = "work-group-title";
+      groupTitle.textContent = group.title;
+      groupEl.appendChild(groupTitle);
+
+      const grid = document.createElement("div");
+      grid.className = "work-grid";
+      group.items.forEach((item) => grid.appendChild(buildWorkItem(item)));
+      groupEl.appendChild(grid);
+
+      body.appendChild(groupEl);
+    });
+  } else {
+    const grid = document.createElement("div");
+    grid.className = "work-grid";
+    cat.items.forEach((item) => {
+      const card = buildWorkItem(item);
+      card.id = `ov-${cat.id}-${slugify(item.title)}`;
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+  }
+
+  return body;
+}
+
+// ---------------------------------------------------------------
+// Full-screen category overlay — open/close + internal subnav.
+// This is a plain fixed-position panel toggled via a CSS class; it
+// never touches the URL hash or calls scrollIntoView on the page
+// itself, so opening/closing it never scrolls the main page. The
+// main page's scroll position is preserved automatically because we
+// only freeze it (overflow: hidden) rather than moving it.
+// ---------------------------------------------------------------
+let overlayLastFocused = null;
+
+function openCategoryOverlay(categoryId, triggerEl) {
+  const cat = CATEGORIES.find((c) => c.id === categoryId);
+  if (!cat) return;
+
+  overlayLastFocused = triggerEl || document.activeElement;
+
+  const overlay = document.getElementById("categoryOverlay");
+  const indexEl = document.getElementById("overlayIndex");
+  const titleEl = document.getElementById("overlayTitle");
+  const descEl = document.getElementById("overlayDesc");
+  const subnavEl = document.getElementById("overlaySubnav");
+  const bodyEl = document.getElementById("overlayBody");
+  const scrollEl = document.getElementById("overlayScroll");
+
+  indexEl.textContent = cat.index;
+  titleEl.textContent = cat.title;
+  if (cat.description) {
+    descEl.textContent = cat.description;
+    descEl.hidden = false;
+  } else {
+    descEl.hidden = true;
+  }
+
+  // Internal nav: one pill per project (flat categories) or per
+  // subsection (grouped categories like Editing), so visitors can
+  // jump between them without closing the overlay.
+  const navTargets = cat.groups
+    ? cat.groups.map((g) => ({ label: g.title, id: `ov-${cat.id}-${slugify(g.title)}` }))
+    : cat.items.map((it) => ({ label: it.title, id: `ov-${cat.id}-${slugify(it.title)}` }));
+
+  subnavEl.innerHTML = "";
+  navTargets.forEach((t, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "overlay-subnav-pill";
+    btn.textContent = t.label;
+    if (i === 0) btn.classList.add("is-active");
+    btn.addEventListener("click", () => {
+      const target = document.getElementById(t.id);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      subnavEl.querySelectorAll(".overlay-subnav-pill").forEach((p) => p.classList.remove("is-active"));
+      btn.classList.add("is-active");
+    });
+    subnavEl.appendChild(btn);
+  });
+
+  bodyEl.innerHTML = "";
+  bodyEl.appendChild(renderOverlayBody(cat));
+
+  lockBodyScroll();
+
+  overlay.classList.add("is-open");
+  overlay.setAttribute("aria-hidden", "false");
+  scrollEl.scrollTop = 0;
+
+  document.getElementById("overlayClose").focus();
+}
+
+function closeCategoryOverlay() {
+  const overlay = document.getElementById("categoryOverlay");
+  if (!overlay.classList.contains("is-open")) return;
+
+  overlay.classList.remove("is-open");
+  overlay.setAttribute("aria-hidden", "true");
+  unlockBodyScroll();
+
+  if (overlayLastFocused && typeof overlayLastFocused.focus === "function") {
+    overlayLastFocused.focus();
+  }
+}
+
+// Simply setting overflow:hidden to freeze scroll is not reliable across
+// browsers — some forget the scroll offset once overflow is restored, so
+// closing the overlay can leave the visitor at the top of the page instead
+// of back where they were. Pinning the body at its current scroll offset
+// via position:fixed and restoring it on close is the robust way to keep
+// the "return to the exact scroll position" promise.
+function lockBodyScroll() {
+  const scrollY = window.scrollY || window.pageYOffset;
+  document.body.dataset.scrollLockY = String(scrollY);
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
+
+function unlockBodyScroll() {
+  const scrollY = parseInt(document.body.dataset.scrollLockY || "0", 10);
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  delete document.body.dataset.scrollLockY;
+  // behavior: "instant" bypasses the global `scroll-behavior: smooth` on
+  // <html> — restoring position should be immediate, not an animation.
+  window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
+}
+
+function initCategoryOverlay() {
+  document.getElementById("overlayClose").addEventListener("click", closeCategoryOverlay);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeCategoryOverlay();
+  });
+}
+
+// ---------------------------------------------------------------
+// Render the Work section as simple list rows (title + count).
+// Clicking a row opens the same full-screen overlay as the hero's
+// circular nav — there is no in-page expansion here, and no work
+// item content lives on the landing page itself.
 // ---------------------------------------------------------------
 function renderCategories() {
   const list = document.getElementById("categoryList");
 
   CATEGORIES.forEach((cat) => {
-    const block = document.createElement("article");
-    block.className = "category-block";
-    block.id = cat.id;
-
-    const panelId = `${cat.id}-panel`;
     const totalWorks = cat.groups
       ? cat.groups.reduce((sum, g) => sum + g.items.length, 0)
       : cat.items.length;
 
-    block.innerHTML = `
-      <button class="category-header" aria-expanded="false" aria-controls="${panelId}">
-        <span class="category-header-left">
-          <h3 class="category-title">${cat.title}</h3>
-        </span>
-        <span class="category-header-right" style="display:flex;align-items:center;gap:20px;">
-          <span class="category-count">${totalWorks} works</span>
-          <span class="category-toggle" aria-hidden="true"></span>
-        </span>
-      </button>
-      <div class="category-panel" id="${panelId}">
-        <div class="category-panel-inner">
-          ${cat.description ? `<p class="category-desc"></p>` : ""}
-        </div>
-      </div>
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "category-row";
+    row.innerHTML = `
+      <span class="category-row-left">
+        <h3 class="category-title">${cat.title}</h3>
+      </span>
+      <span class="category-row-right">
+        <span class="category-count">${totalWorks} works</span>
+        <span class="category-arrow" aria-hidden="true">→</span>
+      </span>
     `;
-
-    if (cat.description) {
-      block.querySelector(".category-desc").textContent = cat.description;
-    }
-
-    const inner = block.querySelector(".category-panel-inner");
-
-    if (cat.groups) {
-      cat.groups.forEach((group) => {
-        const groupEl = document.createElement("div");
-        groupEl.className = "work-group";
-
-        const groupTitle = document.createElement("h4");
-        groupTitle.className = "work-group-title";
-        groupTitle.textContent = group.title;
-        groupEl.appendChild(groupTitle);
-
-        const grid = document.createElement("div");
-        grid.className = "work-grid";
-        group.items.forEach((item) => grid.appendChild(buildWorkItem(item)));
-        groupEl.appendChild(grid);
-
-        inner.appendChild(groupEl);
-      });
-    } else {
-      const grid = document.createElement("div");
-      grid.className = "work-grid";
-      cat.items.forEach((item) => grid.appendChild(buildWorkItem(item)));
-      inner.appendChild(grid);
-    }
-
-    list.appendChild(block);
-
-    const header = block.querySelector(".category-header");
-    const panel = block.querySelector(".category-panel");
-    header.addEventListener("click", () => toggleCategory(block, header, panel));
+    row.addEventListener("click", () => openCategoryOverlay(cat.id, row));
+    list.appendChild(row);
   });
-}
-
-function toggleCategory(block, header, panel) {
-  const isOpen = block.classList.contains("is-open");
-
-  if (isOpen) {
-    panel.style.maxHeight = panel.scrollHeight + "px";
-    requestAnimationFrame(() => {
-      panel.style.maxHeight = "0px";
-    });
-    block.classList.remove("is-open");
-    header.setAttribute("aria-expanded", "false");
-  } else {
-    block.classList.add("is-open");
-    header.setAttribute("aria-expanded", "true");
-    panel.style.maxHeight = panel.scrollHeight + "px";
-    block.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
 }
 
 function renderHighlights() {
@@ -416,22 +547,14 @@ function renderHighlights() {
 }
 
 // ---------------------------------------------------------------
-// Deep-link from hero index into the matching category + open it
+// Hero orbit nav — each item is a <button> (no href/anchor at all),
+// so clicking it only ever opens the full-screen overlay via JS.
 // ---------------------------------------------------------------
 function wireHeroLinks() {
   document.querySelectorAll(".orbit-link").forEach((link) => {
-    link.addEventListener("click", (e) => {
+    link.addEventListener("click", () => {
       const targetId = link.closest(".orbit-item").dataset.target;
-      const block = document.getElementById(targetId);
-      if (!block) return;
-      e.preventDefault();
-      const header = block.querySelector(".category-header");
-      const panel = block.querySelector(".category-panel");
-      if (!block.classList.contains("is-open")) {
-        toggleCategory(block, header, panel);
-      } else {
-        block.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      openCategoryOverlay(targetId, link);
     });
   });
 }
@@ -469,10 +592,15 @@ function initCursor() {
   }
   requestAnimationFrame(raf);
 
-  const interactive = document.querySelectorAll("a, button");
-  interactive.forEach((el) => {
-    el.addEventListener("mouseenter", () => ring.classList.add("is-active"));
-    el.addEventListener("mouseleave", () => ring.classList.remove("is-active"));
+  // Delegated (not bound per-element) so it still works for buttons/links
+  // created later, e.g. inside the category overlay's dynamic content.
+  document.addEventListener("mouseover", (e) => {
+    if (e.target.closest("a, button")) ring.classList.add("is-active");
+  });
+  document.addEventListener("mouseout", (e) => {
+    if (e.target.closest("a, button") && !e.relatedTarget?.closest("a, button")) {
+      ring.classList.remove("is-active");
+    }
   });
 }
 
@@ -573,6 +701,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCategories();
   renderHighlights();
   wireHeroLinks();
+  initCategoryOverlay();
   initCursor();
   initMagneticHeadlines();
   initReveal();

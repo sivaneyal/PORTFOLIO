@@ -30,7 +30,6 @@
   </button>
   <nav class="nav-links" id="navLinks">
     <a href="#about" class="nav-link">About</a>
-    <a href="#work" class="nav-link">Work</a>
     <a href="#contact" class="nav-link">Contact</a>
   </nav>
 </header>
@@ -73,56 +72,59 @@
          the video (desktop). On mobile this collapses to a centered row —
          see .hero-orbit responsive rules in css/style.css.
          Thumbnails are generated placeholders (assets/images/thumb-*-placeholder.svg);
-         swap each src for a real still frame per category when available. -->
+         swap each src for a real still frame per category when available.
+         Each item is a <button>, not a link — clicking opens the full-screen
+         #categoryOverlay via JS (see openCategoryOverlay in js/main.js).
+         There is no href/anchor involved, so it never scrolls the page. -->
     <nav class="hero-orbit" aria-label="Work categories">
       <ul class="orbit-list" id="orbitList">
         <li class="orbit-item orbit-item--1" data-target="directing">
-          <a href="#directing" class="orbit-link">
+          <button type="button" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
               <img class="orbit-thumb" src="assets/images/thumb-directing-placeholder.svg" alt="Directing / Film">
             </span>
             <span class="orbit-label">Directing&nbsp;/&nbsp;Film</span>
-          </a>
+          </button>
         </li>
         <li class="orbit-item orbit-item--2" data-target="editing">
-          <a href="#editing" class="orbit-link">
+          <button type="button" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
               <img class="orbit-thumb" src="assets/images/thumb-editing-placeholder.svg" alt="Editing">
             </span>
             <span class="orbit-label">Editing</span>
-          </a>
+          </button>
         </li>
         <li class="orbit-item orbit-item--3" data-target="photography">
-          <a href="#photography" class="orbit-link">
+          <button type="button" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
               <img class="orbit-thumb" src="assets/images/thumb-photography-placeholder.svg" alt="Photography">
             </span>
             <span class="orbit-label">Photography</span>
-          </a>
+          </button>
         </li>
         <li class="orbit-item orbit-item--4" data-target="curation">
-          <a href="#curation" class="orbit-link">
+          <button type="button" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
               <img class="orbit-thumb" src="assets/images/thumb-curation-placeholder.svg" alt="Curation">
             </span>
             <span class="orbit-label">Curation</span>
-          </a>
+          </button>
         </li>
         <li class="orbit-item orbit-item--5" data-target="performance">
-          <a href="#performance" class="orbit-link">
+          <button type="button" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
               <img class="orbit-thumb" src="assets/images/thumb-performance-placeholder.svg" alt="Performance Artist">
             </span>
             <span class="orbit-label">Performance&nbsp;Artist</span>
-          </a>
+          </button>
         </li>
         <li class="orbit-item orbit-item--6" data-target="production">
-          <a href="#production" class="orbit-link">
+          <button type="button" class="orbit-link">
             <span class="orbit-thumb-wrap" data-float>
               <img class="orbit-thumb" src="assets/images/thumb-production-placeholder.svg" alt="Production">
             </span>
             <span class="orbit-label">Production</span>
-          </a>
+          </button>
         </li>
       </ul>
     </nav>
@@ -189,6 +191,30 @@
   </footer>
 
 </main>
+
+<!-- ========== CATEGORY OVERLAY ==========
+     Full-screen, JS-driven show/hide panel (see openCategoryOverlay /
+     closeCategoryOverlay in js/main.js). It is not a page section you
+     scroll to — it's always in the DOM at position:fixed, hidden until
+     the "is-open" class is toggled on. Content is populated on open. -->
+<div class="category-overlay" id="categoryOverlay" aria-hidden="true">
+  <button type="button" class="overlay-close" id="overlayClose" aria-label="Close and return to site">
+    <span class="overlay-close-cross" aria-hidden="true"></span>
+    <span class="overlay-close-label">Close</span>
+  </button>
+
+  <div class="overlay-scroll" id="overlayScroll">
+    <header class="overlay-head">
+      <span class="overlay-index" id="overlayIndex"></span>
+      <h2 class="overlay-title" id="overlayTitle"></h2>
+      <p class="overlay-desc" id="overlayDesc" hidden></p>
+    </header>
+
+    <nav class="overlay-subnav" id="overlaySubnav" aria-label="Jump to project"></nav>
+
+    <div class="overlay-body" id="overlayBody"></div>
+  </div>
+</div>
 
 <script src="js/main.js" defer></script>
 </body>
