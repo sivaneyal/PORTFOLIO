@@ -296,7 +296,7 @@ img { max-width: 100%; display: block; }
   margin: 0;
 }
 
-/* Category nav — organic circular scatter of image thumbnails over the video */
+/* Category nav — organic scatter of minimal text labels over the video */
 .hero-orbit {
   position: absolute;
   inset: 0;
@@ -318,91 +318,87 @@ img { max-width: 100%; display: block; }
   will-change: transform;
 }
 
-.orbit-item--1 { top: 18%; left: 61%; --thumb-size: 128px; }
-.orbit-item--2 { top: 16%; left: 82%; --thumb-size: 84px; }
-.orbit-item--3 { top: 36%; left: 92%; --thumb-size: 100px; }
-.orbit-item--4 { top: 58%; left: 90%; --thumb-size: 96px; }
-.orbit-item--5 { top: 77%; left: 76%; --thumb-size: 88px; }
-.orbit-item--6 { top: 88%; left: 54%; --thumb-size: 74px; }
+/* --label-size carries the same organic size variety the old circular
+   thumbnails had (item 1 largest, item 6 smallest) — positions are
+   unchanged from before, still scattered to read against the video's
+   negative space rather than gridded. */
+.orbit-item--1 { top: 18%; left: 61%; --label-size: clamp(1.75rem, 2.8vw, 2.6rem); }
+.orbit-item--2 { top: 16%; left: 82%; --label-size: clamp(1.05rem, 1.5vw, 1.4rem); }
+.orbit-item--3 { top: 36%; left: 92%; --label-size: clamp(1.35rem, 2.1vw, 1.9rem); }
+.orbit-item--4 { top: 58%; left: 90%; --label-size: clamp(1.25rem, 2vw, 1.8rem); }
+.orbit-item--5 { top: 77%; left: 76%; --label-size: clamp(1.15rem, 1.8vw, 1.6rem); }
+.orbit-item--6 { top: 88%; left: 54%; --label-size: clamp(1rem, 1.4vw, 1.3rem); }
 
 .orbit-link {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
   /* it's a <button> (triggers the overlay), not a link — reset button chrome */
   background: none;
   border: none;
-  padding: 0;
+  padding: 10px;
   font: inherit;
   color: inherit;
 }
 
-.orbit-thumb-wrap {
-  display: block;
-  width: var(--thumb-size);
-  height: var(--thumb-size);
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
-  transition: border-color 0.4s var(--ease), transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+/* The slow vertical breathing drift lives here, on its own wrapper,
+   so it never fights with the hover scale/color transitions set on
+   .orbit-label below (both would be animating `transform` otherwise). */
+.orbit-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   will-change: transform;
   animation: float-breathe 7s ease-in-out infinite;
   animation-delay: calc(var(--float-delay, 0) * 1s);
 }
 
-.orbit-item--1 .orbit-thumb-wrap { --float-delay: 0; }
-.orbit-item--2 .orbit-thumb-wrap { --float-delay: 0.6; }
-.orbit-item--3 .orbit-thumb-wrap { --float-delay: 1.2; }
-.orbit-item--4 .orbit-thumb-wrap { --float-delay: 1.8; }
-.orbit-item--5 .orbit-thumb-wrap { --float-delay: 2.4; }
-.orbit-item--6 .orbit-thumb-wrap { --float-delay: 3.0; }
+.orbit-item--1 .orbit-text { --float-delay: 0; }
+.orbit-item--2 .orbit-text { --float-delay: 0.6; }
+.orbit-item--3 .orbit-text { --float-delay: 1.2; }
+.orbit-item--4 .orbit-text { --float-delay: 1.8; }
+.orbit-item--5 .orbit-text { --float-delay: 2.4; }
+.orbit-item--6 .orbit-text { --float-delay: 3.0; }
 
 @keyframes float-breathe {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
 
-.orbit-thumb {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.orbit-index {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+  transition: color 0.35s var(--ease);
 }
 
 .orbit-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--bone-dim);
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: var(--label-size);
+  line-height: 1.1;
+  color: var(--bone);
   text-align: center;
-  /* explicit width (not just max-width) forces wrap inside the flex
-     column — a bare max-width lets the text overflow its box instead.
-     min-width:0 overrides the flex item's default min-width:auto,
-     which otherwise keeps sizing at the unwrapped (max-content) width
-     and lets text overflow into the next item regardless. */
-  width: calc(var(--thumb-size) + 30px);
-  min-width: 0;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+  white-space: nowrap;
+  /* legibility over unpredictable video brightness, without a background shape */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 6px 26px rgba(0, 0, 0, 0.5);
+  transition: color 0.35s var(--ease), transform 0.35s var(--ease);
 }
 
 .orbit-link:hover .orbit-label,
 .orbit-link:focus-visible .orbit-label {
-  opacity: 1;
-  transform: translateY(0);
+  color: var(--accent);
+  transform: scale(1.08);
 }
 
-.orbit-link:hover .orbit-thumb-wrap,
-.orbit-link:focus-visible .orbit-thumb-wrap {
-  border-color: var(--accent);
-  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55), 0 0 0 6px var(--accent-soft);
+.orbit-link:hover .orbit-index,
+.orbit-link:focus-visible .orbit-index {
+  color: var(--bone);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .orbit-thumb-wrap { animation: none; }
+  .orbit-text { animation: none; }
 }
 
 /* Mobile: organic scatter doesn't work without a cursor or much space —
@@ -418,18 +414,13 @@ img { max-width: 100%; display: block; }
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 28px 22px;
+    gap: 22px 30px;
   }
 
   .orbit-item {
     position: static;
     transform: none;
-    --thumb-size: 76px !important;
-  }
-
-  .orbit-label {
-    opacity: 1;
-    transform: none;
+    --label-size: 1.3rem !important;
   }
 }
 

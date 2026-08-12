@@ -68,11 +68,9 @@
       </p>
     </div>
 
-    <!-- Category nav as an organic, circular scatter of image thumbnails over
+    <!-- Category nav as an organic scatter of minimal text labels over
          the video (desktop). On mobile this collapses to a centered row —
          see .hero-orbit responsive rules in css/style.css.
-         Thumbnails are generated placeholders (assets/images/thumb-*-placeholder.svg);
-         swap each src for a real still frame per category when available.
          Each item is a <button>, not a link — clicking opens the full-screen
          #categoryOverlay via JS (see openCategoryOverlay in js/main.js).
          There is no href/anchor involved, so it never scrolls the page. -->
@@ -80,50 +78,50 @@
       <ul class="orbit-list" id="orbitList">
         <li class="orbit-item orbit-item--1" data-target="directing">
           <button type="button" class="orbit-link">
-            <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-directing-placeholder.svg" alt="Directing / Film">
+            <span class="orbit-text" data-float>
+              <span class="orbit-index">01</span>
+              <span class="orbit-label">Directing&nbsp;/&nbsp;Film</span>
             </span>
-            <span class="orbit-label">Directing&nbsp;/&nbsp;Film</span>
           </button>
         </li>
         <li class="orbit-item orbit-item--2" data-target="editing">
           <button type="button" class="orbit-link">
-            <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-editing-placeholder.svg" alt="Editing">
+            <span class="orbit-text" data-float>
+              <span class="orbit-index">02</span>
+              <span class="orbit-label">Editing</span>
             </span>
-            <span class="orbit-label">Editing</span>
           </button>
         </li>
         <li class="orbit-item orbit-item--3" data-target="photography">
           <button type="button" class="orbit-link">
-            <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-photography-placeholder.svg" alt="Photography">
+            <span class="orbit-text" data-float>
+              <span class="orbit-index">03</span>
+              <span class="orbit-label">Photography</span>
             </span>
-            <span class="orbit-label">Photography</span>
           </button>
         </li>
         <li class="orbit-item orbit-item--4" data-target="curation">
           <button type="button" class="orbit-link">
-            <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-curation-placeholder.svg" alt="Curation">
+            <span class="orbit-text" data-float>
+              <span class="orbit-index">04</span>
+              <span class="orbit-label">Curation</span>
             </span>
-            <span class="orbit-label">Curation</span>
           </button>
         </li>
         <li class="orbit-item orbit-item--5" data-target="performance">
           <button type="button" class="orbit-link">
-            <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-performance-placeholder.svg" alt="Performance Artist">
+            <span class="orbit-text" data-float>
+              <span class="orbit-index">05</span>
+              <span class="orbit-label">Performance&nbsp;Artist</span>
             </span>
-            <span class="orbit-label">Performance&nbsp;Artist</span>
           </button>
         </li>
         <li class="orbit-item orbit-item--6" data-target="production">
           <button type="button" class="orbit-link">
-            <span class="orbit-thumb-wrap" data-float>
-              <img class="orbit-thumb" src="assets/images/thumb-production-placeholder.svg" alt="Production">
+            <span class="orbit-text" data-float>
+              <span class="orbit-index">06</span>
+              <span class="orbit-label">Production</span>
             </span>
-            <span class="orbit-label">Production</span>
           </button>
         </li>
       </ul>
