@@ -100,9 +100,9 @@
   <section class="hero" id="hero">
     <!-- Full-screen background video. videos/silent-trailer.mp4 is Sivan's
          real footage (H.264/AAC, standard and universally browser-supported).
-         The poster below shows until the video can play, and is also the
-         fallback if it ever fails to load — it is not shown under normal
-         playback in any current browser. -->
+         poster is a real still frame extracted from that same footage
+         (see assets/images/hero-poster.jpg) — shown until the video can
+         play, and as the fallback if it ever fails to load. -->
     <video
       class="hero-video"
       autoplay
@@ -110,7 +110,7 @@
       loop
       playsinline
       preload="auto"
-      poster="assets/images/hero-poster-placeholder.svg"
+      poster="assets/images/hero-poster.jpg"
       aria-hidden="true"
     >
       <source src="videos/silent-trailer.mp4" type="video/mp4">
