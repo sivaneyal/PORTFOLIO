@@ -3,6 +3,27 @@
    All content below is placeholder. Swap the CATEGORIES and
    HIGHLIGHTS arrays with real copy/media once the content
    document is available — no markup restructuring needed.
+
+   A link object (inside `links`/`items[].links`) supports:
+     label      — link text
+     url        — Vimeo / YouTube / Google Drive URLs are detected
+                  automatically (see parseEmbedUrl) and rendered as an
+                  inline, playable embed instead of an outbound link.
+                  Any other URL (e.g. a plain website) stays a normal link.
+     password   — if set, a "Request Password" button (mailto) is shown
+                  alongside the embed instead of displaying the password.
+     thumbnail  — optional path to an image used as the poster/frame
+                  shown before the embed is played. Pick whichever still
+                  frame or image best represents the video and point this
+                  at it (e.g. "assets/images/work/field-trip-poster.jpg").
+                  Left unset, a plain placeholder is shown instead of an
+                  arbitrary/first video frame.
+
+   A group object (inside a category's `groups`) supports:
+     layout: "reels" — renders as a compact clickable-thumbnail grid
+                  that opens a playlist-style viewer, instead of the
+                  standard full-size work-item cards. Used for Editing's
+                  "Selected Social Media Content".
    ============================================================ */
 
 // ---------------------------------------------------------------
@@ -124,6 +145,7 @@ const CATEGORIES = [
       },
       {
         title: "Selected Social Media Content",
+        layout: "reels",
         items: [
           {
             title: "Teasers for \"Focus\" Youth Live Sessions Project",
@@ -260,6 +282,127 @@ const HIGHLIGHTS = [
 ];
 
 // ---------------------------------------------------------------
+// Detect whether a URL is a Vimeo / YouTube / Google Drive video and,
+// if so, return the platform + a src URL suitable for an <iframe>.
+// Anything else (a plain website, an Instagram post permalink used
+// outside the reels viewer, etc.) returns null and stays a normal
+// outbound link.
+// ---------------------------------------------------------------
+function parseEmbedUrl(url) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch (e) {
+    return null;
+  }
+  const host = u.hostname.replace(/^www\./, "");
+
+  if (host === "vimeo.com") {
+    const m = u.pathname.match(/^\/(\d+)/);
+    if (m) return { platform: "vimeo", embedUrl: `https://player.vimeo.com/video/${m[1]}` };
+  }
+
+  if (host === "youtube.com" || host === "youtu.be" || host === "m.youtube.com") {
+    const list = u.searchParams.get("list");
+    if (u.pathname === "/playlist" && list) {
+      return { platform: "youtube", embedUrl: `https://www.youtube.com/embed/videoseries?list=${list}` };
+    }
+    let id = u.searchParams.get("v");
+    if (!id && host === "youtu.be") id = u.pathname.slice(1);
+    if (!id && u.pathname.startsWith("/embed/")) id = u.pathname.split("/")[2];
+    if (id) {
+      return { platform: "youtube", embedUrl: `https://www.youtube.com/embed/${id}${list ? `?list=${list}` : ""}` };
+    }
+  }
+
+  if (host === "drive.google.com") {
+    const m = u.pathname.match(/\/file\/d\/([^/]+)/);
+    if (m) return { platform: "drive", embedUrl: `https://drive.google.com/file/d/${m[1]}/preview` };
+  }
+
+  if (host === "instagram.com") {
+    const m = u.pathname.match(/^\/(p|reel)\/([^/]+)/);
+    if (m) return { platform: "instagram", embedUrl: `https://www.instagram.com/${m[1]}/${m[2]}/embed` };
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------
+// A click-to-play embed: shows a poster (link.thumbnail if set, a
+// plain placeholder otherwise) until clicked, then swaps in the real
+// <iframe>. Returns null if the URL isn't a recognized video platform
+// (see parseEmbedUrl) so the caller can fall back to a normal link.
+// ---------------------------------------------------------------
+function buildMediaEmbed(link, title) {
+  const embed = parseEmbedUrl(link.url);
+  if (!embed) return null;
+
+  const wrap = document.createElement("div");
+  wrap.className = "media-embed";
+  wrap.dataset.platform = embed.platform;
+
+  const facade = document.createElement("button");
+  facade.type = "button";
+  facade.className = "media-embed-facade";
+  facade.setAttribute("aria-label", `Play ${title}`);
+
+  if (link.thumbnail) {
+    const img = document.createElement("img");
+    img.className = "media-embed-thumb";
+    img.src = link.thumbnail;
+    img.alt = "";
+    facade.appendChild(img);
+  } else {
+    const ph = document.createElement("span");
+    ph.className = "media-embed-thumb-placeholder";
+    ph.textContent = "Video Placeholder — thumbnail not set";
+    facade.appendChild(ph);
+  }
+
+  const play = document.createElement("span");
+  play.className = "media-embed-play";
+  play.setAttribute("aria-hidden", "true");
+  facade.appendChild(play);
+
+  facade.addEventListener("click", () => {
+    const iframe = document.createElement("iframe");
+    const sep = embed.embedUrl.includes("?") ? "&" : "?";
+    // Autoplay is only meaningful for Vimeo/YouTube — Drive/Instagram
+    // ignore it, so leave their URLs untouched.
+    iframe.src = embed.platform === "vimeo" || embed.platform === "youtube"
+      ? `${embed.embedUrl}${sep}autoplay=1`
+      : embed.embedUrl;
+    iframe.className = "media-embed-iframe";
+    iframe.title = title;
+    iframe.loading = "lazy";
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.setAttribute("allow", "autoplay; fullscreen; picture-in-picture; encrypted-media");
+    iframe.setAttribute("allowfullscreen", "");
+    wrap.innerHTML = "";
+    wrap.appendChild(iframe);
+  });
+
+  wrap.appendChild(facade);
+  return wrap;
+}
+
+// ---------------------------------------------------------------
+// Replaces displaying a project's password in plain text: a mailto
+// link pre-filled with a request for that specific project, so Sivan
+// can personally decide whether to send it.
+// ---------------------------------------------------------------
+function buildPasswordRequestButton(title) {
+  const btn = document.createElement("a");
+  btn.className = "request-password-btn";
+  const subject = `Password Request — ${title}`;
+  const body = `Hi Sivan,\n\nCould you send me the password to watch "${title}"?\n\nThanks!`;
+  btn.href = `mailto:hello@sivaneyal.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  btn.textContent = "Request Password";
+  return btn;
+}
+
+// ---------------------------------------------------------------
 // Build a single work-item card from an item data object. Used for
 // items inside a grouped category's tab panel (e.g. Editing's
 // subsections) — flat-item categories use buildProjectPanel instead,
@@ -270,13 +413,36 @@ function buildWorkItem(item) {
   const el = document.createElement("article");
   el.className = "work-item";
 
-  const thumb = document.createElement("div");
-  thumb.className = "work-thumb";
-  const thumbLabel = document.createElement("span");
-  thumbLabel.className = "work-thumb-label";
-  thumbLabel.textContent = "Image / Video Placeholder";
-  thumb.appendChild(thumbLabel);
-  el.appendChild(thumb);
+  const links = item.links || [];
+  const mediaLinks = links.filter((l) => parseEmbedUrl(l.url));
+  const plainLinks = links.filter((l) => !parseEmbedUrl(l.url));
+
+  if (mediaLinks.length) {
+    const mediaWrap = document.createElement("div");
+    mediaWrap.className = "work-item-media";
+    mediaLinks.forEach((link) => {
+      const block = document.createElement("div");
+      block.className = "work-item-media-block";
+      if (mediaLinks.length > 1) {
+        const cap = document.createElement("span");
+        cap.className = "work-item-media-label";
+        cap.textContent = link.label;
+        block.appendChild(cap);
+      }
+      block.appendChild(buildMediaEmbed(link, item.title));
+      if (link.password) block.appendChild(buildPasswordRequestButton(item.title));
+      mediaWrap.appendChild(block);
+    });
+    el.appendChild(mediaWrap);
+  } else {
+    const thumb = document.createElement("div");
+    thumb.className = "work-thumb";
+    const thumbLabel = document.createElement("span");
+    thumbLabel.className = "work-thumb-label";
+    thumbLabel.textContent = "Image / Video Placeholder";
+    thumb.appendChild(thumbLabel);
+    el.appendChild(thumb);
+  }
 
   const meta = document.createElement("div");
   meta.className = "work-item-meta";
@@ -299,16 +465,16 @@ function buildWorkItem(item) {
     el.appendChild(desc);
   }
 
-  if (item.links && item.links.length) {
+  if (plainLinks.length) {
     const linksWrap = document.createElement("div");
     linksWrap.className = "work-item-links";
-    item.links.forEach((link) => {
+    plainLinks.forEach((link) => {
       const a = document.createElement("a");
       a.href = link.url;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.className = "work-item-link";
-      a.textContent = link.password ? `${link.label} (password: ${link.password})` : link.label;
+      a.textContent = link.label;
       linksWrap.appendChild(a);
     });
     el.appendChild(linksWrap);
@@ -405,6 +571,29 @@ function buildProjectPanel(item) {
   header.appendChild(yearEl);
   info.appendChild(header);
 
+  const links = item.links || [];
+  const mediaLinks = links.filter((l) => parseEmbedUrl(l.url));
+  const plainLinks = links.filter((l) => !parseEmbedUrl(l.url));
+
+  if (mediaLinks.length) {
+    const mediaWrap = document.createElement("div");
+    mediaWrap.className = "work-item-media";
+    mediaLinks.forEach((link) => {
+      const block = document.createElement("div");
+      block.className = "work-item-media-block";
+      if (mediaLinks.length > 1) {
+        const cap = document.createElement("span");
+        cap.className = "work-item-media-label";
+        cap.textContent = link.label;
+        block.appendChild(cap);
+      }
+      block.appendChild(buildMediaEmbed(link, item.title));
+      if (link.password) block.appendChild(buildPasswordRequestButton(item.title));
+      mediaWrap.appendChild(block);
+    });
+    info.appendChild(mediaWrap);
+  }
+
   info.appendChild(buildProjectSection("Synopsis", item.desc));
 
   if (item.specs && item.specs.length) {
@@ -450,16 +639,16 @@ function buildProjectPanel(item) {
     info.appendChild(buildProjectSection("Awards / Screening History", ""));
   }
 
-  if (item.links && item.links.length) {
+  if (plainLinks.length) {
     const linksWrap = document.createElement("div");
     linksWrap.className = "work-item-links";
-    item.links.forEach((link) => {
+    plainLinks.forEach((link) => {
       const a = document.createElement("a");
       a.href = link.url;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.className = "work-item-link";
-      a.textContent = link.password ? `${link.label} (password: ${link.password})` : link.label;
+      a.textContent = link.label;
       linksWrap.appendChild(a);
     });
     info.appendChild(linksWrap);
@@ -477,22 +666,29 @@ function buildProjectPanel(item) {
 // toggles which panel is visible — it never scrolls anything.
 // ---------------------------------------------------------------
 function renderTabbedContent(cat, subnavEl, bodyEl) {
+  // Each build() returns { el, step, unzoom } — step/unzoom are only
+  // present for interactive panels (the reels playlist viewer) and are
+  // rewired into the global keydown handler whenever that tab becomes
+  // the active one, so a hidden panel's stepper never intercepts
+  // arrow keys or Escape for whichever tab is actually on screen.
   const tabs = cat.groups
     ? cat.groups.map((group) => ({
         label: group.title,
         build: () => {
+          if (group.layout === "reels") return buildSocialReelsPanel(group.items);
           const grid = document.createElement("div");
           grid.className = "work-grid";
           group.items.forEach((item) => grid.appendChild(buildWorkItem(item)));
-          return grid;
+          return { el: grid };
         },
       }))
     : cat.items.map((item) => ({
         label: item.title,
-        build: () => buildProjectPanel(item),
+        build: () => ({ el: buildProjectPanel(item) }),
       }));
 
-  const panels = tabs.map((t) => t.build());
+  const built = tabs.map((t) => t.build());
+  const panels = built.map((b) => b.el);
   panels.forEach((panel) => bodyEl.appendChild(panel));
 
   const pills = tabs.map((t, i) => {
@@ -508,9 +704,211 @@ function renderTabbedContent(cat, subnavEl, bodyEl) {
   function showTab(i) {
     panels.forEach((panel, j) => { panel.hidden = j !== i; });
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === i));
+    activeGalleryStep = built[i].step || null;
+    activeGalleryUnzoom = built[i].unzoom || null;
   }
 
   showTab(0);
+}
+
+// ---------------------------------------------------------------
+// Compact "reels" playlist viewer for social media content: each
+// item's links are flattened into one grid of small clickable
+// thumbnails. Clicking any of them opens a one-at-a-time playlist
+// stage (reusing the same .gallery-nav / .gallery-back / .gallery-
+// caption look as the Photography viewer) with prev/next controls
+// that step through every reel in sequence, wrapping at the ends —
+// rather than each reel linking out to Instagram individually.
+// Returns { el, step, unzoom } for renderTabbedContent to wire into
+// the shared arrow-key / Escape handling while this tab is active.
+// ---------------------------------------------------------------
+function buildSocialReelsPanel(items) {
+  const reels = [];
+  items.forEach((item) => {
+    (item.links || []).forEach((link) => {
+      reels.push({
+        title: item.title,
+        label: link.label,
+        desc: item.desc,
+        url: link.url,
+        thumbnail: link.thumbnail,
+      });
+    });
+  });
+
+  const wrap = document.createElement("div");
+  wrap.className = "reel-panel";
+
+  const state = { mode: "grid", index: 0 };
+
+  const gridEl = document.createElement("div");
+  gridEl.className = "reel-grid";
+
+  const browseEl = document.createElement("div");
+  browseEl.className = "reel-browse";
+
+  const backBtn = document.createElement("button");
+  backBtn.type = "button";
+  backBtn.className = "gallery-back";
+  backBtn.innerHTML = '<span aria-hidden="true">&#8249;</span> Back to All Reels';
+  backBtn.addEventListener("click", () => setMode("grid"));
+  browseEl.appendChild(backBtn);
+
+  const stage = document.createElement("div");
+  stage.className = "reel-stage";
+
+  const stageMedia = document.createElement("div");
+  stageMedia.className = "reel-stage-media";
+  stage.appendChild(stageMedia);
+
+  const prevBtn = document.createElement("button");
+  prevBtn.type = "button";
+  prevBtn.className = "gallery-nav gallery-nav--prev";
+  prevBtn.setAttribute("aria-label", "Previous reel");
+  prevBtn.innerHTML = '<span aria-hidden="true">&#8249;</span>';
+  stage.appendChild(prevBtn);
+
+  const nextBtn = document.createElement("button");
+  nextBtn.type = "button";
+  nextBtn.className = "gallery-nav gallery-nav--next";
+  nextBtn.setAttribute("aria-label", "Next reel");
+  nextBtn.innerHTML = '<span aria-hidden="true">&#8250;</span>';
+  stage.appendChild(nextBtn);
+  browseEl.appendChild(stage);
+
+  const caption = document.createElement("div");
+  caption.className = "gallery-caption reel-caption";
+  browseEl.appendChild(caption);
+
+  wrap.appendChild(gridEl);
+  wrap.appendChild(browseEl);
+
+  function renderGrid() {
+    gridEl.innerHTML = "";
+    reels.forEach((reel, i) => {
+      const tile = document.createElement("button");
+      tile.type = "button";
+      tile.className = "reel-tile";
+      tile.setAttribute("aria-label", `Play ${reel.label}`);
+
+      if (reel.thumbnail) {
+        const img = document.createElement("img");
+        img.className = "reel-tile-thumb";
+        img.src = reel.thumbnail;
+        img.alt = "";
+        tile.appendChild(img);
+      } else {
+        const ph = document.createElement("span");
+        ph.className = "reel-tile-thumb-placeholder";
+        ph.textContent = reel.label;
+        tile.appendChild(ph);
+      }
+
+      const play = document.createElement("span");
+      play.className = "reel-tile-play";
+      play.setAttribute("aria-hidden", "true");
+      tile.appendChild(play);
+
+      tile.addEventListener("click", () => {
+        state.index = i;
+        setMode("browse");
+      });
+      gridEl.appendChild(tile);
+    });
+  }
+
+  function renderStage() {
+    const reel = reels[state.index];
+    stageMedia.innerHTML = "";
+    const embedEl = buildMediaEmbed(reel, reel.title);
+    if (embedEl) {
+      stageMedia.appendChild(embedEl);
+    } else {
+      const a = document.createElement("a");
+      a.href = reel.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.className = "work-item-link";
+      a.textContent = `View "${reel.label}"`;
+      stageMedia.appendChild(a);
+    }
+  }
+
+  function renderCaption() {
+    const reel = reels[state.index];
+    caption.innerHTML = "";
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "gallery-caption-title";
+    titleEl.textContent = reel.title;
+    caption.appendChild(titleEl);
+
+    const metaRow = document.createElement("div");
+    metaRow.className = "gallery-caption-meta";
+    const labelEl = document.createElement("span");
+    labelEl.className = "gallery-caption-field";
+    labelEl.textContent = reel.label;
+    metaRow.appendChild(labelEl);
+    const countEl = document.createElement("span");
+    countEl.className = "gallery-caption-field";
+    countEl.textContent = `${state.index + 1} / ${reels.length}`;
+    metaRow.appendChild(countEl);
+    caption.appendChild(metaRow);
+
+    if (reel.desc) {
+      const noteEl = document.createElement("p");
+      noteEl.className = "gallery-caption-note";
+      noteEl.textContent = reel.desc;
+      caption.appendChild(noteEl);
+    }
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    gridEl.style.display = mode === "grid" ? "grid" : "none";
+    browseEl.style.display = mode === "browse" ? "block" : "none";
+    if (mode === "grid") renderGrid();
+    else {
+      renderStage();
+      renderCaption();
+    }
+  }
+
+  // Stepping past the last/first reel wraps around, same as
+  // Photography's cross-series rollover — one continuous gesture
+  // covers the whole playlist. Only active in browse mode.
+  function step(direction) {
+    if (state.mode !== "browse") return;
+    state.index = ((state.index + direction) % reels.length + reels.length) % reels.length;
+    renderStage();
+    renderCaption();
+  }
+
+  // First Escape backs out to the grid rather than closing the whole
+  // overlay, matching the Photography gallery's zoom-then-close order.
+  function backToGrid() {
+    if (state.mode !== "browse") return false;
+    setMode("grid");
+    return true;
+  }
+
+  prevBtn.addEventListener("click", () => step(-1));
+  nextBtn.addEventListener("click", () => step(1));
+
+  let touchStartX = null;
+  stage.addEventListener("touchstart", (e) => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  stage.addEventListener("touchend", (e) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
+    touchStartX = null;
+  }, { passive: true });
+
+  setMode("grid");
+
+  return { el: wrap, step, unzoom: backToGrid };
 }
 
 // ---------------------------------------------------------------

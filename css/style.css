@@ -841,6 +841,137 @@ section {
   border-color: var(--bone);
 }
 
+/* ============================================================
+   Inline video embeds — Vimeo / YouTube / Google Drive links play
+   in place instead of navigating away. A click-to-play poster
+   (media-embed-facade) is shown first so nothing autoloads/autoplays
+   until the visitor asks for it, and swaps for the real <iframe>.
+   ============================================================ */
+.work-item-media {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.work-item-media-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.work-item-media-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone-faint);
+}
+
+.media-embed {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.media-embed-facade {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: pointer;
+}
+
+.media-embed-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.media-embed-thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px 18px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bone-faint);
+}
+
+.media-embed-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(10, 10, 10, 0.6);
+  transition: border-color 0.3s var(--ease), background 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.media-embed-play::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 56%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 9px 0 9px 15px;
+  border-color: transparent transparent transparent var(--bone);
+}
+
+.media-embed-facade:hover .media-embed-play,
+.media-embed-facade:focus-visible .media-embed-play {
+  border-color: var(--accent);
+  background: rgba(10, 10, 10, 0.8);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.media-embed-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* A password-protected embed still shows the video (Vimeo/YouTube's
+   own password gate appears inside the iframe once played) — this
+   button replaces displaying the password itself, routing the
+   request through Sivan instead. */
+.request-password-btn {
+  align-self: flex-start;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--bone);
+  border: 1px solid var(--accent);
+  padding: 9px 18px;
+  transition: color 0.3s var(--ease), background 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.request-password-btn:hover,
+.request-password-btn:focus-visible {
+  color: var(--bg);
+  background: var(--accent);
+}
+
 .work-thumb {
   aspect-ratio: 4 / 3;
   background:
@@ -1275,6 +1406,121 @@ section {
 @media (max-width: 640px) {
   .gallery-nav--prev { left: 6px; }
   .gallery-nav--next { right: 6px; }
+}
+
+/* ============================================================
+   Social "reels" playlist viewer — a compact grid of small clickable
+   thumbnails (Selected Social Media Content) that opens a one-at-a-
+   time playlist stage. Reuses .gallery-back / .gallery-nav /
+   .gallery-caption from the Photography viewer above for a
+   consistent look, rather than duplicating that styling.
+   ============================================================ */
+.reel-panel {
+  width: 100%;
+}
+
+.reel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.reel-tile {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.reel-tile:hover,
+.reel-tile:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+.reel-tile-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reel-tile-thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 10px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--bone-faint);
+  line-height: 1.4;
+}
+
+.reel-tile-play {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.65);
+  border: 1px solid var(--line);
+}
+
+.reel-tile-play::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 58%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 4px 0 4px 7px;
+  border-color: transparent transparent transparent var(--bone);
+}
+
+.reel-browse {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.reel-stage {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  touch-action: pan-y;
+}
+
+.reel-stage-media {
+  width: 100%;
+  height: 100%;
+}
+
+.reel-stage-media .media-embed {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.reel-caption {
+  margin-top: 24px;
 }
 
 /* ============================================================
