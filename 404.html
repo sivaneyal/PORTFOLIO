@@ -16,15 +16,17 @@
 </head>
 <body>
 
-<!-- Grain overlay — pure CSS, no js/main.js needed on this page. -->
+<!-- Custom cursor (desktop only, see CSS/JS for pointer:fine gating) -->
+<div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+
+<!-- Grain / noise overlay -->
 <div class="grain" aria-hidden="true"></div>
 
-<!-- Ambient glow — renders fine without the cursor-tracking JS too,
-     just static at its default position instead of following the
-     pointer. -->
-<div class="glow-field" aria-hidden="true"></div>
+<!-- Ambient cursor-reactive glow -->
+<div class="glow-field" id="glowField" aria-hidden="true"></div>
 
-<header class="site-nav">
+<header class="site-nav" id="siteNav">
   <a href="/" class="nav-mark">Sivan&nbsp;Eyal</a>
 </header>
 
@@ -37,5 +39,6 @@
   <a href="/" class="notfound-link">Back to the homepage</a>
 </main>
 
+<script src="js/main.js" defer></script>
 </body>
 </html>

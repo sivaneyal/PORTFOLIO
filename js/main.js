@@ -1051,7 +1051,9 @@ function unlockBodyScroll() {
 }
 
 function initCategoryOverlay() {
-  document.getElementById("overlayClose").addEventListener("click", closeCategoryOverlay);
+  const closeBtn = document.getElementById("overlayClose");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", closeCategoryOverlay);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       // If a gallery photo is zoomed in, the first Escape backs out of
@@ -1303,6 +1305,7 @@ function renderGallery(cat, subnavEl, bodyEl) {
 
 function renderHighlights() {
   const grid = document.getElementById("highlightGrid");
+  if (!grid) return;
   HIGHLIGHTS.forEach((h) => {
     const card = document.createElement("div");
     card.className = "highlight-card";
@@ -1339,6 +1342,7 @@ function initCursor() {
   const dot = document.getElementById("cursorDot");
   const ring = document.getElementById("cursorRing");
   const glow = document.getElementById("glowField");
+  if (!dot || !ring || !glow) return;
 
   let mouseX = window.innerWidth / 2;
   let mouseY = window.innerHeight / 2;
@@ -1448,6 +1452,7 @@ function initMobileNav() {
   const nav = document.getElementById("siteNav");
   const toggle = document.getElementById("navToggle");
   const links = document.getElementById("navLinks");
+  if (!nav || !toggle || !links) return;
 
   toggle.addEventListener("click", () => {
     const isOpen = links.classList.toggle("is-open");
@@ -1475,6 +1480,7 @@ function initMobileNav() {
 // ---------------------------------------------------------------
 function initNavScrollState() {
   const nav = document.getElementById("siteNav");
+  if (!nav) return;
 
   function update() {
     nav.classList.toggle("is-scrolled", window.scrollY > 4);
