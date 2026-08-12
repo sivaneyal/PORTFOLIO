@@ -35,6 +35,10 @@ const CATEGORIES = [
     index: "01",
     title: "Film Directing",
     description: "",
+    // Verb phrase used to build specific image/video alt text (see
+    // buildMediaAlt) — Sivan's actual role varies by category, so this
+    // isn't hardcoded into the alt-text builder itself.
+    mediaRole: "directing on the set of",
     items: [
       {
         title: "Venus Sucks",
@@ -72,6 +76,7 @@ const CATEGORIES = [
     groups: [
       {
         title: "Short Narrative Films",
+        mediaRole: "editing",
         items: [
           {
             title: "Field Trip",
@@ -87,6 +92,7 @@ const CATEGORIES = [
       },
       {
         title: "Short Documentary",
+        mediaRole: "editing",
         items: [
           {
             title: "Today I Am",
@@ -97,6 +103,7 @@ const CATEGORIES = [
       },
       {
         title: "Live Sessions",
+        mediaRole: "editing",
         items: [
           {
             title: "Modus Sessions 2026 — Young Artists",
@@ -120,6 +127,7 @@ const CATEGORIES = [
       },
       {
         title: "Performance Documentation",
+        mediaRole: "editing",
         items: [
           {
             title: "Biofeedback",
@@ -130,6 +138,7 @@ const CATEGORIES = [
       },
       {
         title: "Curation & Artistic Direction",
+        mediaRole: "curating",
         items: [
           {
             title: "Shablulim Films Streaming Platform",
@@ -248,6 +257,7 @@ const CATEGORIES = [
     index: "04",
     title: "Curation",
     description: "Placeholder category description — a short line of context on Sivan's curatorial work goes here.",
+    mediaRole: "curating",
     items: [
       { title: "Untitled Screening Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
       { title: "Untitled Exhibition", year: "2022", desc: "Placeholder description of the project, format, and context." },
@@ -258,6 +268,7 @@ const CATEGORIES = [
     index: "05",
     title: "Performance Artist",
     description: "Placeholder category description — a short line of context on Sivan's performance work goes here.",
+    mediaRole: "performing in",
     items: [
       { title: "Untitled Performance", year: "2024", desc: "Placeholder description of the project, format, and context." },
       { title: "Untitled Performance", year: "2022", desc: "Placeholder description of the project, format, and context." },
@@ -268,6 +279,7 @@ const CATEGORIES = [
     index: "06",
     title: "Production",
     description: "Placeholder category description — a short line of context on Sivan's production work goes here.",
+    mediaRole: "producing",
     items: [
       { title: "Untitled Production", year: "2024", desc: "Placeholder description of the project, format, and context." },
       { title: "Untitled Production", year: "2023", desc: "Placeholder description of the project, format, and context." },
@@ -329,12 +341,24 @@ function parseEmbedUrl(url) {
 }
 
 // ---------------------------------------------------------------
+// Builds specific, descriptive alt text for a work thumbnail instead
+// of a generic label — e.g. "Sivan Eyal directing on the set of Venus
+// Sucks, 2025" rather than "Video thumbnail". `role` is a verb phrase
+// describing Sivan's actual role on that specific piece of work
+// (varies by category/group — see each CATEGORIES entry's mediaRole),
+// since she directs some projects and edits/curates/produces others.
+// ---------------------------------------------------------------
+function buildMediaAlt(role, title, year) {
+  return `Sivan Eyal ${role} ${title}${year ? `, ${year}` : ""}`;
+}
+
+// ---------------------------------------------------------------
 // A click-to-play embed: shows a poster (link.thumbnail if set, a
 // plain placeholder otherwise) until clicked, then swaps in the real
 // <iframe>. Returns null if the URL isn't a recognized video platform
 // (see parseEmbedUrl) so the caller can fall back to a normal link.
 // ---------------------------------------------------------------
-function buildMediaEmbed(link, title) {
+function buildMediaEmbed(link, title, altText) {
   const embed = parseEmbedUrl(link.url);
   if (!embed) return null;
 
@@ -351,7 +375,7 @@ function buildMediaEmbed(link, title) {
     const img = document.createElement("img");
     img.className = "media-embed-thumb";
     img.src = link.thumbnail;
-    img.alt = "";
+    img.alt = altText || title;
     facade.appendChild(img);
   } else {
     const ph = document.createElement("span");
@@ -409,7 +433,7 @@ function buildPasswordRequestButton(title) {
 // which has room for the fuller synopsis/technical/awards/gallery
 // layout since only one project is ever on screen at a time.
 // ---------------------------------------------------------------
-function buildWorkItem(item) {
+function buildWorkItem(item, mediaRole) {
   const el = document.createElement("article");
   el.className = "work-item";
 
@@ -429,7 +453,8 @@ function buildWorkItem(item) {
         cap.textContent = link.label;
         block.appendChild(cap);
       }
-      block.appendChild(buildMediaEmbed(link, item.title));
+      const altText = buildMediaAlt(mediaRole || "in", item.title, item.year);
+      block.appendChild(buildMediaEmbed(link, item.title, altText));
       if (link.password) block.appendChild(buildPasswordRequestButton(item.title));
       mediaWrap.appendChild(block);
     });
@@ -550,7 +575,7 @@ function buildProjectGallery(count, title) {
 // always shown in full — no collapse toggle, since only one project
 // is ever visible at a time in the tab-isolated overlay.
 // ---------------------------------------------------------------
-function buildProjectPanel(item) {
+function buildProjectPanel(item, mediaRole) {
   const el = document.createElement("article");
   el.className = "project-panel";
 
@@ -587,7 +612,8 @@ function buildProjectPanel(item) {
         cap.textContent = link.label;
         block.appendChild(cap);
       }
-      block.appendChild(buildMediaEmbed(link, item.title));
+      const altText = buildMediaAlt(mediaRole || "in", item.title, item.year);
+      block.appendChild(buildMediaEmbed(link, item.title, altText));
       if (link.password) block.appendChild(buildPasswordRequestButton(item.title));
       mediaWrap.appendChild(block);
     });
@@ -678,13 +704,13 @@ function renderTabbedContent(cat, subnavEl, bodyEl) {
           if (group.layout === "reels") return buildSocialReelsPanel(group.items);
           const grid = document.createElement("div");
           grid.className = "work-grid";
-          group.items.forEach((item) => grid.appendChild(buildWorkItem(item)));
+          group.items.forEach((item) => grid.appendChild(buildWorkItem(item, group.mediaRole)));
           return { el: grid };
         },
       }))
     : cat.items.map((item) => ({
         label: item.title,
-        build: () => ({ el: buildProjectPanel(item) }),
+        build: () => ({ el: buildProjectPanel(item, cat.mediaRole) }),
       }));
 
   const built = tabs.map((t) => t.build());
@@ -795,7 +821,7 @@ function buildSocialReelsPanel(items) {
         const img = document.createElement("img");
         img.className = "reel-tile-thumb";
         img.src = reel.thumbnail;
-        img.alt = "";
+        img.alt = `Sivan Eyal social media content — ${reel.label}, ${reel.title}`;
         tile.appendChild(img);
       } else {
         const ph = document.createElement("span");
@@ -820,7 +846,8 @@ function buildSocialReelsPanel(items) {
   function renderStage() {
     const reel = reels[state.index];
     stageMedia.innerHTML = "";
-    const embedEl = buildMediaEmbed(reel, reel.title);
+    const altText = `Sivan Eyal social media content — ${reel.label}, ${reel.title}`;
+    const embedEl = buildMediaEmbed(reel, reel.title, altText);
     if (embedEl) {
       stageMedia.appendChild(embedEl);
     } else {
