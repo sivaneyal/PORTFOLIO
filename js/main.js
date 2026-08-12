@@ -12,7 +12,7 @@ const CATEGORIES = [
   {
     id: "directing",
     index: "01",
-    title: "Directing / Film",
+    title: "Film Directing",
     description: "",
     items: [
       {
@@ -254,7 +254,7 @@ const CATEGORIES = [
 ];
 
 const HIGHLIGHTS = [
-  { title: "Venus Sucks", category: "Directing / Film", year: "2025" },
+  { title: "Venus Sucks", category: "Film Directing", year: "2025" },
   { title: "Untitled Campaign", category: "Social Media & Strategy", year: "2024" },
   { title: "Untitled Exhibition", category: "Curation", year: "2023" },
 ];

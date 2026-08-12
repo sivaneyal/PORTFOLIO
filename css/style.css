@@ -282,52 +282,62 @@ img { max-width: 100%; display: block; }
 .hero-name {
   font-family: var(--font-head);
   font-weight: 400;
-  font-size: clamp(3.2rem, 10vw, 7.5rem);
+  font-size: clamp(2.8rem, 8.6vw, 6.4rem);
   line-height: 0.95;
   letter-spacing: -0.01em;
   margin: 0 0 24px;
 }
 
 .hero-bio {
-  font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+  font-size: clamp(0.88rem, 1.15vw, 0.98rem);
   line-height: 1.75;
   color: var(--bone-dim);
   max-width: 560px;
   margin: 0;
 }
 
-/* Category nav — organic scatter of minimal text labels over the video */
+/* Category nav — a single organized row near the bottom of the hero,
+   above the scroll cue, rather than scattered across the frame. By
+   this point in the hero the name/bio column (upper-left) has already
+   ended vertically, so a full-width row here doesn't compete with it. */
 .hero-orbit {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: clamp(92px, 14vh, 130px);
   z-index: 2;
+  padding: 0 clamp(20px, 5vw, 56px);
   pointer-events: none;
 }
 
 .orbit-list {
-  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px 28px;
   width: 100%;
-  height: 100%;
 }
 
 .orbit-item {
-  position: absolute;
-  /* base centering offset, plus a magnetic-pull offset the JS drives via --mx/--my */
-  transform: translate(calc(-50% + var(--mx, 0px)), calc(-50% + var(--my, 0px)));
+  position: static;
+  /* magnetic-pull offset the JS drives via --mx/--my on hover proximity */
+  transform: translate(var(--mx, 0px), var(--my, 0px));
   pointer-events: auto;
   will-change: transform;
 }
 
-/* --label-size carries the same organic size variety the old circular
-   thumbnails had (item 1 largest, item 6 smallest) — positions are
-   unchanged from before, still scattered to read against the video's
-   negative space rather than gridded. */
-.orbit-item--1 { top: 18%; left: 61%; --label-size: clamp(1.75rem, 2.8vw, 2.6rem); }
-.orbit-item--2 { top: 16%; left: 82%; --label-size: clamp(1.05rem, 1.5vw, 1.4rem); }
-.orbit-item--3 { top: 36%; left: 92%; --label-size: clamp(1.35rem, 2.1vw, 1.9rem); }
-.orbit-item--4 { top: 58%; left: 90%; --label-size: clamp(1.25rem, 2vw, 1.8rem); }
-.orbit-item--5 { top: 77%; left: 76%; --label-size: clamp(1.15rem, 1.8vw, 1.6rem); }
-.orbit-item--6 { top: 88%; left: 54%; --label-size: clamp(1rem, 1.4vw, 1.3rem); }
+/* --label-size carries the requested hierarchy: Film Directing/Editing
+   largest, Photography/Curation mid, Performance Artist/Production
+   smallest. */
+.orbit-item--1,
+.orbit-item--2 { --label-size: clamp(1.7rem, 2.6vw, 2.3rem); }
+
+.orbit-item--3,
+.orbit-item--4 { --label-size: clamp(1.3rem, 2vw, 1.8rem); }
+
+.orbit-item--5,
+.orbit-item--6 { --label-size: clamp(1.05rem, 1.5vw, 1.4rem); }
 
 .orbit-link {
   display: flex;
@@ -401,24 +411,20 @@ img { max-width: 100%; display: block; }
   .orbit-text { animation: none; }
 }
 
-/* Mobile: organic scatter doesn't work without a cursor or much space —
-   collapse to a centered, evenly spaced row instead. */
+/* Mobile: not enough width for one row of six — flow it below the
+   bio instead, centered and wrapping, at one uniform readable size. */
 @media (max-width: 860px) {
   .hero-orbit {
     position: static;
     margin-top: 56px;
+    padding: 0;
   }
 
   .orbit-list {
-    position: static;
-    display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 22px 30px;
   }
 
   .orbit-item {
-    position: static;
     transform: none;
     --label-size: 1.3rem !important;
   }
@@ -1309,6 +1315,7 @@ section {
 
 .highlight-title {
   font-family: var(--font-head);
+  font-weight: 400;
   font-size: 1.3rem;
   margin: 0 0 6px;
 }
@@ -1332,6 +1339,13 @@ section {
 
 .contact-email {
   font-family: var(--font-head);
+  /* Explicit weight matters here: every other var(--font-head) rule on
+     the site sets 400, but this one didn't, so it fell back to body's
+     inherited 300 — a weight the Google Fonts request never actually
+     loads for Bodoni Moda (only 400/500/600/700 + italic 400/500 are
+     fetched, see the <link> in index.html), so it rendered off-family
+     from the rest of the site's headline type. */
+  font-weight: 400;
   font-size: clamp(1.8rem, 5vw, 3.4rem);
   border-bottom: 1px solid var(--line);
   padding-bottom: 6px;
