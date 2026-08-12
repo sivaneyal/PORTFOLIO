@@ -1688,3 +1688,59 @@ section {
   .site-nav.is-open .nav-toggle span:nth-child(2) { opacity: 0; }
   .site-nav.is-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 }
+
+/* ============================================================
+   404 page (404.html) — a plain static page, no js/main.js. The
+   nav stays in its "at rest" gradient state since there's no scroll
+   tracking here, which is fine over the near-black background.
+   ============================================================ */
+.notfound {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: calc(var(--nav-h) + 24px) clamp(20px, 5vw, 56px) 80px;
+}
+
+.notfound-kicker {
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: clamp(5rem, 18vw, 10rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--bone);
+  margin: 0;
+}
+
+.notfound-title {
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  margin: 18px 0 20px;
+}
+
+.notfound-text {
+  max-width: 440px;
+  color: var(--bone-dim);
+  font-size: 0.96rem;
+  line-height: 1.7;
+  margin: 0 0 36px;
+}
+
+.notfound-link {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 3px;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.notfound-link:hover,
+.notfound-link:focus-visible {
+  color: var(--accent);
+  border-color: var(--bone);
+}
