@@ -1744,3 +1744,133 @@ section {
   color: var(--accent);
   border-color: var(--bone);
 }
+
+/* ============================================================
+   Legal pages (privacy.html, and any future page like an
+   impressum) — plain static pages, no js/main.js, reusing this
+   stylesheet directly for a consistent look. Simple single-column
+   layout, deliberately less decorative than the rest of the site
+   since this is informational/legal content meant to be read.
+   ============================================================ */
+.legal {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: calc(var(--nav-h) + 56px) clamp(20px, 5vw, 56px) 100px;
+}
+
+.legal-title {
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin: 0 0 12px;
+}
+
+.legal-updated {
+  font-size: 0.78rem;
+  color: var(--bone-faint);
+  margin: 0 0 48px;
+}
+
+.legal-section + .legal-section {
+  margin-top: 40px;
+}
+
+.legal-heading {
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: 1.3rem;
+  margin: 0 0 14px;
+}
+
+.legal-text {
+  font-size: 0.96rem;
+  line-height: 1.75;
+  color: var(--bone-dim);
+  margin: 0 0 14px;
+}
+
+.legal-text:last-child { margin-bottom: 0; }
+
+.legal-text a {
+  color: var(--bone);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 1px;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.legal-text a:hover,
+.legal-text a:focus-visible {
+  color: var(--accent);
+  border-color: var(--bone);
+}
+
+.legal-list {
+  margin: 0 0 14px;
+  padding-left: 4px;
+  color: var(--bone-dim);
+  font-size: 0.96rem;
+  line-height: 1.75;
+}
+
+.legal-list li {
+  position: relative;
+  margin-bottom: 4px;
+  padding-left: 16px;
+}
+
+.legal-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.legal-list a {
+  color: var(--bone);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 1px;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.legal-list a:hover,
+.legal-list a:focus-visible {
+  color: var(--accent);
+  border-color: var(--bone);
+}
+
+.legal-back {
+  display: inline-block;
+  margin-top: 56px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 3px;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.legal-back:hover,
+.legal-back:focus-visible {
+  color: var(--accent);
+  border-color: var(--bone);
+}
+
+/* Small "Privacy Policy" link alongside the footer's copyright line. */
+.contact-legal {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--bone-faint);
+}
+
+.contact-legal a {
+  color: var(--bone-faint);
+  border-bottom: 1px solid transparent;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.contact-legal a:hover,
+.contact-legal a:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
