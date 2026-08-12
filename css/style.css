@@ -248,7 +248,10 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: calc(var(--nav-h) + 24px) clamp(20px, 5vw, 56px) 80px;
+  /* generous bottom padding shrinks the space .hero-intro is centered
+     within, pushing the name/bio upward so the orbit row below has real
+     clearance instead of crowding the bio text above it */
+  padding: calc(var(--nav-h) + 24px) clamp(20px, 5vw, 56px) 220px;
   z-index: 2;
   overflow: hidden;
 }
@@ -304,18 +307,32 @@ img { max-width: 100%; display: block; }
   position: absolute;
   left: 0;
   right: 0;
-  bottom: clamp(92px, 14vh, 130px);
+  /* clearance below the row so it never crowds the scroll cue; the bulk
+     of the separation from the bio above now comes from .hero's own
+     padding-bottom, which shifts .hero-intro upward */
+  bottom: clamp(96px, 13vh, 130px);
   z-index: 2;
-  padding: 0 clamp(20px, 5vw, 56px);
+  padding: 30px clamp(20px, 5vw, 56px) 0;
+  /* a quiet top rule + the padding above are what separate this from
+     the bio text above it, rather than it reading as a continuation */
+  border-top: 1px solid var(--line);
   pointer-events: none;
 }
 
 .orbit-list {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  /* flex-start (not baseline) so every item's box starts at the same
+     top edge — .orbit-index is always the first child at a fixed
+     font-size, so this is what actually keeps all six numbers level
+     regardless of how tall each label below them renders. */
+  align-items: flex-start;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 20px 28px;
+  row-gap: 22px;
+  /* a fixed column-gap (not space-between's leftover-space split)
+     guarantees the gap between every pair of items is identical,
+     regardless of how wide any given label is. */
+  column-gap: clamp(28px, 4.5vw, 72px);
   width: 100%;
 }
 
@@ -417,7 +434,7 @@ img { max-width: 100%; display: block; }
   .hero-orbit {
     position: static;
     margin-top: 56px;
-    padding: 0;
+    padding: 24px 0 0;
   }
 
   .orbit-list {
