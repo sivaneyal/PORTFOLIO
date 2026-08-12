@@ -1,6 +1,6 @@
 /* ============================================================
    Sivan Eyal — Portfolio
-   Palette: near-black ground, bone text, single oxblood accent.
+   Palette: near-black ground, bone text, single dusty-rose accent.
    Headline: Bodoni Moda (high-contrast, cinematic editorial serif).
    Body: Archivo (neutral grotesk with more character than a system sans).
    ============================================================ */
@@ -11,8 +11,8 @@
   --bone: #f2f0ec;
   --bone-dim: #b9b6ae;
   --bone-faint: #7a7770;
-  --accent: #9c3b2e;        /* muted oxblood red — the single accent */
-  --accent-soft: rgba(156, 59, 46, 0.35);
+  --accent: #c1667f;        /* muted dusty rose — the single accent */
+  --accent-soft: rgba(193, 102, 127, 0.35);
   --line: rgba(242, 240, 236, 0.12);
 
   --font-head: "Bodoni Moda", "Didot", "Times New Roman", serif;
