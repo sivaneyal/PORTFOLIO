@@ -4,6 +4,13 @@
    HIGHLIGHTS arrays with real copy/media once the content
    document is available — no markup restructuring needed.
 
+   Style rule: never use an em dash (—) in any visible copy — titles,
+   descriptions, labels, alt text, button/link text, anything a
+   visitor or a screen reader encounters. Use a period, comma, or a
+   plain hyphen ("-") instead. This file's own comments are exempt
+   (not user-facing), but CATEGORIES/HIGHLIGHTS data and any string
+   built for on-page display are not.
+
    A link object (inside `links`/`items[].links`) supports:
      label      — link text
      url        — Vimeo / YouTube / Google Drive URLs are detected
@@ -106,17 +113,17 @@ const CATEGORIES = [
         mediaRole: "editing",
         items: [
           {
-            title: "Modus Sessions 2026 — Young Artists",
+            title: "Modus Sessions 2026 - Young Artists",
             desc: "Six live sessions with young artists for the Modus Sessions 2026 project.",
             links: [{ label: "Watch Playlist", url: "https://youtube.com/playlist?list=PLqkKsxATvseqrMdN86tTiMM0QS-0z8q6p&si=rDb5QuRJsdXBukN_" }],
           },
           {
-            title: "Daniela Spector — Live Session",
+            title: "Daniela Spector - Live Session",
             desc: "Gig at Ba'ozen Hashlishit.",
             links: [{ label: "Watch", url: "https://youtu.be/iBNx4tyA220?si=aVh2pf7uhHQRzvxe" }],
           },
           {
-            title: "Yoni Bloch — Live Session",
+            title: "Yoni Bloch - Live Session",
             desc: "Gig at Ha'ozen Hashlishit.",
             links: [
               { label: "Watch", url: "https://youtu.be/-kOJDlvIh2s" },
@@ -146,7 +153,7 @@ const CATEGORIES = [
             links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
           },
           {
-            title: "Content Editing — Outline Festival 2025",
+            title: "Content Editing - Outline Festival 2025",
             desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
             links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
           },
@@ -182,17 +189,17 @@ const CATEGORIES = [
             ],
           },
           {
-            title: "New Year's Eve Teaser — Snail Cinema",
+            title: "New Year's Eve Teaser - Snail Cinema",
             desc: "Comedic teaser for a New Year's Eve event with Snail Cinema.",
             links: [{ label: "Watch", url: "https://www.instagram.com/p/DELOx8yt2qX/" }],
           },
           {
-            title: "Longing — Short Film Screening Teaser",
+            title: "Longing - Short Film Screening Teaser",
             desc: "Teaser for a short film screening event on the theme of longing.",
             links: [{ label: "Watch", url: "https://www.instagram.com/p/DO1K0NmCPat/" }],
           },
           {
-            title: "Liel Magen — Peace Delegations to Northern Ireland",
+            title: "Liel Magen - Peace Delegations to Northern Ireland",
             desc: "Liel Magen talks about peace delegations to Northern Ireland.",
             links: [{ label: "Watch", url: "https://www.instagram.com/reel/DEKjEz2tZDC/" }],
           },
@@ -256,7 +263,7 @@ const CATEGORIES = [
     id: "curation",
     index: "04",
     title: "Curation",
-    description: "Placeholder category description — a short line of context on Sivan's curatorial work goes here.",
+    description: "Placeholder category description - a short line of context on Sivan's curatorial work goes here.",
     mediaRole: "curating",
     items: [
       { title: "Untitled Screening Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
@@ -267,7 +274,7 @@ const CATEGORIES = [
     id: "performance",
     index: "05",
     title: "Performance Artist",
-    description: "Placeholder category description — a short line of context on Sivan's performance work goes here.",
+    description: "Placeholder category description - a short line of context on Sivan's performance work goes here.",
     mediaRole: "performing in",
     items: [
       { title: "Untitled Performance", year: "2024", desc: "Placeholder description of the project, format, and context." },
@@ -278,7 +285,7 @@ const CATEGORIES = [
     id: "production",
     index: "06",
     title: "Production",
-    description: "Placeholder category description — a short line of context on Sivan's production work goes here.",
+    description: "Placeholder category description - a short line of context on Sivan's production work goes here.",
     mediaRole: "producing",
     items: [
       { title: "Untitled Production", year: "2024", desc: "Placeholder description of the project, format, and context." },
@@ -380,7 +387,7 @@ function buildMediaEmbed(link, title, altText) {
   } else {
     const ph = document.createElement("span");
     ph.className = "media-embed-thumb-placeholder";
-    ph.textContent = "Video Placeholder — thumbnail not set";
+    ph.textContent = "Video Placeholder - thumbnail not set";
     facade.appendChild(ph);
   }
 
@@ -419,7 +426,7 @@ function buildMediaEmbed(link, title, altText) {
 function buildPasswordRequestButton(title) {
   const btn = document.createElement("a");
   btn.className = "request-password-btn";
-  const subject = `Password Request — ${title}`;
+  const subject = `Password Request - ${title}`;
   const body = `Hi Sivan,\n\nCould you send me the password to watch "${title}"?\n\nThanks!`;
   btn.href = `mailto:hello@sivaneyal.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   btn.textContent = "Request Password";
@@ -525,7 +532,7 @@ function buildProjectSection(label, text) {
 
   const body = document.createElement("p");
   body.className = "project-section-body" + (text ? "" : " is-placeholder");
-  body.textContent = text || `${label} — TBD`;
+  body.textContent = text || `${label} - TBD`;
   section.appendChild(body);
 
   return section;
@@ -543,7 +550,7 @@ function buildProjectGallery(count, title) {
   const main = document.createElement("div");
   main.className = "project-gallery-main";
   const mainLabel = document.createElement("span");
-  mainLabel.textContent = `Image Placeholder — ${title} (1/${count})`;
+  mainLabel.textContent = `Image Placeholder - ${title} (1/${count})`;
   main.appendChild(mainLabel);
   wrap.appendChild(main);
 
@@ -556,7 +563,7 @@ function buildProjectGallery(count, title) {
       t.className = "project-gallery-thumb" + (i === 0 ? " is-active" : "");
       t.setAttribute("aria-label", `View image ${i + 1} of ${count}`);
       t.addEventListener("click", () => {
-        mainLabel.textContent = `Image Placeholder — ${title} (${i + 1}/${count})`;
+        mainLabel.textContent = `Image Placeholder - ${title} (${i + 1}/${count})`;
         thumbs.querySelectorAll(".project-gallery-thumb").forEach((el) => el.classList.remove("is-active"));
         t.classList.add("is-active");
       });
@@ -592,7 +599,7 @@ function buildProjectPanel(item, mediaRole) {
   header.appendChild(titleEl);
   const yearEl = document.createElement("span");
   yearEl.className = "project-year" + (item.year ? "" : " is-placeholder");
-  yearEl.textContent = item.year ? item.year : "Year — TBD";
+  yearEl.textContent = item.year ? item.year : "Year - TBD";
   header.appendChild(yearEl);
   info.appendChild(header);
 
@@ -821,7 +828,7 @@ function buildSocialReelsPanel(items) {
         const img = document.createElement("img");
         img.className = "reel-tile-thumb";
         img.src = reel.thumbnail;
-        img.alt = `Sivan Eyal social media content — ${reel.label}, ${reel.title}`;
+        img.alt = `Sivan Eyal social media content - ${reel.label}, ${reel.title}`;
         tile.appendChild(img);
       } else {
         const ph = document.createElement("span");
@@ -846,7 +853,7 @@ function buildSocialReelsPanel(items) {
   function renderStage() {
     const reel = reels[state.index];
     stageMedia.innerHTML = "";
-    const altText = `Sivan Eyal social media content — ${reel.label}, ${reel.title}`;
+    const altText = `Sivan Eyal social media content - ${reel.label}, ${reel.title}`;
     const embedEl = buildMediaEmbed(reel, reel.title, altText);
     if (embedEl) {
       stageMedia.appendChild(embedEl);
@@ -1170,7 +1177,7 @@ function renderGallery(cat, subnavEl, bodyEl) {
     const placeholder = document.createElement("div");
     placeholder.className = "gallery-photo-placeholder";
     const label = document.createElement("span");
-    label.textContent = `Image Placeholder — ${series.title} (${state.photoIndex + 1}/${photoCount})`;
+    label.textContent = `Image Placeholder - ${series.title} (${state.photoIndex + 1}/${photoCount})`;
     placeholder.appendChild(label);
     photoEl.appendChild(placeholder);
 
@@ -1196,20 +1203,20 @@ function renderGallery(cat, subnavEl, bodyEl) {
 
     const yearEl = document.createElement("span");
     yearEl.className = "gallery-caption-field" + (series.year ? "" : " is-placeholder");
-    yearEl.textContent = series.year ? series.year : "Year — TBD";
+    yearEl.textContent = series.year ? series.year : "Year - TBD";
     metaRow.appendChild(yearEl);
 
     if (series.model) {
       const modelEl = document.createElement("span");
       modelEl.className = "gallery-caption-field";
-      modelEl.textContent = `Model — ${series.model}`;
+      modelEl.textContent = `Model - ${series.model}`;
       metaRow.appendChild(modelEl);
     }
     caption.appendChild(metaRow);
 
     const noteEl = document.createElement("p");
     noteEl.className = "gallery-caption-note" + (series.note ? "" : " is-placeholder");
-    noteEl.textContent = series.note ? series.note : "Note — TBD";
+    noteEl.textContent = series.note ? series.note : "Note - TBD";
     caption.appendChild(noteEl);
   }
 
