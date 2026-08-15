@@ -99,10 +99,15 @@
 
   <!-- ========== HERO ========== -->
   <section class="hero" id="hero">
-    <!-- Full-screen background video. videos/silent-trailer.mp4 is Sivan's
-         real footage (H.264/AAC, standard and universally browser-supported).
-         poster is a real still frame extracted from that same footage
-         (see assets/images/hero-poster.jpg) — shown until the video can
+    <!-- Full-screen background video. Sivan's real footage, encoded at
+         1280x720 (down from the original 1920x1080 export) for faster
+         initial load - full original duration kept, audio stripped
+         since the video is always muted here anyway. silent-trailer.webm
+         (VP9) is listed first so browsers that support it fetch the
+         smaller file automatically; silent-trailer.mp4 (H.264) is the
+         universally-supported fallback. poster is a real still frame
+         extracted from this same re-encoded footage (see
+         assets/images/hero-poster.jpg) - shown until the video can
          play, and as the fallback if it ever fails to load. -->
     <video
       class="hero-video"
@@ -114,6 +119,7 @@
       poster="assets/images/hero-poster.jpg"
       aria-hidden="true"
     >
+      <source src="videos/silent-trailer.webm" type="video/webm">
       <source src="videos/silent-trailer.mp4" type="video/mp4">
     </video>
     <div class="hero-video-scrim" aria-hidden="true"></div>
