@@ -1516,15 +1516,56 @@ section {
   touch-action: pan-y;
 }
 
+/* Instagram's official embed widget sizes its own iframe internally
+   (Instagram, not this stylesheet, decides its height) rather than
+   filling a container the way the custom media-embed iframe does, so
+   forcing the usual fixed 9:16 box here would just clip or leave a
+   large gap. Used instead of aspect-ratio on .reel-stage whenever the
+   current reel is Instagram-sourced. */
+.reel-stage--auto {
+  aspect-ratio: auto;
+  min-height: 200px;
+}
+
 .reel-stage-media {
   width: 100%;
   height: 100%;
+}
+
+.reel-stage--auto .reel-stage-media {
+  height: auto;
 }
 
 .reel-stage-media .media-embed {
   width: 100%;
   height: 100%;
   aspect-ratio: auto;
+}
+
+.instagram-embed-wrap {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Shown only until (or unless) Instagram's script replaces the
+   blockquote with the real embed — see buildInstagramEmbed. */
+.instagram-embed-fallback {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bone);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.instagram-embed-fallback:hover,
+.instagram-embed-fallback:focus-visible {
+  color: var(--accent);
+  border-color: var(--bone);
 }
 
 .reel-caption {

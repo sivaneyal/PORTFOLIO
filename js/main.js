@@ -348,7 +348,14 @@ function parseEmbedUrl(url) {
     if (!id && host === "youtu.be") id = u.pathname.slice(1);
     if (!id && u.pathname.startsWith("/embed/")) id = u.pathname.split("/")[2];
     if (id) {
-      return { platform: "youtube", embedUrl: `https://www.youtube.com/embed/${id}${list ? `?list=${list}` : ""}` };
+      return {
+        platform: "youtube",
+        embedUrl: `https://www.youtube.com/embed/${id}${list ? `?list=${list}` : ""}`,
+        // No API call or fetch needed — YouTube's thumbnail path is a
+        // predictable pattern built straight from the video ID. Not
+        // available for a playlist URL (no single video ID to key off).
+        thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      };
     }
   }
 
@@ -396,11 +403,25 @@ function buildMediaEmbed(link, title, altText) {
   facade.className = "media-embed-facade";
   facade.setAttribute("aria-label", `Play ${title}`);
 
-  if (link.thumbnail) {
+  // link.thumbnail (an explicit, hand-picked frame) wins if set; otherwise
+  // fall back to whatever the platform can supply automatically (e.g.
+  // YouTube's predictable /vi/{id}/hqdefault.jpg path — see parseEmbedUrl).
+  const thumbnailSrc = link.thumbnail || embed.thumbnailUrl;
+  if (thumbnailSrc) {
     const img = document.createElement("img");
     img.className = "media-embed-thumb";
-    img.src = link.thumbnail;
+    img.src = thumbnailSrc;
     img.alt = altText || title;
+    img.loading = "lazy";
+    // If the image 404s (e.g. a stale/deleted video ID), fall back to the
+    // plain placeholder instead of leaving a broken-image icon on screen.
+    img.addEventListener("error", () => {
+      img.remove();
+      const ph = document.createElement("span");
+      ph.className = "media-embed-thumb-placeholder";
+      ph.textContent = "Video Placeholder - thumbnail not set";
+      facade.insertBefore(ph, facade.firstChild);
+    }, { once: true });
     facade.appendChild(img);
   } else {
     const ph = document.createElement("span");
@@ -433,6 +454,72 @@ function buildMediaEmbed(link, title, altText) {
   });
 
   wrap.appendChild(facade);
+  return wrap;
+}
+
+// ---------------------------------------------------------------
+// Instagram's official oEmbed widget (blockquote + embed.js), used in
+// place of a custom iframe facade so the real post thumbnail, caption,
+// and engagement UI render exactly as Instagram intends, pulled live
+// from Instagram itself rather than guessed at. The script is only
+// injected the first time a visitor actually opens a reel (not on
+// every page load, since most visitors never open this tab), and is
+// only ever added once regardless of how many reels get viewed.
+// ---------------------------------------------------------------
+let instagramScriptPromise = null;
+
+function loadInstagramEmbedScript() {
+  if (window.instgrm) return Promise.resolve();
+  if (instagramScriptPromise) return instagramScriptPromise;
+  instagramScriptPromise = new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.instagram.com/embed.js";
+    script.addEventListener("load", () => resolve());
+    // Fail open — if Instagram's script can't load, the blockquote is
+    // still there with a real permalink, so the page doesn't break.
+    script.addEventListener("error", () => resolve());
+    document.body.appendChild(script);
+  });
+  return instagramScriptPromise;
+}
+
+// embed.js only scans the page for .instagram-media blockquotes once,
+// at its own load time — it doesn't watch the DOM for ones added
+// later. Since every reel here is inserted well after that (a visitor
+// has to open the overlay and click into a reel first), process()
+// must be called explicitly after each blockquote is inserted, or it
+// would just sit there unrendered.
+function buildInstagramEmbed(url) {
+  const wrap = document.createElement("div");
+  wrap.className = "instagram-embed-wrap";
+
+  const blockquote = document.createElement("blockquote");
+  blockquote.className = "instagram-media";
+  blockquote.setAttribute("data-instgrm-permalink", url);
+  blockquote.setAttribute("data-instgrm-version", "14");
+
+  // Fallback content Instagram's own script replaces once it
+  // successfully processes this blockquote. Left in place (rather
+  // than empty) for when it can't — e.g. an ad/privacy blocker
+  // stopping embed.js outright, which is common enough in the real
+  // world to be worth a real fallback, not just a blank gap.
+  const fallback = document.createElement("a");
+  fallback.className = "instagram-embed-fallback";
+  fallback.href = url;
+  fallback.target = "_blank";
+  fallback.rel = "noopener noreferrer";
+  fallback.textContent = "View this post on Instagram";
+  blockquote.appendChild(fallback);
+
+  wrap.appendChild(blockquote);
+
+  loadInstagramEmbedScript().then(() => {
+    if (window.instgrm && window.instgrm.Embeds) {
+      window.instgrm.Embeds.process();
+    }
+  });
+
   return wrap;
 }
 
@@ -903,6 +990,17 @@ function buildSocialReelsPanel(items) {
   function renderStage() {
     const reel = reels[state.index];
     stageMedia.innerHTML = "";
+    const parsed = parseEmbedUrl(reel.url);
+
+    if (parsed && parsed.platform === "instagram") {
+      // Instagram's own official widget, not the custom facade+iframe
+      // used for every other platform — see buildInstagramEmbed.
+      stage.classList.add("reel-stage--auto");
+      stageMedia.appendChild(buildInstagramEmbed(reel.url));
+      return;
+    }
+
+    stage.classList.remove("reel-stage--auto");
     const altText = `Sivan Eyal social media content - ${reel.label}, ${reel.title}`;
     const embedEl = buildMediaEmbed(reel, reel.title, altText);
     if (embedEl) {

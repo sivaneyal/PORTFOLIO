@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" fill="#0a0a0a"/>
-  <text x="32" y="39" text-anchor="middle" font-family="'Bodoni Moda', 'Didot', 'Times New Roman', serif" font-weight="700" font-size="30" fill="#f2f0ec">SE</text>
+  <text x="32" y="39" text-anchor="middle" font-family="'Hammersmith One', 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="28" fill="#f2f0ec">SE</text>
   <rect x="20.6" y="46.5" width="22.8" height="1.8" fill="#c1667f"/>
 </svg>
