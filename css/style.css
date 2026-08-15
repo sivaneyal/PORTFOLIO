@@ -1,7 +1,11 @@
 /* ============================================================
    Sivan Eyal — Portfolio
    Palette: near-black ground, bone text, single dusty-rose accent.
-   Headline: Bodoni Moda (high-contrast, cinematic editorial serif).
+   Headline: Hammersmith One (bold, rounded display sans). Ships as a
+   single weight (400, no italic) on Google Fonts, so every rule below
+   that uses --font-head explicitly sets font-weight: 400 — requesting
+   anything heavier would trigger the browser's synthetic bold instead
+   of using a real face.
    Body: Archivo (neutral grotesk with more character than a system sans).
    ============================================================ */
 
@@ -15,7 +19,7 @@
   --accent-soft: rgba(193, 102, 127, 0.35);
   --line: rgba(242, 240, 236, 0.12);
 
-  --font-head: "Bodoni Moda", "Didot", "Times New Roman", serif;
+  --font-head: "Hammersmith One", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -182,7 +186,7 @@ img { max-width: 100%; display: block; }
   font-family: var(--font-head);
   font-size: 1.05rem;
   letter-spacing: 0.02em;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .nav-links {
@@ -331,8 +335,12 @@ img { max-width: 100%; display: block; }
   row-gap: 22px;
   /* a fixed column-gap (not space-between's leftover-space split)
      guarantees the gap between every pair of items is identical,
-     regardless of how wide any given label is. */
-  column-gap: clamp(28px, 4.5vw, 72px);
+     regardless of how wide any given label is. Tightened slightly
+     from the original clamp — Hammersmith One's letterforms run wider
+     than the previous headline font at the same sizes, which pushed
+     the row's total width just past a single line at common desktop
+     widths (e.g. 1440px) with the old values. */
+  column-gap: clamp(24px, 3.7vw, 68px);
   width: 100%;
 }
 
@@ -1602,12 +1610,10 @@ section {
 
 .contact-email {
   font-family: var(--font-head);
-  /* Explicit weight matters here: every other var(--font-head) rule on
-     the site sets 400, but this one didn't, so it fell back to body's
-     inherited 300 — a weight the Google Fonts request never actually
-     loads for Bodoni Moda (only 400/500/600/700 + italic 400/500 are
-     fetched, see the <link> in index.html), so it rendered off-family
-     from the rest of the site's headline type. */
+  /* Explicit weight matters here (see the --font-head note at the top
+     of this file): Hammersmith One only ships weight 400, so this
+     must match every other var(--font-head) rule exactly rather than
+     inheriting body's 300. */
   font-weight: 400;
   font-size: clamp(1.8rem, 5vw, 3.4rem);
   border-bottom: 1px solid var(--line);
