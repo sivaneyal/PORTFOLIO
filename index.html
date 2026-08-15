@@ -29,16 +29,12 @@
      doctor also named Sivan Eyal in Hebrew) by tying this specific
      name to her actual roles, this site, and her known affiliations.
 
-     sameAs is intentionally left empty below — fill it in with her
-     other professional profile URLs once supplied, e.g.:
-       "sameAs": [
-         "https://www.instagram.com/<handle>",
-         "https://vimeo.com/<handle>",
-         "https://www.imdb.com/name/<id>/"
-       ]
-     Leaving it empty is valid JSON-LD; a placeholder/fake URL is not
-     something search engines should ever see, so don't fill this in
-     with guessed links. -->
+     sameAs lists her real profile URLs below. No Vimeo entry - she
+     doesn't have a Vimeo profile to link to (the Vimeo *video* links
+     used elsewhere on the site, e.g. Field Trip/Orange Juice, are
+     unrelated embedded content, not a profile). Add more real
+     profile URLs here as they're confirmed (e.g. IMDb) - never a
+     placeholder/guessed link, search engines shouldn't see those. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -47,7 +43,10 @@
   "alternateName": "סיון איל",
   "jobTitle": ["Filmmaker", "Editor", "Photographer", "Curator"],
   "url": "https://sivaneyal.netlify.app/",
-  "sameAs": [],
+  "sameAs": [
+    "https://www.instagram.com/sivaneyal/",
+    "https://www.linkedin.com/in/sivan-eyal-0b756b272"
+  ],
   "memberOf": {
     "@type": "Organization",
     "name": "Shablulim Films",
@@ -239,11 +238,10 @@
   <footer class="contact" id="contact">
     <div class="section-frame contact-frame">
       <p class="section-kicker reveal">Contact</p>
-      <a class="contact-email reveal" href="mailto:hello@sivaneyal.com">hello@sivaneyal.com</a>
+      <a class="contact-email reveal" href="mailto:sivaneyal23@gmail.com">sivaneyal23@gmail.com</a>
       <div class="contact-links reveal">
-        <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
-        <a href="https://vimeo.com/" target="_blank" rel="noopener noreferrer">Vimeo</a>
-        <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://www.instagram.com/sivaneyal/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.linkedin.com/in/sivan-eyal-0b756b272" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       </div>
       <p class="contact-foot">&copy; <span id="year"></span> Sivan Eyal <span lang="he" dir="rtl">(סיון איל)</span>. All rights reserved.</p>
       <p class="contact-legal"><a href="privacy.html">Privacy Policy</a></p>

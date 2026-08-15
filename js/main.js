@@ -533,7 +533,10 @@ function buildPasswordRequestButton(title) {
   btn.className = "request-password-btn";
   const subject = `Password Request - ${title}`;
   const body = `Hi Sivan,\n\nCould you send me the password to watch "${title}"?\n\nThanks!`;
-  btn.href = `mailto:hello@sivaneyal.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  // sivaneyal23@gmail.com, not hello@sivaneyal.com - the custom domain
+  // address isn't set up yet, so every contact point on the site routes
+  // to the Gmail address until that changes.
+  btn.href = `mailto:sivaneyal23@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   btn.textContent = "Request Password";
   return btn;
 }
