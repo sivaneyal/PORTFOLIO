@@ -130,6 +130,20 @@ const CATEGORIES = [
               { label: "Live Session Teaser", url: "https://youtu.be/PIhOwgrXQZI?si=7ml4pPbf_Un0m8D8" },
             ],
           },
+          {
+            // Labels are placeholder "Video N" — real per-video titles
+            // can be swapped in later, YouTube's own oEmbed/API isn't
+            // reachable from this environment to pull them automatically.
+            title: "Focus JLM - Live Sessions",
+            desc: "Live session videos for the Focus JLM youth culture platform.",
+            links: [
+              { label: "Video 1", url: "https://youtu.be/fNEhufcJS9A" },
+              { label: "Video 2", url: "https://youtu.be/UyUGFBrGghc" },
+              { label: "Video 3", url: "https://youtu.be/jlC5KxEyWIw" },
+              { label: "Video 4", url: "https://youtu.be/QHTqVJeIF3w" },
+              { label: "Video 5", url: "https://youtu.be/iZq0XjqSbdE" },
+            ],
+          },
         ],
       },
       {
@@ -139,7 +153,11 @@ const CATEGORIES = [
           {
             title: "Biofeedback",
             desc: "By Daniel Galia Kind. Documented and edited a 48 minute biofeedback based dance performance.",
-            links: [{ label: "Watch", url: "https://drive.google.com/file/d/17X6u7yRCCKSXH_zpFKGnppk6QQEyKS2d/view?usp=sharing" }],
+            // passwordOnly: no url at all, on purpose - this used to be a
+            // directly-viewable "anyone with the link" Drive file, so
+            // even embedding it behind a label would still show the full
+            // performance to anyone. Requests now route through Sivan.
+            links: [{ label: "Request Password", passwordOnly: true }],
           },
         ],
       },
@@ -434,6 +452,35 @@ function buildPasswordRequestButton(title) {
 }
 
 // ---------------------------------------------------------------
+// For content that isn't safe to embed at all — e.g. a Drive file
+// shared as "anyone with the link can view", where embedding it would
+// just show the content directly with no gate, unlike Vimeo's own
+// password wall on an embedded player. Renders only a locked
+// placeholder and the Request Password button; the real URL is never
+// put in a link.passwordOnly item's data, so it never ships to the
+// browser and can't be found via view-source either.
+// ---------------------------------------------------------------
+function buildPasswordOnlyMedia(title) {
+  const wrap = document.createElement("div");
+  wrap.className = "work-item-media";
+
+  const block = document.createElement("div");
+  block.className = "work-item-media-block";
+
+  const thumb = document.createElement("div");
+  thumb.className = "work-thumb";
+  const label = document.createElement("span");
+  label.className = "work-thumb-label";
+  label.textContent = "Password Protected";
+  thumb.appendChild(label);
+  block.appendChild(thumb);
+
+  block.appendChild(buildPasswordRequestButton(title));
+  wrap.appendChild(block);
+  return wrap;
+}
+
+// ---------------------------------------------------------------
 // Build a single work-item card from an item data object. Used for
 // items inside a grouped category's tab panel (e.g. Editing's
 // subsections) — flat-item categories use buildProjectPanel instead,
@@ -445,10 +492,13 @@ function buildWorkItem(item, mediaRole) {
   el.className = "work-item";
 
   const links = item.links || [];
-  const mediaLinks = links.filter((l) => parseEmbedUrl(l.url));
-  const plainLinks = links.filter((l) => !parseEmbedUrl(l.url));
+  const passwordOnlyLinks = links.filter((l) => l.passwordOnly);
+  const mediaLinks = links.filter((l) => !l.passwordOnly && parseEmbedUrl(l.url));
+  const plainLinks = links.filter((l) => !l.passwordOnly && !parseEmbedUrl(l.url));
 
-  if (mediaLinks.length) {
+  if (passwordOnlyLinks.length) {
+    el.appendChild(buildPasswordOnlyMedia(item.title));
+  } else if (mediaLinks.length) {
     const mediaWrap = document.createElement("div");
     mediaWrap.className = "work-item-media";
     mediaLinks.forEach((link) => {
