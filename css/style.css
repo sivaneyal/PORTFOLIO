@@ -542,6 +542,20 @@ section {
     ),
     var(--bg-raised);
   border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.about-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Fallback layout if the photo fails to load (see initAboutPhoto in
+   js/main.js) - the same centered-placeholder-text look this box had
+   before a real photo existed. */
+.about-photo.is-empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1657,6 +1671,11 @@ section {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* A screenshot thumbnail (see buildScreenshotThumbnailUrl) is a
+     full page capture, much taller than this 9:16 tile - anchoring to
+     the top keeps the actual post content in frame instead of
+     whatever happens to fall at the vertical center of the page. */
+  object-position: top;
   display: block;
 }
 

@@ -52,10 +52,10 @@ const CATEGORIES = [
         year: "2025",
         desc: "Yana is determined to leave her innocent days behind. Together with her sharp and shady friend Sheli, she sets out for an afternoon of mischief at the mall: in search of a blue movie, fast food, and male attention. What begins as a light hearted adventure slowly derails into a series of borderline encounters with strangers, and an unexpected lesson in the praises of the arts of seduction.",
         screenings: [
-          "2025 COLIFFE, COLiseum International Film Festival",
-          "2025 Haifa Film Festival",
-          "2025 TLVFEST",
-          "2025 Jerusalem's Women's Film Festival",
+          { year: "2025", name: "COLIFFE, COLiseum International Film Festival", url: "https://coliffe.it/en/international-short-films-2025-en" },
+          { year: "2025", name: "Haifa Film Festival", url: "https://www.haifaff.co.il/סרטים/12096/חשיפה_ראשונה_-_קולנוע_קצר" },
+          { year: "2025", name: "TLVFEST", url: "https://www.tlvfest.com/fest_movie/venus-sucks-israeli-short-films/" },
+          { year: "2025", name: "Jerusalem's Women's Film Festival", url: "https://www.jwff.co.il/independent-film/venus-sucks" },
         ],
         specs: [
           ["Length", "12:13"],
@@ -87,7 +87,7 @@ const CATEGORIES = [
         items: [
           {
             title: "Field Trip",
-            desc: "By Yehuda Bogomolny. Won first prize at the Israeli Film Festival in Paris 2025, and second place in the short film competition at \"Epos\".",
+            desc: "Directed by Yehuda Bogomolny. Co-edited with Sivan Eyal. Won first prize at the Israeli Film Festival in Paris 2025, and second place in the short film competition at \"Epos\".",
             links: [{ label: "Watch", url: "https://vimeo.com/730740409?share=copy", password: "GR@31" }],
           },
           {
@@ -392,7 +392,18 @@ function parseEmbedUrl(url) {
 
   if (host === "instagram.com") {
     const m = u.pathname.match(/^\/(p|reel)\/([^/]+)/);
-    if (m) return { platform: "instagram", embedUrl: `https://www.instagram.com/${m[1]}/${m[2]}/embed` };
+    if (m) {
+      return {
+        platform: "instagram",
+        embedUrl: `https://www.instagram.com/${m[1]}/${m[2]}/embed`,
+        // Instagram has no public thumbnail-by-ID pattern the way YouTube
+        // does, so a real preview image has to come from somewhere else -
+        // a live screenshot of the post itself, same free screenshot
+        // service already used for the Curation website previews and the
+        // News strip (see buildScreenshotThumbnailUrl below).
+        thumbnailUrl: buildScreenshotThumbnailUrl(url),
+      };
+    }
   }
 
   return null;
@@ -869,6 +880,44 @@ function buildProjectPanel(item, mediaRole) {
 
   info.appendChild(buildProjectSection("Synopsis", item.desc));
 
+  if (item.screenings && item.screenings.length) {
+    const section = document.createElement("div");
+    section.className = "project-section";
+    const label = document.createElement("h4");
+    label.className = "project-section-label";
+    label.textContent = "Awards / Screening History";
+    section.appendChild(label);
+    const ul = document.createElement("ul");
+    ul.className = "work-item-screenings";
+    item.screenings.forEach((s) => {
+      const li = document.createElement("li");
+      // Plain strings stay plain text; an object with a url makes the
+      // festival name itself a link (the year prefix, if any, stays
+      // plain text) - see the "directing" category's Venus Sucks entry.
+      if (typeof s === "string") {
+        li.textContent = s;
+      } else {
+        if (s.year) li.appendChild(document.createTextNode(`${s.year} `));
+        if (s.url) {
+          const a = document.createElement("a");
+          a.href = s.url;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.className = "work-item-link";
+          a.textContent = s.name;
+          li.appendChild(a);
+        } else {
+          li.appendChild(document.createTextNode(s.name));
+        }
+      }
+      ul.appendChild(li);
+    });
+    section.appendChild(ul);
+    info.appendChild(section);
+  } else {
+    info.appendChild(buildProjectSection("Awards / Screening History", ""));
+  }
+
   if (item.specs && item.specs.length) {
     const section = document.createElement("div");
     section.className = "project-section";
@@ -890,26 +939,6 @@ function buildProjectPanel(item, mediaRole) {
     info.appendChild(section);
   } else {
     info.appendChild(buildProjectSection("Technical Details", ""));
-  }
-
-  if (item.screenings && item.screenings.length) {
-    const section = document.createElement("div");
-    section.className = "project-section";
-    const label = document.createElement("h4");
-    label.className = "project-section-label";
-    label.textContent = "Awards / Screening History";
-    section.appendChild(label);
-    const ul = document.createElement("ul");
-    ul.className = "work-item-screenings";
-    item.screenings.forEach((s) => {
-      const li = document.createElement("li");
-      li.textContent = s;
-      ul.appendChild(li);
-    });
-    section.appendChild(ul);
-    info.appendChild(section);
-  } else {
-    info.appendChild(buildProjectSection("Awards / Screening History", ""));
   }
 
   if (textLinks.length) {
@@ -1005,12 +1034,18 @@ function buildSocialReelsPanel(items) {
   const reels = [];
   items.forEach((item) => {
     (item.links || []).forEach((link) => {
+      const parsed = parseEmbedUrl(link.url);
       reels.push({
         title: item.title,
         label: link.label,
         desc: item.desc,
         url: link.url,
-        thumbnail: link.thumbnail,
+        // link.thumbnail (a hand-picked frame) wins if set; otherwise
+        // fall back to whatever the platform can supply automatically
+        // (e.g. Instagram's screenshot-based thumbnailUrl - see
+        // parseEmbedUrl) so every grid tile gets a real preview image
+        // instead of the plain text-label placeholder.
+        thumbnail: link.thumbnail || (parsed && parsed.thumbnailUrl) || null,
       });
     });
   });
@@ -1075,6 +1110,16 @@ function buildSocialReelsPanel(items) {
         img.className = "reel-tile-thumb";
         img.src = reel.thumbnail;
         img.alt = `Sivan Eyal social media content - ${reel.label}, ${reel.title}`;
+        img.loading = "lazy";
+        // Screenshot services can fail/rate-limit - fall back to the
+        // plain text-label placeholder instead of a broken-image icon.
+        img.addEventListener("error", () => {
+          img.remove();
+          const ph = document.createElement("span");
+          ph.className = "reel-tile-thumb-placeholder";
+          ph.textContent = reel.label;
+          tile.insertBefore(ph, tile.firstChild);
+        }, { once: true });
         tile.appendChild(img);
       } else {
         const ph = document.createElement("span");
@@ -1939,6 +1984,26 @@ function initNavScrollState() {
 }
 
 // ---------------------------------------------------------------
+// About photo — falls back to the original centered-placeholder-text
+// look (same pattern as buildLinkPreview/buildMediaEmbed's thumbnail
+// fallbacks) if the real photo fails to load, instead of a broken-
+// image icon.
+// ---------------------------------------------------------------
+function initAboutPhoto() {
+  const wrap = document.querySelector(".about-photo");
+  const img = wrap ? wrap.querySelector("img") : null;
+  if (!wrap || !img) return;
+
+  img.addEventListener("error", () => {
+    img.remove();
+    wrap.classList.add("is-empty");
+    const span = document.createElement("span");
+    span.textContent = "Photo of Sivan - Placeholder";
+    wrap.appendChild(span);
+  }, { once: true });
+}
+
+// ---------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
@@ -1953,6 +2018,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMobileNav();
   initNavScrollState();
   initOverlayRouting();
+  initAboutPhoto();
 
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
