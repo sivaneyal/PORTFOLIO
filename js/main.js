@@ -125,10 +125,7 @@ const CATEGORIES = [
           {
             title: "Yoni Bloch - Live Session",
             desc: "Gig at Ha'ozen Hashlishit.",
-            links: [
-              { label: "Watch", url: "https://youtu.be/-kOJDlvIh2s" },
-              { label: "Live Session Teaser", url: "https://youtu.be/PIhOwgrXQZI?si=7ml4pPbf_Un0m8D8" },
-            ],
+            links: [{ label: "Watch", url: "https://youtu.be/-kOJDlvIh2s" }],
           },
           {
             // Labels are placeholder "Video N" — real per-video titles
@@ -158,22 +155,6 @@ const CATEGORIES = [
             // even embedding it behind a label would still show the full
             // performance to anyone. Requests now route through Sivan.
             links: [{ label: "Request Password", passwordOnly: true }],
-          },
-        ],
-      },
-      {
-        title: "Curation & Artistic Direction",
-        mediaRole: "curating",
-        items: [
-          {
-            title: "Shablulim Films Streaming Platform",
-            desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
-            links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
-          },
-          {
-            title: "Content Editing - Outline Festival 2025",
-            desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
-            links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
           },
         ],
       },
@@ -225,6 +206,10 @@ const CATEGORIES = [
             title: "Cabaret in the Square",
             desc: "\"Behind the scenes\" of a cabaret in the square.",
             links: [{ label: "Watch", url: "https://www.instagram.com/p/DHGHUtToMyN/" }],
+          },
+          {
+            title: "Yoni Bloch - Live Session Teaser",
+            links: [{ label: "Watch", url: "https://youtu.be/PIhOwgrXQZI?si=7ml4pPbf_Un0m8D8" }],
           },
         ],
       },
@@ -284,6 +269,21 @@ const CATEGORIES = [
     description: "Placeholder category description - a short line of context on Sivan's curatorial work goes here.",
     mediaRole: "curating",
     items: [
+      {
+        title: "Shablulim Films Streaming Platform",
+        desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
+        // No real production photos for a curated website - the site's
+        // own screenshot (via link.thumbnail below) is the visual, so
+        // the generic placeholder photo gallery is turned off.
+        photoCount: 0,
+        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/", thumbnail: "https://image.thum.io/get/width/1200/https://shablulimfilm.com" }],
+      },
+      {
+        title: "Content Editing - Outline Festival 2025",
+        desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
+        photoCount: 0,
+        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/", thumbnail: "https://image.thum.io/get/width/1200/https://outlinejerusalem.com" }],
+      },
       { title: "Untitled Screening Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
       { title: "Untitled Exhibition", year: "2022", desc: "Placeholder description of the project, format, and context." },
     ],
@@ -455,6 +455,48 @@ function buildMediaEmbed(link, title, altText) {
 
   wrap.appendChild(facade);
   return wrap;
+}
+
+// ---------------------------------------------------------------
+// A plain (non-embeddable) link with a real preview image - e.g. a
+// curated external website, where link.thumbnail is a screenshot URL
+// rather than a hand-picked video frame. Unlike buildMediaEmbed there
+// is nothing to "play" in place, so the whole card is just a link
+// straight out to the site.
+// ---------------------------------------------------------------
+function buildLinkPreview(link, altText) {
+  const a = document.createElement("a");
+  a.className = "link-preview";
+  a.href = link.url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+
+  const thumb = document.createElement("div");
+  thumb.className = "link-preview-thumb";
+  const img = document.createElement("img");
+  img.src = link.thumbnail;
+  img.alt = altText;
+  img.loading = "lazy";
+  // Screenshot services can fail/rate-limit - fall back to a plain
+  // placeholder instead of a broken-image icon, same pattern as
+  // buildMediaEmbed's thumbnail fallback.
+  img.addEventListener("error", () => {
+    img.remove();
+    thumb.classList.add("is-empty");
+    const ph = document.createElement("span");
+    ph.className = "link-preview-thumb-placeholder";
+    ph.textContent = "Website Preview - image unavailable";
+    thumb.appendChild(ph);
+  }, { once: true });
+  thumb.appendChild(img);
+  a.appendChild(thumb);
+
+  const label = document.createElement("span");
+  label.className = "link-preview-label";
+  label.textContent = link.label;
+  a.appendChild(label);
+
+  return a;
 }
 
 // ---------------------------------------------------------------
@@ -726,7 +768,13 @@ function buildProjectPanel(item, mediaRole) {
   const el = document.createElement("article");
   el.className = "project-panel";
 
-  el.appendChild(buildProjectGallery(item.photoCount || 3, item.title));
+  // photoCount: 0 opts out of the generic placeholder photo gallery -
+  // used for items with a real preview image of their own (e.g. a
+  // curated website's screenshot via a link.thumbnail below) instead
+  // of an actual film/photo shoot to gallery-ize.
+  if (item.photoCount !== 0) {
+    el.appendChild(buildProjectGallery(item.photoCount || 3, item.title));
+  }
 
   const info = document.createElement("div");
   info.className = "project-info";
@@ -746,6 +794,8 @@ function buildProjectPanel(item, mediaRole) {
   const links = item.links || [];
   const mediaLinks = links.filter((l) => parseEmbedUrl(l.url));
   const plainLinks = links.filter((l) => !parseEmbedUrl(l.url));
+  const previewLinks = plainLinks.filter((l) => l.thumbnail);
+  const textLinks = plainLinks.filter((l) => !l.thumbnail);
 
   if (mediaLinks.length) {
     const mediaWrap = document.createElement("div");
@@ -765,6 +815,19 @@ function buildProjectPanel(item, mediaRole) {
       mediaWrap.appendChild(block);
     });
     info.appendChild(mediaWrap);
+  }
+
+  if (previewLinks.length) {
+    const previewWrap = document.createElement("div");
+    previewWrap.className = "work-item-media";
+    previewLinks.forEach((link) => {
+      const block = document.createElement("div");
+      block.className = "work-item-media-block";
+      const altText = buildMediaAlt(mediaRole || "in", item.title, item.year);
+      block.appendChild(buildLinkPreview(link, altText));
+      previewWrap.appendChild(block);
+    });
+    info.appendChild(previewWrap);
   }
 
   info.appendChild(buildProjectSection("Synopsis", item.desc));
@@ -812,10 +875,10 @@ function buildProjectPanel(item, mediaRole) {
     info.appendChild(buildProjectSection("Awards / Screening History", ""));
   }
 
-  if (plainLinks.length) {
+  if (textLinks.length) {
     const linksWrap = document.createElement("div");
     linksWrap.className = "work-item-links";
-    plainLinks.forEach((link) => {
+    textLinks.forEach((link) => {
       const a = document.createElement("a");
       a.href = link.url;
       a.target = "_blank";
