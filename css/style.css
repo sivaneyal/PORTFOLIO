@@ -519,7 +519,7 @@ section {
    ============================================================ */
 .about-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 320px) 1fr;
+  grid-template-columns: minmax(170px, 240px) 1fr;
   gap: clamp(32px, 5vw, 64px);
   align-items: start;
 }
@@ -609,6 +609,15 @@ section {
 
 .news-strip {
   display: flex;
+  /* Items keep their own natural height (thumb + however many lines
+     the caption needs) instead of the flex default of stretching
+     every item to match the tallest one - a short caption just ends
+     sooner, it doesn't leave a stretched, empty gap under it. Since
+     every item renders up front (not swapped in/out as the strip
+     scrolls), the row's height - and so the section's - is still
+     fully determined the moment the page loads, and never changes
+     from there regardless of which items happen to be in view. */
+  align-items: flex-start;
   gap: 20px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
@@ -628,12 +637,15 @@ section {
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 168px;
+  gap: 10px;
+  width: clamp(190px, 15vw, 240px);
 }
 
+/* 4:5 - a standard Instagram post's proportions, sized proportionally
+   with the rest of the site (clamp on .news-item above) rather than a
+   fixed pixel width. */
 .news-item-thumb {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 5;
   background:
     repeating-linear-gradient(
       135deg,
@@ -675,15 +687,16 @@ section {
   text-align: center;
 }
 
-/* One truncated line, always - a caption's length must never be
-   able to grow the section's height. */
+/* Wraps freely (2-3 lines for most captions here) instead of the old
+   single-line ellipsis truncation - never cut off mid-sentence. No
+   line-clamp/max-height: every item still renders up front (see
+   align-items: flex-start on .news-strip), so a longer caption can't
+   cause any layout shift - it just makes that one item's column
+   taller within a row height that was already fixed at load time. */
 .news-item-caption {
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   line-height: 1.4;
   color: var(--bone-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   transition: color 0.3s var(--ease);
 }
 

@@ -318,27 +318,36 @@ const HIGHLIGHTS = [
   { title: "Untitled Exhibition", category: "Curation", year: "2023" },
 ];
 
-// Chronological, oldest first (see renderNews) - each item's
-// thumbnail is a live screenshot of its Instagram post (see
-// buildScreenshotThumbnailUrl), not a hand-picked image.
+// Chronological, oldest first (see renderNews). Each item links out to
+// its Instagram post, but the thumbnail is a static local image file
+// (image) rather than a live embed/screenshot - those rendered
+// unreliably (a generic Instagram card, not the actual photo). Every
+// item below points at the same placeholder image for now; once real
+// per-item photos are supplied, swap each item's `image` path
+// individually - no other code needs to change.
 const NEWS = [
   {
+    image: "assets/images/hero-poster.jpg",
     caption: "Digital Diary screening at Berkshire Film Festival, MA (30.5.24) and Short Shorts Film Festival, Tokyo (16.6.24).",
     url: "https://www.instagram.com/p/C7jG-pBtLfnjfGaKDi01v--2uoyXHLtk5kIckg0/",
   },
   {
+    image: "assets/images/hero-poster.jpg",
     caption: "Behind the scenes, Sun's Too Hot.",
     url: "https://www.instagram.com/p/CebaZxytswf/",
   },
   {
+    image: "assets/images/hero-poster.jpg",
     caption: "Behind the scenes, Venus Sucks.",
     url: "https://www.instagram.com/p/DLzLDzhosUp/",
   },
   {
+    image: "assets/images/hero-poster.jpg",
     caption: "Chezyonot, a small local film festival I curated.",
     url: "https://www.instagram.com/p/DLmkKapIUv1/",
   },
   {
+    image: "assets/images/hero-poster.jpg",
     caption: "An event I co-curated with intangible cinema project.",
     url: "https://www.instagram.com/p/DO1K0NmCPat/",
   },
@@ -1762,18 +1771,18 @@ function renderNews() {
     const thumb = document.createElement("div");
     thumb.className = "news-item-thumb";
     const img = document.createElement("img");
-    img.src = buildScreenshotThumbnailUrl(item.url);
+    img.src = item.image;
     img.alt = item.caption;
     img.loading = "lazy";
-    // Screenshot services can fail/rate-limit - fall back to a plain
-    // placeholder instead of a broken-image icon, same pattern used
-    // for the Curation website previews (see buildLinkPreview).
+    // A missing/renamed image file falls back to a plain placeholder
+    // instead of a broken-image icon, same pattern used elsewhere on
+    // the site (see buildLinkPreview).
     img.addEventListener("error", () => {
       img.remove();
       thumb.classList.add("is-empty");
       const ph = document.createElement("span");
       ph.className = "news-item-thumb-placeholder";
-      ph.textContent = "Preview unavailable";
+      ph.textContent = "Image unavailable";
       thumb.appendChild(ph);
     }, { once: true });
     thumb.appendChild(img);
