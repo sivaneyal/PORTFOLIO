@@ -64,6 +64,7 @@ const CATEGORIES = [
           ["Resolution", "4K DCI Scope, Color"],
           ["Subtitles", "Hebrew, English"],
         ],
+        links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/venus-sucks/" }],
       },
       {
         title: "WIN",
@@ -73,6 +74,7 @@ const CATEGORIES = [
       {
         title: "Sun's Too Hot",
         desc: "Soli, a young activist, meets Ameline in an anarchist eco rebel camp in Jerusalem. Soli's search for tenderness and intimacy leads her to guide Ameline through her existential struggle, living in a toxic world.",
+        links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/suns-too-hot/" }],
       },
     ],
   },
@@ -345,12 +347,12 @@ const NEWS = [
     url: "https://www.instagram.com/p/DOY73CJCHY1/",
   },
   {
-    image: "PHOTOS/NEWS/HEZYONOT.png",
+    image: "PHOTOS/NEWS/HEZYONOT.jpg",
     caption: "Chezyonot, a small local film festival I curated.",
     url: "https://www.instagram.com/p/DLmkKapIUv1/",
   },
   {
-    image: "PHOTOS/NEWS/4 MOVIES ABOUT MISSING.png",
+    image: "PHOTOS/NEWS/4 MOVIES ABOUT MISSING.jpg",
     caption: "An event I co-curated with intangible cinema project.",
     url: "https://www.instagram.com/p/DO1K0NmCPat/",
   },
@@ -810,15 +812,22 @@ function buildProjectGallery(photos, title) {
   function showPhoto(i) {
     main.classList.add("has-photo");
     main.innerHTML = "";
+    const altText = `${title} - production still ${i + 1} of ${count}`;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "project-gallery-main-btn";
+    btn.setAttribute("aria-label", `View full-size image ${i + 1} of ${count}`);
     const img = document.createElement("img");
     img.className = "project-gallery-main-img";
     img.src = realPhotos[i];
-    img.alt = `${title} - production still ${i + 1} of ${count}`;
+    img.alt = altText;
     img.loading = "lazy";
     // A missing/renamed file falls back to the placeholder frame
     // instead of a broken-image icon, same pattern used elsewhere.
     img.addEventListener("error", () => showPlaceholder(i), { once: true });
-    main.appendChild(img);
+    btn.appendChild(img);
+    btn.addEventListener("click", () => openImageLightbox(realPhotos[i], altText));
+    main.appendChild(btn);
   }
 
   const showSlide = realPhotos ? showPhoto : showPlaceholder;
@@ -1491,7 +1500,16 @@ function initOverlayRouting() {
 // of back where they were. Pinning the body at its current scroll offset
 // via position:fixed and restoring it on close is the robust way to keep
 // the "return to the exact scroll position" promise.
+// Reentrant: the image lightbox can now open on top of the category
+// overlay (e.g. clicking a photo inside Venus Sucks' gallery), so two
+// independent callers may both want the body locked at once. A count
+// rather than a boolean means the lock is only actually released once
+// every caller that asked for it has also asked to release it.
+let bodyScrollLockCount = 0;
+
 function lockBodyScroll() {
+  bodyScrollLockCount++;
+  if (bodyScrollLockCount > 1) return;
   const scrollY = window.scrollY || window.pageYOffset;
   document.body.dataset.scrollLockY = String(scrollY);
   document.body.style.position = "fixed";
@@ -1502,6 +1520,8 @@ function lockBodyScroll() {
 }
 
 function unlockBodyScroll() {
+  bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
+  if (bodyScrollLockCount > 0) return;
   const scrollY = parseInt(document.body.dataset.scrollLockY || "0", 10);
   document.body.style.position = "";
   document.body.style.top = "";
@@ -1514,19 +1534,107 @@ function unlockBodyScroll() {
   window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
 }
 
+// ---------------------------------------------------------------
+// Full-size image lightbox — every real photo on the site (Venus
+// Sucks' gallery, the News strip) is shown small and/or cropped;
+// this is how a visitor sees the actual, uncropped photo. Built once
+// on first use and reused after that. Works whether it's opened from
+// the main page (News) or from on top of the already-open category
+// overlay (Venus Sucks' gallery) - see the reentrant body-scroll lock
+// above and the Escape-key handling in initCategoryOverlay below.
+// ---------------------------------------------------------------
+let lightbox = null;
+let lightboxLastFocused = null;
+
+function ensureLightbox() {
+  if (lightbox) return lightbox;
+
+  const overlay = document.createElement("div");
+  overlay.className = "image-lightbox";
+  overlay.setAttribute("aria-hidden", "true");
+  // Clicking the dimmed backdrop (anywhere but the photo/link) closes it.
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeLightbox();
+  });
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "image-lightbox-close";
+  closeBtn.setAttribute("aria-label", "Close preview");
+  closeBtn.innerHTML = "&times;";
+  closeBtn.addEventListener("click", closeLightbox);
+  overlay.appendChild(closeBtn);
+
+  const figure = document.createElement("div");
+  figure.className = "image-lightbox-figure";
+  const img = document.createElement("img");
+  img.className = "image-lightbox-img";
+  figure.appendChild(img);
+  overlay.appendChild(figure);
+
+  const link = document.createElement("a");
+  link.className = "image-lightbox-link";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.hidden = true;
+  overlay.appendChild(link);
+
+  document.body.appendChild(overlay);
+  lightbox = { overlay, img, link, closeBtn };
+  return lightbox;
+}
+
+function isLightboxOpen() {
+  return !!(lightbox && lightbox.overlay.classList.contains("is-open"));
+}
+
+function openImageLightbox(src, alt, linkInfo) {
+  const lb = ensureLightbox();
+  lightboxLastFocused = document.activeElement;
+  lb.img.src = src;
+  lb.img.alt = alt || "";
+  if (linkInfo && linkInfo.url) {
+    lb.link.href = linkInfo.url;
+    lb.link.textContent = linkInfo.label || "View original";
+    lb.link.hidden = false;
+  } else {
+    lb.link.hidden = true;
+  }
+  lockBodyScroll();
+  lb.overlay.classList.add("is-open");
+  lb.overlay.setAttribute("aria-hidden", "false");
+  lb.closeBtn.focus();
+}
+
+function closeLightbox() {
+  if (!isLightboxOpen()) return;
+  lightbox.overlay.classList.remove("is-open");
+  lightbox.overlay.setAttribute("aria-hidden", "true");
+  unlockBodyScroll();
+  if (lightboxLastFocused && typeof lightboxLastFocused.focus === "function") {
+    lightboxLastFocused.focus();
+  }
+}
+
 function initCategoryOverlay() {
   const closeBtn = document.getElementById("overlayClose");
   if (!closeBtn) return;
   closeBtn.addEventListener("click", closeCategoryOverlay);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      // The lightbox, if open, is always the topmost layer - close it
+      // first regardless of what else might be open underneath.
+      if (isLightboxOpen()) {
+        closeLightbox();
+        return;
+      }
       // If a gallery photo is zoomed in, the first Escape backs out of
       // the zoom rather than closing the whole overlay.
       if (activeGalleryUnzoom && activeGalleryUnzoom()) return;
       closeCategoryOverlay();
       return;
     }
-    if (!activeGalleryStep) return;
+    if (isLightboxOpen() || !activeGalleryStep) return;
     if (e.key === "ArrowRight") activeGalleryStep(1);
     if (e.key === "ArrowLeft") activeGalleryStep(-1);
   });
@@ -1791,20 +1899,18 @@ function renderHighlights() {
 // News strip — a fixed-height horizontal row (see .news-strip in
 // css/style.css) browsed via the two arrow buttons, which just nudge
 // the strip's native scroll position rather than swap panels. Each
-// item links straight out to its Instagram post; there's no in-page
-// viewer for these (unlike the reels playlist), since news items are
-// meant to send visitors to the real post, not play in place.
+// item opens the full-size photo in the image lightbox rather than
+// navigating straight to Instagram - the lightbox itself carries a
+// "View on Instagram" link out to the real post.
 // ---------------------------------------------------------------
 function renderNews() {
   const strip = document.getElementById("newsStrip");
   if (!strip) return;
 
   NEWS.forEach((item) => {
-    const a = document.createElement("a");
+    const a = document.createElement("button");
+    a.type = "button";
     a.className = "news-item";
-    a.href = item.url;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
     a.title = item.caption;
 
     const thumb = document.createElement("div");
@@ -1831,6 +1937,10 @@ function renderNews() {
     caption.className = "news-item-caption";
     caption.textContent = item.caption;
     a.appendChild(caption);
+
+    a.addEventListener("click", () => {
+      openImageLightbox(item.image, item.caption, { url: item.url, label: "View on Instagram" });
+    });
 
     strip.appendChild(a);
   });
