@@ -838,7 +838,7 @@ function buildProjectPanel(item, mediaRole) {
 // shows exactly one panel at a time. Switching tabs only ever
 // toggles which panel is visible — it never scrolls anything.
 // ---------------------------------------------------------------
-function renderTabbedContent(cat, subnavEl, bodyEl) {
+function renderTabbedContent(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   // Each build() returns { el, step, unzoom } — step/unzoom are only
   // present for interactive panels (the reels playlist viewer) and are
   // rewired into the global keydown handler whenever that tab becomes
@@ -874,14 +874,20 @@ function renderTabbedContent(cat, subnavEl, bodyEl) {
     return btn;
   });
 
+  let initializing = true;
   function showTab(i) {
     panels.forEach((panel, j) => { panel.hidden = j !== i; });
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === i));
     activeGalleryStep = built[i].step || null;
     activeGalleryUnzoom = built[i].unzoom || null;
+    if (onTabChange) onTabChange(slugify(tabs[i].label), initializing);
   }
 
-  showTab(0);
+  const startIndex = initialTabSlug
+    ? Math.max(0, tabs.findIndex((t) => slugify(t.label) === initialTabSlug))
+    : 0;
+  showTab(startIndex);
+  initializing = false;
 }
 
 // ---------------------------------------------------------------
@@ -1099,20 +1105,26 @@ function buildSocialReelsPanel(items) {
 // ---------------------------------------------------------------
 // Full-screen category overlay — open/close + internal subnav.
 // This is a plain fixed-position panel toggled via a CSS class; it
-// never touches the URL hash or calls scrollIntoView on the page
-// itself, so opening/closing it never scrolls the main page. The
-// main page's scroll position is preserved automatically because we
-// only freeze it (overflow: hidden) rather than moving it.
+// never calls scrollIntoView on the page itself, so opening/closing
+// it never scrolls the main page. The main page's scroll position is
+// preserved automatically because we only freeze it rather than
+// moving it. The open category and active sub-tab ARE reflected in
+// the URL hash (see the routing helpers below openCategoryOverlay)
+// so a refresh or a shared link lands back on the same view.
 // ---------------------------------------------------------------
 let overlayLastFocused = null;
+let overlayOpenedViaPush = false;
 
-function openCategoryOverlay(categoryId, triggerEl) {
+function openCategoryOverlay(categoryId, triggerEl, options = {}) {
   const cat = CATEGORIES.find((c) => c.id === categoryId);
-  if (!cat) return;
+  const overlay = document.getElementById("categoryOverlay");
+  if (!cat || !overlay) return;
+
+  const { tabSlug = null, viaHistory = false } = options;
 
   overlayLastFocused = triggerEl || document.activeElement;
 
-  const overlay = document.getElementById("categoryOverlay");
+  const wasOpen = overlay.classList.contains("is-open");
   const indexEl = document.getElementById("overlayIndex");
   const titleEl = document.getElementById("overlayTitle");
   const descEl = document.getElementById("overlayDesc");
@@ -1135,31 +1147,59 @@ function openCategoryOverlay(categoryId, triggerEl) {
   activeGalleryStep = null;
   activeGalleryUnzoom = null;
 
+  // Tracks whichever sub-tab ends up active once rendering settles
+  // (a requested tabSlug that doesn't match anything falls back to
+  // the first tab), so the hash we push below reflects reality. The
+  // initial call (isInitial) only records that slug — it must NOT
+  // write history itself, since that would replaceState the entry
+  // that was current *before* this open (corrupting whatever the
+  // visitor was on) rather than the new entry pushed further down.
+  let resolvedTabSlug = tabSlug;
+  const onTabChange = (slug, isInitial) => {
+    resolvedTabSlug = slug;
+    if (isInitial) return;
+    updateOverlayHash(categoryId, slug, { replace: true });
+  };
+
   if (cat.type === "gallery") {
     // Photography: a dedicated swipe/zoom photo viewer, not the
     // standard work-grid. renderGallery builds both the subnav pills
     // (series switcher) and the body itself.
-    renderGallery(cat, subnavEl, bodyEl);
+    renderGallery(cat, subnavEl, bodyEl, tabSlug, onTabChange);
   } else {
     // Every other category: true tab isolation. Clicking a subnav
     // pill (one per project, or per subsection for grouped
     // categories like Editing) shows only that panel and hides the
     // rest — no scrolling involved.
-    renderTabbedContent(cat, subnavEl, bodyEl);
+    renderTabbedContent(cat, subnavEl, bodyEl, tabSlug, onTabChange);
   }
 
-  lockBodyScroll();
+  // Only freeze the page on a genuine closed-to-open transition —
+  // calling this again while already open (e.g. jumping straight
+  // from one category's hash to another) would capture scrollY as 0
+  // and corrupt the position unlockBodyScroll later restores.
+  if (!wasOpen) lockBodyScroll();
 
   overlay.classList.add("is-open");
   overlay.setAttribute("aria-hidden", "false");
   scrollEl.scrollTop = 0;
 
   document.getElementById("overlayClose").focus();
+
+  // A real user-initiated open pushes one new history entry, so the
+  // browser's back button closes the overlay like a modal should.
+  // Everything else (adopting a loaded hash, or self-correcting a
+  // category-only/invalid tab slug onto the entry we already landed
+  // on) replaces in place rather than adding entries.
+  const shouldPush = !viaHistory && !wasOpen;
+  updateOverlayHash(categoryId, resolvedTabSlug, { replace: !shouldPush });
+  overlayOpenedViaPush = shouldPush;
 }
 
-function closeCategoryOverlay() {
+function closeCategoryOverlay(options = {}) {
+  const { viaHistory = false } = options;
   const overlay = document.getElementById("categoryOverlay");
-  if (!overlay.classList.contains("is-open")) return;
+  if (!overlay || !overlay.classList.contains("is-open")) return;
 
   overlay.classList.remove("is-open");
   overlay.setAttribute("aria-hidden", "true");
@@ -1170,6 +1210,86 @@ function closeCategoryOverlay() {
   if (overlayLastFocused && typeof overlayLastFocused.focus === "function") {
     overlayLastFocused.focus();
   }
+
+  if (!viaHistory) {
+    if (overlayOpenedViaPush) {
+      // Undo the entry we pushed on open, so back/forward stays tidy
+      // instead of accumulating a stray "closed" state.
+      history.back();
+    } else {
+      // Opened straight from a hash (initial load/refresh) — there's
+      // no entry of ours to undo, so just drop the hash in place.
+      clearOverlayHash();
+    }
+  }
+  overlayOpenedViaPush = false;
+}
+
+// ---------------------------------------------------------------
+// URL hash routing for the category overlay — lets a refresh, a
+// shared link, or the back button land back on the same category
+// (and sub-tab) a visitor was viewing instead of resetting to the
+// homepage. Format: "#categoryId" or "#categoryId/tab-slug".
+// ---------------------------------------------------------------
+let lastSyncedHash = null;
+
+function slugify(str) {
+  return String(str)
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function buildOverlayHash(categoryId, tabSlug) {
+  return tabSlug ? `#${categoryId}/${tabSlug}` : `#${categoryId}`;
+}
+
+function updateOverlayHash(categoryId, tabSlug, { replace = false } = {}) {
+  const hash = buildOverlayHash(categoryId, tabSlug);
+  const url = location.pathname + location.search + hash;
+  lastSyncedHash = hash;
+  if (replace) history.replaceState(null, "", url);
+  else history.pushState(null, "", url);
+}
+
+function clearOverlayHash() {
+  const url = location.pathname + location.search;
+  lastSyncedHash = "";
+  history.replaceState(null, "", url);
+}
+
+function parseOverlayHash(rawHash) {
+  const hash = (rawHash || "").replace(/^#/, "");
+  if (!hash) return null;
+  const [categoryId, tabSlug] = hash.split("/");
+  if (!categoryId || !CATEGORIES.some((c) => c.id === categoryId)) return null;
+  return { categoryId, tabSlug: tabSlug || null };
+}
+
+function syncOverlayFromHash() {
+  const raw = location.hash;
+  if (raw === lastSyncedHash) return;
+  lastSyncedHash = raw;
+  const parsed = parseOverlayHash(raw);
+  if (parsed) {
+    openCategoryOverlay(parsed.categoryId, null, { tabSlug: parsed.tabSlug, viaHistory: true });
+  } else {
+    closeCategoryOverlay({ viaHistory: true });
+  }
+}
+
+function initOverlayRouting() {
+  // The browser's own scroll-restoration would otherwise fight the
+  // manual position:fixed lock/unlock above: it snapshots window.scrollY
+  // right as pushState/back() run, which reads as ~0 while the body is
+  // locked, so it "restores" the homepage entry to the top of the page
+  // out from under our own restore. Scroll position is fully handled by
+  // lockBodyScroll/unlockBodyScroll, so hand the browser's copy off.
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  window.addEventListener("popstate", syncOverlayFromHash);
+  window.addEventListener("hashchange", syncOverlayFromHash);
+  syncOverlayFromHash();
 }
 
 // Simply setting overflow:hidden to freeze scroll is not reliable across
@@ -1233,7 +1353,7 @@ function initCategoryOverlay() {
 let activeGalleryStep = null;
 let activeGalleryUnzoom = null;
 
-function renderGallery(cat, subnavEl, bodyEl) {
+function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   bodyEl.classList.add("overlay-body--gallery");
 
   // mode: "grid" shows the active series as a gallery of thumbnails
@@ -1383,6 +1503,7 @@ function renderGallery(cat, subnavEl, bodyEl) {
     else renderStage();
   }
 
+  let initializing = true;
   function setSeries(i) {
     const count = cat.series.length;
     state.seriesIndex = ((i % count) + count) % count;
@@ -1390,6 +1511,7 @@ function renderGallery(cat, subnavEl, bodyEl) {
     renderCaption();
     setMode("grid");
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
+    if (onTabChange) onTabChange(slugify(cat.series[state.seriesIndex].title), initializing);
   }
 
   // Stepping past the last/first photo of a series rolls over into
@@ -1449,9 +1571,11 @@ function renderGallery(cat, subnavEl, bodyEl) {
   activeGalleryStep = step;
   activeGalleryUnzoom = unzoom;
 
-  renderCaption();
-  setMode("grid");
-  pills[0].classList.add("is-active");
+  const startIndex = initialTabSlug
+    ? Math.max(0, cat.series.findIndex((s) => slugify(s.title) === initialTabSlug))
+    : 0;
+  setSeries(startIndex);
+  initializing = false;
 }
 
 function renderHighlights() {
@@ -1653,6 +1777,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initReveal();
   initMobileNav();
   initNavScrollState();
+  initOverlayRouting();
 
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
