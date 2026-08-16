@@ -1297,6 +1297,7 @@ section {
     ),
     var(--bg-raised);
   border: 1px solid var(--line);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1304,11 +1305,25 @@ section {
   padding: 20px;
 }
 
+/* A real photo (see .project-gallery-main-img) fills the frame edge
+   to edge - the placeholder's centering padding only applies to the
+   placeholder's own text label. */
+.project-gallery-main.has-photo {
+  padding: 0;
+}
+
 .project-gallery-main span {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--bone-faint);
+}
+
+.project-gallery-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .project-gallery-thumbs {
@@ -1321,6 +1336,7 @@ section {
   width: 48px;
   height: 48px;
   flex-shrink: 0;
+  overflow: hidden;
   background:
     repeating-linear-gradient(
       135deg,
@@ -1332,6 +1348,13 @@ section {
     var(--bg-raised);
   border: 1px solid var(--line);
   transition: border-color 0.3s var(--ease);
+}
+
+.project-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .project-gallery-thumb:hover,

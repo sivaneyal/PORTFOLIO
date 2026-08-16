@@ -51,6 +51,7 @@ const CATEGORIES = [
         title: "Venus Sucks",
         year: "2025",
         desc: "Yana is determined to leave her innocent days behind. Together with her sharp and shady friend Sheli, she sets out for an afternoon of mischief at the mall: in search of a blue movie, fast food, and male attention. What begins as a light hearted adventure slowly derails into a series of borderline encounters with strangers, and an unexpected lesson in the praises of the arts of seduction.",
+        photos: ["PHOTOS/1.jpg", "PHOTOS/2.jpg", "PHOTOS/3.jpg"],
         screenings: [
           { year: "2025", name: "COLIFFE, COLiseum International Film Festival", url: "https://coliffe.it/en/international-short-films-2025-en" },
           { year: "2025", name: "Haifa Film Festival", url: "https://www.haifaff.co.il/סרטים/12096/חשיפה_ראשונה_-_קולנוע_קצר" },
@@ -778,20 +779,48 @@ function buildProjectSection(label, text) {
 }
 
 // ---------------------------------------------------------------
-// Small image gallery for a single project: a main placeholder frame
-// plus a row of thumbnails; clicking a thumbnail swaps the main
-// frame's label. Placeholder-only until real photos are supplied.
+// Small image gallery for a single project: a main frame plus a row
+// of thumbnails; clicking a thumbnail swaps the main frame. Pass a
+// `photos` array of real image paths once they exist for a project
+// (e.g. Directing's Venus Sucks); anything else (a bare count, or no
+// photos yet) falls back to the placeholder-frame look this always
+// had, with no other code changes needed when real photos do land.
 // ---------------------------------------------------------------
-function buildProjectGallery(count, title) {
+function buildProjectGallery(photos, title) {
+  const realPhotos = Array.isArray(photos) ? photos : null;
+  const count = realPhotos ? realPhotos.length : photos;
+
   const wrap = document.createElement("div");
   wrap.className = "project-gallery";
 
   const main = document.createElement("div");
   main.className = "project-gallery-main";
-  const mainLabel = document.createElement("span");
-  mainLabel.textContent = `Image Placeholder - ${title} (1/${count})`;
-  main.appendChild(mainLabel);
   wrap.appendChild(main);
+
+  function showPlaceholder(i) {
+    main.classList.remove("has-photo");
+    main.innerHTML = "";
+    const label = document.createElement("span");
+    label.textContent = `Image Placeholder - ${title} (${i + 1}/${count})`;
+    main.appendChild(label);
+  }
+
+  function showPhoto(i) {
+    main.classList.add("has-photo");
+    main.innerHTML = "";
+    const img = document.createElement("img");
+    img.className = "project-gallery-main-img";
+    img.src = realPhotos[i];
+    img.alt = `${title} - production still ${i + 1} of ${count}`;
+    img.loading = "lazy";
+    // A missing/renamed file falls back to the placeholder frame
+    // instead of a broken-image icon, same pattern used elsewhere.
+    img.addEventListener("error", () => showPlaceholder(i), { once: true });
+    main.appendChild(img);
+  }
+
+  const showSlide = realPhotos ? showPhoto : showPlaceholder;
+  showSlide(0);
 
   if (count > 1) {
     const thumbs = document.createElement("div");
@@ -801,8 +830,16 @@ function buildProjectGallery(count, title) {
       t.type = "button";
       t.className = "project-gallery-thumb" + (i === 0 ? " is-active" : "");
       t.setAttribute("aria-label", `View image ${i + 1} of ${count}`);
+      if (realPhotos) {
+        const timg = document.createElement("img");
+        timg.src = realPhotos[i];
+        timg.alt = "";
+        timg.loading = "lazy";
+        timg.addEventListener("error", () => timg.remove(), { once: true });
+        t.appendChild(timg);
+      }
       t.addEventListener("click", () => {
-        mainLabel.textContent = `Image Placeholder - ${title} (${i + 1}/${count})`;
+        showSlide(i);
         thumbs.querySelectorAll(".project-gallery-thumb").forEach((el) => el.classList.remove("is-active"));
         t.classList.add("is-active");
       });
@@ -830,7 +867,7 @@ function buildProjectPanel(item, mediaRole) {
   // curated website's screenshot via a link.thumbnail below) instead
   // of an actual film/photo shoot to gallery-ize.
   if (item.photoCount !== 0) {
-    el.appendChild(buildProjectGallery(item.photoCount || 3, item.title));
+    el.appendChild(buildProjectGallery(item.photos || item.photoCount || 3, item.title));
   }
 
   const info = document.createElement("div");
