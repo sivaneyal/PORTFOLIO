@@ -318,6 +318,32 @@ const HIGHLIGHTS = [
   { title: "Untitled Exhibition", category: "Curation", year: "2023" },
 ];
 
+// Chronological, oldest first (see renderNews) - each item's
+// thumbnail is a live screenshot of its Instagram post (see
+// buildScreenshotThumbnailUrl), not a hand-picked image.
+const NEWS = [
+  {
+    caption: "Digital Diary screening at Berkshire Film Festival, MA (30.5.24) and Short Shorts Film Festival, Tokyo (16.6.24).",
+    url: "https://www.instagram.com/p/C7jG-pBtLfnjfGaKDi01v--2uoyXHLtk5kIckg0/",
+  },
+  {
+    caption: "Behind the scenes, Sun's Too Hot.",
+    url: "https://www.instagram.com/p/CebaZxytswf/",
+  },
+  {
+    caption: "Behind the scenes, Venus Sucks.",
+    url: "https://www.instagram.com/p/DLzLDzhosUp/",
+  },
+  {
+    caption: "Chezyonot, a small local film festival I curated.",
+    url: "https://www.instagram.com/p/DLmkKapIUv1/",
+  },
+  {
+    caption: "An event I co-curated with intangible cinema project.",
+    url: "https://www.instagram.com/p/DO1K0NmCPat/",
+  },
+];
+
 // ---------------------------------------------------------------
 // Detect whether a URL is a Vimeo / YouTube / Google Drive video and,
 // if so, return the platform + a src URL suitable for an <iframe>.
@@ -370,6 +396,17 @@ function parseEmbedUrl(url) {
   }
 
   return null;
+}
+
+// ---------------------------------------------------------------
+// A live screenshot of a page, via a free (no API key) screenshot
+// service - same approach used for the Curation website previews
+// (see the "curation" category's link.thumbnail values), just
+// computed on the fly here instead of hand-set per item, since every
+// News item's thumbnail is derived the same way from its own URL.
+// ---------------------------------------------------------------
+function buildScreenshotThumbnailUrl(url, width = 400) {
+  return `https://image.thum.io/get/width/${width}/${url}`;
 }
 
 // ---------------------------------------------------------------
@@ -1658,6 +1695,79 @@ function renderHighlights() {
 }
 
 // ---------------------------------------------------------------
+// News strip — a fixed-height horizontal row (see .news-strip in
+// css/style.css) browsed via the two arrow buttons, which just nudge
+// the strip's native scroll position rather than swap panels. Each
+// item links straight out to its Instagram post; there's no in-page
+// viewer for these (unlike the reels playlist), since news items are
+// meant to send visitors to the real post, not play in place.
+// ---------------------------------------------------------------
+function renderNews() {
+  const strip = document.getElementById("newsStrip");
+  if (!strip) return;
+
+  NEWS.forEach((item) => {
+    const a = document.createElement("a");
+    a.className = "news-item";
+    a.href = item.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.title = item.caption;
+
+    const thumb = document.createElement("div");
+    thumb.className = "news-item-thumb";
+    const img = document.createElement("img");
+    img.src = buildScreenshotThumbnailUrl(item.url);
+    img.alt = item.caption;
+    img.loading = "lazy";
+    // Screenshot services can fail/rate-limit - fall back to a plain
+    // placeholder instead of a broken-image icon, same pattern used
+    // for the Curation website previews (see buildLinkPreview).
+    img.addEventListener("error", () => {
+      img.remove();
+      thumb.classList.add("is-empty");
+      const ph = document.createElement("span");
+      ph.className = "news-item-thumb-placeholder";
+      ph.textContent = "Preview unavailable";
+      thumb.appendChild(ph);
+    }, { once: true });
+    thumb.appendChild(img);
+    a.appendChild(thumb);
+
+    const caption = document.createElement("span");
+    caption.className = "news-item-caption";
+    caption.textContent = item.caption;
+    a.appendChild(caption);
+
+    strip.appendChild(a);
+  });
+}
+
+function initNewsNav() {
+  const strip = document.getElementById("newsStrip");
+  const prevBtn = document.getElementById("newsPrev");
+  const nextBtn = document.getElementById("newsNext");
+  if (!strip || !prevBtn || !nextBtn) return;
+
+  function step(direction) {
+    strip.scrollBy({ left: strip.clientWidth * 0.9 * direction, behavior: "smooth" });
+  }
+
+  prevBtn.addEventListener("click", () => step(-1));
+  nextBtn.addEventListener("click", () => step(1));
+
+  function updateEdgeState() {
+    const maxScroll = strip.scrollWidth - strip.clientWidth;
+    prevBtn.classList.toggle("is-disabled", strip.scrollLeft <= 4);
+    nextBtn.classList.toggle("is-disabled", strip.scrollLeft >= maxScroll - 4);
+  }
+
+  updateEdgeState();
+  strip.addEventListener("scroll", updateEdgeState, { passive: true });
+  window.addEventListener("resize", updateEdgeState);
+}
+
+// ---------------------------------------------------------------
 // Hero orbit nav — each item is a <button> (no href/anchor at all),
 // so clicking it only ever opens the full-screen overlay via JS.
 // ---------------------------------------------------------------
@@ -1833,6 +1943,8 @@ function initNavScrollState() {
 // ---------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   renderHighlights();
+  renderNews();
+  initNewsNav();
   wireHeroLinks();
   initCategoryOverlay();
   initCursor();

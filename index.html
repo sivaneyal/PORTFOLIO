@@ -234,6 +234,27 @@
     </div>
   </section>
 
+  <!-- ========== NEWS ========== -->
+  <!-- A fixed, compact-height horizontal strip (not a grid/list) —
+       browsed via the arrow buttons (and swipe/trackpad scroll
+       underneath), so the section's height never grows no matter how
+       many items get added later. Rendered dynamically from
+       js/main.js (see the NEWS data array). -->
+  <section class="news" id="news">
+    <div class="section-frame">
+      <p class="section-kicker reveal">News</p>
+    </div>
+    <div class="news-strip-wrap reveal">
+      <button type="button" class="news-nav news-nav--prev" id="newsPrev" aria-label="Previous news items">
+        <span aria-hidden="true">&#8249;</span>
+      </button>
+      <div class="news-strip" id="newsStrip"></div>
+      <button type="button" class="news-nav news-nav--next" id="newsNext" aria-label="Next news items">
+        <span aria-hidden="true">&#8250;</span>
+      </button>
+    </div>
+  </section>
+
   <!-- ========== CONTACT / FOOTER ========== -->
   <footer class="contact" id="contact">
     <div class="section-frame contact-frame">
