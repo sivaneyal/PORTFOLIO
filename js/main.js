@@ -320,35 +320,37 @@ const HIGHLIGHTS = [
 ];
 
 // Chronological, oldest first (see renderNews). Each item links out to
-// its Instagram post, but the thumbnail is a static local image file
-// (image) rather than a live embed/screenshot - those rendered
-// unreliably (a generic Instagram card, not the actual photo). Every
-// item below points at the same placeholder image for now; once real
-// per-item photos are supplied, swap each item's `image` path
-// individually - no other code needs to change.
+// its Instagram post, with a real static image (image) - not a live
+// embed/screenshot, those rendered unreliably (a generic Instagram
+// card, not the actual photo).
 const NEWS = [
   {
-    image: "assets/images/hero-poster.jpg",
+    image: "PHOTOS/NEWS/DIGITAL DIARY POSTER.jpg",
     caption: "Digital Diary screening at Berkshire Film Festival, MA (30.5.24) and Short Shorts Film Festival, Tokyo (16.6.24).",
     url: "https://www.instagram.com/p/C7jG-pBtLfnjfGaKDi01v--2uoyXHLtk5kIckg0/",
   },
   {
-    image: "assets/images/hero-poster.jpg",
+    image: "PHOTOS/NEWS/BTS SUNS TOO HOT.jpg",
     caption: "Behind the scenes, Sun's Too Hot.",
     url: "https://www.instagram.com/p/CebaZxytswf/",
   },
   {
-    image: "assets/images/hero-poster.jpg",
+    image: "PHOTOS/NEWS/VENUS SUCKS BTS.jpg",
     caption: "Behind the scenes, Venus Sucks.",
     url: "https://www.instagram.com/p/DLzLDzhosUp/",
   },
   {
-    image: "assets/images/hero-poster.jpg",
+    image: "PHOTOS/NEWS/HAIFA ANNOUNCMENT.jpg",
+    caption: "Venus Sucks selected for the Haifa Film Festival, 2025.",
+    url: "https://www.instagram.com/p/DOY73CJCHY1/",
+  },
+  {
+    image: "PHOTOS/NEWS/HEZYONOT.png",
     caption: "Chezyonot, a small local film festival I curated.",
     url: "https://www.instagram.com/p/DLmkKapIUv1/",
   },
   {
-    image: "assets/images/hero-poster.jpg",
+    image: "PHOTOS/NEWS/4 MOVIES ABOUT MISSING.png",
     caption: "An event I co-curated with intangible cinema project.",
     url: "https://www.instagram.com/p/DO1K0NmCPat/",
   },
