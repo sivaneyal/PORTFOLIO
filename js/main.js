@@ -121,13 +121,13 @@ const CATEGORIES = [
             title: "Field Trip",
             desc: "Directed and edited by Yehuda Bogomolny. Co-edited with Sivan Eyal. Won first prize at the Israeli Film Festival in Paris 2025, and second place in the short film competition at 'Epos'.",
             links: [{ label: "Watch", url: "https://vimeo.com/730740409?share=copy", password: "GR@31" }],
-            hasScreenerButton: true,
+            photos: ["PHOTOS/EDITOR/SHORT NARRATIVE/Field Trip 1.jpg"],
           },
           {
             title: "Orange Juice",
             desc: "A short film by Yahali Maoz.",
             links: [{ label: "Watch", url: "https://vimeo.com/444188059?share=copy", password: "MaOz#E" }],
-            hasScreenerButton: true,
+            photos: ["PHOTOS/EDITOR/SHORT NARRATIVE/Orange Juice 1.jpg"],
           },
         ],
       },
@@ -138,8 +138,8 @@ const CATEGORIES = [
           {
             title: "Today I Am",
             desc: "By Rotem Amitai. Documented and edited Rotem's workshop with elderly women centered on poetry. The short film combines readings of the works produced in the workshop with documentary footage of the group's unique dynamic.",
-            links: [{ label: "Watch", url: "https://drive.google.com/file/d/1oBrubMnNph92jBJvaMCwtPjvPm-Kt6IS/view?usp=sharing" }],
-            hasScreenerButton: true,
+            links: [{ label: "Watch", url: "https://drive.google.com/file/d/1oBrubMnNph92jBJvaMCwtPjvPm-Kt6IS/view?usp=sharing", screenerButton: true }],
+            photos: ["PHOTOS/EDITOR/SHORT NARRATIVE/Today I Am 1.jpg"],
           },
         ],
       },
@@ -189,8 +189,7 @@ const CATEGORIES = [
             // directly-viewable "anyone with the link" Drive file, so
             // even embedding it behind a label would still show the full
             // performance to anyone. Requests now route through Sivan.
-            links: [{ label: "Request Password", passwordOnly: true }],
-            hasScreenerButton: true,
+            links: [{ label: "Request Screener", passwordOnly: true }],
           },
         ],
       },
@@ -716,7 +715,7 @@ function buildScreenerLink(title) {
 // shared as "anyone with the link can view", where embedding it would
 // just show the content directly with no gate, unlike Vimeo's own
 // password wall on an embedded player. Renders only a locked
-// placeholder and the Request Password button; the real URL is never
+// placeholder and the Request Screener button; the real URL is never
 // put in a link.passwordOnly item's data, so it never ships to the
 // browser and can't be found via view-source either.
 // ---------------------------------------------------------------
@@ -731,11 +730,11 @@ function buildPasswordOnlyMedia(title) {
   thumb.className = "work-thumb";
   const label = document.createElement("span");
   label.className = "work-thumb-label";
-  label.textContent = "Password Protected";
+  label.textContent = "Screener Protected";
   thumb.appendChild(label);
   block.appendChild(thumb);
 
-  block.appendChild(buildPasswordRequestButton(title));
+  block.appendChild(buildScreenerRequestButton(title));
   wrap.appendChild(block);
   return wrap;
 }
@@ -772,7 +771,11 @@ function buildWorkItem(item, mediaRole) {
       }
       const altText = buildMediaAlt(mediaRole || "in", item.title, item.year);
       block.appendChild(buildMediaEmbed(link, item.title, altText));
-      if (link.password) block.appendChild(buildScreenerRequestButton(item.title));
+      // screenerButton: for embeds with no real password gate (e.g.
+      // Today I Am's Drive link) that still want the same "Request
+      // Screener" button shown for password-gated embeds like Field
+      // Trip/Orange Juice.
+      if (link.password || link.screenerButton) block.appendChild(buildScreenerRequestButton(item.title));
       mediaWrap.appendChild(block);
     });
     el.appendChild(mediaWrap);
@@ -805,6 +808,10 @@ function buildWorkItem(item, mediaRole) {
     desc.className = "work-item-desc";
     desc.textContent = item.desc;
     el.appendChild(desc);
+  }
+
+  if (item.photos && item.photos.length) {
+    el.appendChild(buildProjectGallery(item.photos, item.title));
   }
 
   if (plainLinks.length || item.hasScreenerButton) {
