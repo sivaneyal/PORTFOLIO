@@ -1328,12 +1328,40 @@ section {
   padding: 0 16px;
 }
 
+/* A real production still (not the gated video itself, just a
+   non-sensitive still frame) behind the lock overlay - dimmed via a
+   dark scrim so the CSS-drawn padlock/label below stay legible over
+   any photo. .work-thumb already has position:relative/overflow:hidden
+   from the base rule above. */
+.work-thumb-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Above the poster image, below the lock/label - ::before would
+   otherwise paint UNDER the <img> despite the equal z-index, since
+   pseudo-elements are the first box in paint order regardless of when
+   the img was appended in JS. */
+.work-thumb.has-poster::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.72);
+  z-index: 1;
+}
+
 /* A CSS-drawn padlock for password/screener-gated tiles (Field Trip,
    Orange Juice, Today I Am, Biofeedback) - previously these just
    showed the tiny "Screener Protected" label alone in a large empty
    frame, reading as a missing thumbnail rather than a deliberately
    locked one. */
 .work-thumb-locked {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;

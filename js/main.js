@@ -132,13 +132,16 @@ const CATEGORIES = [
             // passwordOnly: the real Vimeo URL/password never ship to the
             // browser at all (see buildPasswordOnlyMedia) - previously
             // embedding the video with its password inline meant anyone
-            // could read the password straight from page source.
+            // could read the password straight from page source. poster
+            // is just a non-sensitive still frame, dimmed behind the lock.
             links: [{ label: "Request Screener", passwordOnly: true }],
+            poster: "PHOTOS/EDITOR/SHORT NARRATIVE/Field Trip 1.jpg",
           },
           {
             title: "Orange Juice",
             desc: "A short film by Yahali Maoz.",
             links: [{ label: "Request Screener", passwordOnly: true }],
+            poster: "PHOTOS/EDITOR/SHORT NARRATIVE/Orange Juice 1.jpg",
           },
         ],
       },
@@ -153,6 +156,7 @@ const CATEGORIES = [
             // an "anyone with the link" Drive share is viewable by anyone
             // who reads it out of the page source, same issue as Biofeedback.
             links: [{ label: "Request Screener", passwordOnly: true }],
+            poster: "PHOTOS/EDITOR/SHORT NARRATIVE/Today I Am 1.jpg",
           },
         ],
       },
@@ -203,6 +207,7 @@ const CATEGORIES = [
             // even embedding it behind a label would still show the full
             // performance to anyone. Requests now route through Sivan.
             links: [{ label: "Request Screener", passwordOnly: true }],
+            poster: "PHOTOS/EDITOR/PERFORMANCE DOCUMENTATION/Biofeedback.jpg",
           },
         ],
       },
@@ -765,7 +770,7 @@ function buildScreenerLink(title) {
 // put in a link.passwordOnly item's data, so it never ships to the
 // browser and can't be found via view-source either.
 // ---------------------------------------------------------------
-function buildPasswordOnlyMedia(title) {
+function buildPasswordOnlyMedia(title, poster) {
   const wrap = document.createElement("div");
   wrap.className = "work-item-media";
 
@@ -773,7 +778,24 @@ function buildPasswordOnlyMedia(title) {
   block.className = "work-item-media-block";
 
   const thumb = document.createElement("div");
-  thumb.className = "work-thumb";
+  thumb.className = "work-thumb" + (poster ? " has-poster" : "");
+
+  // poster: a real production still behind the lock overlay, dimmed so
+  // the "Screener Protected" label/icon stay legible over it - not the
+  // real video, just a still frame that isn't sensitive on its own.
+  if (poster) {
+    const img = document.createElement("img");
+    img.className = "work-thumb-poster";
+    img.src = poster;
+    img.alt = "";
+    img.loading = "lazy";
+    img.addEventListener("error", () => {
+      img.remove();
+      thumb.classList.remove("has-poster");
+    }, { once: true });
+    thumb.appendChild(img);
+  }
+
   const lockWrap = document.createElement("div");
   lockWrap.className = "work-thumb-locked";
   const lock = document.createElement("span");
@@ -809,7 +831,7 @@ function buildWorkItem(item, mediaRole) {
   const plainLinks = links.filter((l) => !l.passwordOnly && !parseEmbedUrl(l.url));
 
   if (passwordOnlyLinks.length) {
-    el.appendChild(buildPasswordOnlyMedia(item.title));
+    el.appendChild(buildPasswordOnlyMedia(item.title, item.poster));
   } else if (mediaLinks.length) {
     const mediaWrap = document.createElement("div");
     mediaWrap.className = "work-item-media";
