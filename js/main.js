@@ -70,7 +70,7 @@ const CATEGORIES = [
       {
         title: "WIN",
         year: "2026",
-        desc: "A bystander passes through Jerusalem, Israel, where barbarism and joy are one, winning their way through destruction. Experimental documentary.",
+        desc: "A bystander passes through Jerusalem, Israel, where barbarism and joy are one, winning their way through destruction. Experimental short documentary.",
         photos: [
           "PHOTOS/WIN/WIN 1.jpg",
           "PHOTOS/WIN/WIN 2.jpg",
@@ -94,13 +94,19 @@ const CATEGORIES = [
       },
       {
         title: "Sun's Too Hot",
+        year: "2023",
         desc: "Soli, a young activist, meets Ameline in an anarchist eco rebel camp in Jerusalem. Soli's search for tenderness and intimacy leads her to guide Ameline through her existential struggle, living in a toxic world.",
         photos: [
+          "PHOTOS/SUNSTOOHOT/banana 2shot happy.jpg",
           "PHOTOS/SUNSTOOHOT/night fire soli.jpg",
           "PHOTOS/SUNSTOOHOT/1.jpg",
           "PHOTOS/SUNSTOOHOT/kiss with hands.jpg",
           "PHOTOS/SUNSTOOHOT/soli pure joy cu.jpg",
-          "PHOTOS/SUNSTOOHOT/banana 2shot happy.jpg",
+          { video: "https://geo.dailymotion.com/player.html?video=x8qwsta" },
+        ],
+        screenings: [
+          { linkLabel: "TLVFest 23", linkUrl: "https://www.tlvfest.com/fest_movie/arava-shrt-heb/" },
+          "Winner, Best Long Short at the Milwaukee Illuminate Film Festival, December 16, 2023",
         ],
         links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/suns-too-hot/" }],
         hasScreenerButton: true,
@@ -429,6 +435,15 @@ function parseEmbedUrl(url) {
         thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
       };
     }
+  }
+
+  if (host === "dailymotion.com" || host === "geo.dailymotion.com") {
+    let id = u.searchParams.get("video");
+    if (!id) {
+      const m = u.pathname.match(/\/video\/([^/_]+)/);
+      if (m) id = m[1];
+    }
+    if (id) return { platform: "dailymotion", embedUrl: `https://www.dailymotion.com/embed/video/${id}` };
   }
 
   if (host === "drive.google.com") {
@@ -867,6 +882,10 @@ function buildProjectSection(label, text) {
 function buildProjectGallery(photos, title) {
   const realPhotos = Array.isArray(photos) ? photos : null;
   const count = realPhotos ? realPhotos.length : photos;
+  // A slide is a video (not a photo) when it's an object with a
+  // .video url instead of a plain path string - see Sun's Too Hot's
+  // teaser, mixed in alongside its production stills.
+  const isVideoSlide = (i) => realPhotos && realPhotos[i] && typeof realPhotos[i] === "object";
 
   const wrap = document.createElement("div");
   wrap.className = "project-gallery";
@@ -904,7 +923,19 @@ function buildProjectGallery(photos, title) {
     main.appendChild(btn);
   }
 
-  const showSlide = realPhotos ? showPhoto : showPlaceholder;
+  function showVideo(i) {
+    main.classList.add("has-photo");
+    main.innerHTML = "";
+    const altText = `${title} - teaser`;
+    const embed = buildMediaEmbed({ url: realPhotos[i].video }, title, altText);
+    if (embed) main.appendChild(embed);
+  }
+
+  function showSlide(i) {
+    if (!realPhotos) return showPlaceholder(i);
+    if (isVideoSlide(i)) return showVideo(i);
+    return showPhoto(i);
+  }
   showSlide(0);
 
   if (count > 1) {
@@ -914,14 +945,22 @@ function buildProjectGallery(photos, title) {
       const t = document.createElement("button");
       t.type = "button";
       t.className = "project-gallery-thumb" + (i === 0 ? " is-active" : "");
-      t.setAttribute("aria-label", `View image ${i + 1} of ${count}`);
-      if (realPhotos) {
-        const timg = document.createElement("img");
-        timg.src = realPhotos[i];
-        timg.alt = "";
-        timg.loading = "lazy";
-        timg.addEventListener("error", () => timg.remove(), { once: true });
-        t.appendChild(timg);
+      if (realPhotos && isVideoSlide(i)) {
+        t.classList.add("is-video");
+        t.setAttribute("aria-label", "Play teaser video");
+        const play = document.createElement("span");
+        play.className = "project-gallery-thumb-play";
+        t.appendChild(play);
+      } else {
+        t.setAttribute("aria-label", `View image ${i + 1} of ${count}`);
+        if (realPhotos) {
+          const timg = document.createElement("img");
+          timg.src = realPhotos[i];
+          timg.alt = "";
+          timg.loading = "lazy";
+          timg.addEventListener("error", () => timg.remove(), { once: true });
+          t.appendChild(timg);
+        }
       }
       t.addEventListener("click", () => {
         showSlide(i);

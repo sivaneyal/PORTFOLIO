@@ -1469,6 +1469,25 @@ section {
   border-color: var(--accent);
 }
 
+.project-gallery-thumb.is-video {
+  position: relative;
+}
+
+.project-gallery-thumb-play {
+  position: absolute;
+  top: 50%;
+  left: 55%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 6px 0 6px 10px;
+  border-color: transparent transparent transparent var(--bone-faint);
+}
+
+.project-gallery-thumb.is-video:hover .project-gallery-thumb-play,
+.project-gallery-thumb.is-video.is-active .project-gallery-thumb-play {
+  border-left-color: var(--accent);
+}
+
 .project-header {
   display: flex;
   align-items: baseline;
