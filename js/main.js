@@ -661,36 +661,54 @@ function buildInstagramEmbed(url) {
 }
 
 // ---------------------------------------------------------------
+// Shared builder for the mailto links/buttons below - each caller
+// supplies the visible label, CSS class, and mail subject/body.
+// sivaneyal23@gmail.com, not hello@sivaneyal.com - the custom domain
+// address isn't set up yet, so every contact point on the site routes
+// to the Gmail address until that changes.
+// ---------------------------------------------------------------
+function buildMailtoLink(className, text, subject, body) {
+  const a = document.createElement("a");
+  a.className = className;
+  a.href = `mailto:sivaneyal23@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  a.textContent = text;
+  return a;
+}
+
 // Replaces displaying a project's password in plain text: a mailto
 // link pre-filled with a request for that specific project, so Sivan
 // can personally decide whether to send it.
-// ---------------------------------------------------------------
 function buildPasswordRequestButton(title) {
-  const btn = document.createElement("a");
-  btn.className = "request-password-btn";
-  const subject = `Password Request - ${title}`;
-  const body = `Hi Sivan,\n\nCould you send me the password to watch "${title}"?\n\nThanks!`;
-  // sivaneyal23@gmail.com, not hello@sivaneyal.com - the custom domain
-  // address isn't set up yet, so every contact point on the site routes
-  // to the Gmail address until that changes.
-  btn.href = `mailto:sivaneyal23@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  btn.textContent = "Request Password";
-  return btn;
+  return buildMailtoLink(
+    "request-password-btn",
+    "Request Password",
+    `Password Request - ${title}`,
+    `Hi Sivan,\n\nCould you send me the password to watch "${title}"?\n\nThanks!`
+  );
 }
 
-// ---------------------------------------------------------------
+// Same mailto content as buildScreenerLink, but styled as a button -
+// for projects like Field Trip/Orange Juice that already show a
+// password-style button next to their embed (see buildWorkItem).
+function buildScreenerRequestButton(title) {
+  return buildMailtoLink(
+    "request-password-btn",
+    "Request Screener",
+    `Screener Request - ${title}`,
+    `Hi Sivan,\n\nCould you send me a screener for "${title}"?\n\nThanks!`
+  );
+}
+
 // A plain text link (not a button) alongside a project's other
 // bottom-of-panel links like Letterboxd/Watch - opens a pre-filled
 // mailto asking Sivan for a private screener.
-// ---------------------------------------------------------------
 function buildScreenerLink(title) {
-  const a = document.createElement("a");
-  a.className = "work-item-link";
-  const subject = `Screener Request - ${title}`;
-  const body = `Hi Sivan,\n\nCould you send me a screener for "${title}"?\n\nThanks!`;
-  a.href = `mailto:sivaneyal23@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  a.textContent = "Ask for a Screener";
-  return a;
+  return buildMailtoLink(
+    "work-item-link",
+    "Ask for a Screener",
+    `Screener Request - ${title}`,
+    `Hi Sivan,\n\nCould you send me a screener for "${title}"?\n\nThanks!`
+  );
 }
 
 // ---------------------------------------------------------------
@@ -754,7 +772,7 @@ function buildWorkItem(item, mediaRole) {
       }
       const altText = buildMediaAlt(mediaRole || "in", item.title, item.year);
       block.appendChild(buildMediaEmbed(link, item.title, altText));
-      if (link.password) block.appendChild(buildPasswordRequestButton(item.title));
+      if (link.password) block.appendChild(buildScreenerRequestButton(item.title));
       mediaWrap.appendChild(block);
     });
     el.appendChild(mediaWrap);
