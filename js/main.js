@@ -65,6 +65,7 @@ const CATEGORIES = [
           ["Subtitles", "Hebrew, English"],
         ],
         links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/venus-sucks/" }],
+        hasScreenerButton: true,
       },
       {
         title: "WIN",
@@ -89,8 +90,6 @@ const CATEGORIES = [
         // unlike Venus Sucks - omit the section rather than show a
         // "Technical Details - TBD" placeholder that will never fill in.
         hideTechnicalDetails: true,
-        // "Ask for a Screener" mailto button (see buildScreenerRequestButton) -
-        // there's no embedded video link to gate behind a password here.
         hasScreenerButton: true,
       },
       {
@@ -104,6 +103,7 @@ const CATEGORIES = [
           "PHOTOS/SUNSTOOHOT/banana 2shot happy.jpg",
         ],
         links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/suns-too-hot/" }],
+        hasScreenerButton: true,
       },
     ],
   },
@@ -119,13 +119,15 @@ const CATEGORIES = [
         items: [
           {
             title: "Field Trip",
-            desc: "Directed by Yehuda Bogomolny. Co-edited with Sivan Eyal. Won first prize at the Israeli Film Festival in Paris 2025, and second place in the short film competition at \"Epos\".",
+            desc: "Directed and edited by Yehuda Bogomolny. Co-edited with Sivan Eyal. Won first prize at the Israeli Film Festival in Paris 2025, and second place in the short film competition at 'Epos'.",
             links: [{ label: "Watch", url: "https://vimeo.com/730740409?share=copy", password: "GR@31" }],
+            hasScreenerButton: true,
           },
           {
             title: "Orange Juice",
             desc: "A short film by Yahali Maoz.",
             links: [{ label: "Watch", url: "https://vimeo.com/444188059?share=copy", password: "MaOz#E" }],
+            hasScreenerButton: true,
           },
         ],
       },
@@ -137,6 +139,7 @@ const CATEGORIES = [
             title: "Today I Am",
             desc: "By Rotem Amitai. Documented and edited Rotem's workshop with elderly women centered on poetry. The short film combines readings of the works produced in the workshop with documentary footage of the group's unique dynamic.",
             links: [{ label: "Watch", url: "https://drive.google.com/file/d/1oBrubMnNph92jBJvaMCwtPjvPm-Kt6IS/view?usp=sharing" }],
+            hasScreenerButton: true,
           },
         ],
       },
@@ -187,6 +190,7 @@ const CATEGORIES = [
             // even embedding it behind a label would still show the full
             // performance to anyone. Requests now route through Sivan.
             links: [{ label: "Request Password", passwordOnly: true }],
+            hasScreenerButton: true,
           },
         ],
       },
@@ -675,18 +679,18 @@ function buildPasswordRequestButton(title) {
 }
 
 // ---------------------------------------------------------------
-// Same mailto-button pattern as buildPasswordRequestButton, for
-// projects with no embedded video link at all to gate a password
-// behind (e.g. WIN) - reuses the same .request-password-btn styling.
+// A plain text link (not a button) alongside a project's other
+// bottom-of-panel links like Letterboxd/Watch - opens a pre-filled
+// mailto asking Sivan for a private screener.
 // ---------------------------------------------------------------
-function buildScreenerRequestButton(title) {
-  const btn = document.createElement("a");
-  btn.className = "request-password-btn";
+function buildScreenerLink(title) {
+  const a = document.createElement("a");
+  a.className = "work-item-link";
   const subject = `Screener Request - ${title}`;
   const body = `Hi Sivan,\n\nCould you send me a screener for "${title}"?\n\nThanks!`;
-  btn.href = `mailto:sivaneyal23@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  btn.textContent = "Ask for a Screener";
-  return btn;
+  a.href = `mailto:sivaneyal23@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  a.textContent = "Ask for a Screener";
+  return a;
 }
 
 // ---------------------------------------------------------------
@@ -785,7 +789,7 @@ function buildWorkItem(item, mediaRole) {
     el.appendChild(desc);
   }
 
-  if (plainLinks.length) {
+  if (plainLinks.length || item.hasScreenerButton) {
     const linksWrap = document.createElement("div");
     linksWrap.className = "work-item-links";
     plainLinks.forEach((link) => {
@@ -797,6 +801,7 @@ function buildWorkItem(item, mediaRole) {
       a.textContent = link.label;
       linksWrap.appendChild(a);
     });
+    if (item.hasScreenerButton) linksWrap.appendChild(buildScreenerLink(item.title));
     el.appendChild(linksWrap);
   }
 
@@ -981,8 +986,6 @@ function buildProjectPanel(item, mediaRole) {
 
   info.appendChild(buildProjectSection("Synopsis", item.desc));
 
-  if (item.hasScreenerButton) info.appendChild(buildScreenerRequestButton(item.title));
-
   const screeningsLabel = item.screeningsLabel || "Awards / Screening History";
   if (item.screenings && item.screenings.length) {
     const section = document.createElement("div");
@@ -1063,7 +1066,7 @@ function buildProjectPanel(item, mediaRole) {
     }
   }
 
-  if (textLinks.length) {
+  if (textLinks.length || item.hasScreenerButton) {
     const linksWrap = document.createElement("div");
     linksWrap.className = "work-item-links";
     textLinks.forEach((link) => {
@@ -1075,6 +1078,7 @@ function buildProjectPanel(item, mediaRole) {
       a.textContent = link.label;
       linksWrap.appendChild(a);
     });
+    if (item.hasScreenerButton) linksWrap.appendChild(buildScreenerLink(item.title));
     info.appendChild(linksWrap);
   }
 
