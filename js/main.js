@@ -51,7 +51,7 @@ const CATEGORIES = [
         title: "Venus Sucks",
         year: "2025",
         desc: "Yana is determined to leave her innocent days behind. Together with her sharp and shady friend Sheli, she sets out for an afternoon of mischief at the mall: in search of a blue movie, fast food, and male attention. What begins as a light hearted adventure slowly derails into a series of borderline encounters with strangers, and an unexpected lesson in the praises of the arts of seduction.",
-        photos: ["PHOTOS/1.jpg", "PHOTOS/2.jpg", "PHOTOS/3.jpg"],
+        photos: ["PHOTOS/VENUS SUCKS/1.jpg", "PHOTOS/VENUS SUCKS/2.jpg", "PHOTOS/VENUS SUCKS/3.jpg"],
         screenings: [
           { year: "2025", name: "COLIFFE, COLiseum International Film Festival", url: "https://coliffe.it/en/international-short-films-2025-en" },
           { year: "2025", name: "Haifa Film Festival", url: "https://www.haifaff.co.il/סרטים/12096/חשיפה_ראשונה_-_קולנוע_קצר" },
@@ -74,6 +74,11 @@ const CATEGORIES = [
       {
         title: "Sun's Too Hot",
         desc: "Soli, a young activist, meets Ameline in an anarchist eco rebel camp in Jerusalem. Soli's search for tenderness and intimacy leads her to guide Ameline through her existential struggle, living in a toxic world.",
+        // Only 2 of the 5 photos uploaded for this film actually made
+        // it through intact - the other 3 ("banana 2shot happy",
+        // "kiss with hands", "soli pure joy cu") arrived as empty/
+        // corrupt files and need to be re-uploaded.
+        photos: ["PHOTOS/SUNSTOOHOT/night fire soli.jpg", "PHOTOS/SUNSTOOHOT/1.jpg"],
         links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/suns-too-hot/" }],
       },
     ],
