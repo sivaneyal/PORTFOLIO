@@ -126,14 +126,12 @@ const CATEGORIES = [
           {
             title: "Field Trip",
             desc: "Directed and edited by Yehuda Bogomolny. Co-edited with Sivan Eyal. Won first prize at the Israeli Film Festival in Paris 2025, and second place in the short film competition at 'Epos'.",
-            links: [{ label: "Watch", url: "https://vimeo.com/730740409?share=copy", password: "GR@31" }],
-            photos: ["PHOTOS/EDITOR/SHORT NARRATIVE/Field Trip 1.jpg"],
+            links: [{ label: "Watch", url: "https://vimeo.com/730740409?share=copy", password: "GR@31", thumbnail: "PHOTOS/EDITOR/SHORT NARRATIVE/Field Trip 1.jpg" }],
           },
           {
             title: "Orange Juice",
             desc: "A short film by Yahali Maoz.",
-            links: [{ label: "Watch", url: "https://vimeo.com/444188059?share=copy", password: "MaOz#E" }],
-            photos: ["PHOTOS/EDITOR/SHORT NARRATIVE/Orange Juice 1.jpg"],
+            links: [{ label: "Watch", url: "https://vimeo.com/444188059?share=copy", password: "MaOz#E", thumbnail: "PHOTOS/EDITOR/SHORT NARRATIVE/Orange Juice 1.jpg" }],
           },
         ],
       },
@@ -144,8 +142,7 @@ const CATEGORIES = [
           {
             title: "Today I Am",
             desc: "By Rotem Amitai. Documented and edited Rotem's workshop with elderly women centered on poetry. The short film combines readings of the works produced in the workshop with documentary footage of the group's unique dynamic.",
-            links: [{ label: "Watch", url: "https://drive.google.com/file/d/1oBrubMnNph92jBJvaMCwtPjvPm-Kt6IS/view?usp=sharing", screenerButton: true }],
-            photos: ["PHOTOS/EDITOR/SHORT NARRATIVE/Today I Am 1.jpg"],
+            links: [{ label: "Watch", url: "https://drive.google.com/file/d/1oBrubMnNph92jBJvaMCwtPjvPm-Kt6IS/view?usp=sharing", screenerButton: true, thumbnail: "PHOTOS/EDITOR/SHORT NARRATIVE/Today I Am 1.jpg" }],
           },
         ],
       },
@@ -310,17 +307,17 @@ const CATEGORIES = [
       {
         title: "Shablulim Films Streaming Platform",
         desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
-        // No real production photos for a curated website - the site's
-        // own screenshot (via link.thumbnail below) is the visual, so
-        // the generic placeholder photo gallery is turned off.
+        // No production photos for a curated website - a real, hand-
+        // picked site screenshot (link.thumbnail below) is the visual,
+        // so the generic placeholder photo gallery is turned off.
         photoCount: 0,
-        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/", thumbnail: "https://image.thum.io/get/width/1200/https://shablulimfilm.com" }],
+        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/", thumbnail: "PHOTOS/CURATION/Shablulim Films.jpg" }],
       },
       {
         title: "Content Editing - Outline Festival 2025",
         desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
         photoCount: 0,
-        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/", thumbnail: "https://image.thum.io/get/width/1200/https://outlinejerusalem.com" }],
+        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/", thumbnail: "PHOTOS/CURATION/Outline Festival 2025.jpg" }],
       },
       { title: "Untitled Screening Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
       { title: "Untitled Exhibition", year: "2022", desc: "Placeholder description of the project, format, and context." },
