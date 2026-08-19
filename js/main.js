@@ -765,9 +765,9 @@ function buildScreenerLink(title) {
 // For content that isn't safe to embed at all — e.g. a Drive file
 // shared as "anyone with the link can view", where embedding it would
 // just show the content directly with no gate, unlike Vimeo's own
-// password wall on an embedded player. Renders only a locked
-// placeholder and the Request Screener button; the real URL is never
-// put in a link.passwordOnly item's data, so it never ships to the
+// password wall on an embedded player. Renders a plain poster still
+// (if any) and the Request Screener button; the real URL is never put
+// in a link.passwordOnly item's data, so it never ships to the
 // browser and can't be found via view-source either.
 // ---------------------------------------------------------------
 function buildPasswordOnlyMedia(title, poster) {
@@ -780,9 +780,10 @@ function buildPasswordOnlyMedia(title, poster) {
   const thumb = document.createElement("div");
   thumb.className = "work-thumb" + (poster ? " has-poster" : "");
 
-  // poster: a real production still behind the lock overlay, dimmed so
-  // the "Screener Protected" label/icon stay legible over it - not the
-  // real video, just a still frame that isn't sensitive on its own.
+  // poster: a real production still, shown plain with no lock icon or
+  // label over it - not the real video, just a still frame that isn't
+  // sensitive on its own. With no poster this just falls back to the
+  // plain textured placeholder frame.
   if (poster) {
     const img = document.createElement("img");
     img.className = "work-thumb-poster";
@@ -796,17 +797,6 @@ function buildPasswordOnlyMedia(title, poster) {
     thumb.appendChild(img);
   }
 
-  const lockWrap = document.createElement("div");
-  lockWrap.className = "work-thumb-locked";
-  const lock = document.createElement("span");
-  lock.className = "work-thumb-lock";
-  lock.setAttribute("aria-hidden", "true");
-  lockWrap.appendChild(lock);
-  const label = document.createElement("span");
-  label.className = "work-thumb-label";
-  label.textContent = "Screener Protected";
-  lockWrap.appendChild(label);
-  thumb.appendChild(lockWrap);
   block.appendChild(thumb);
 
   block.appendChild(buildScreenerRequestButton(title));
