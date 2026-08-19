@@ -1283,6 +1283,7 @@ section {
    button replaces displaying the password itself, routing the
    request through Sivan instead. */
 .request-password-btn {
+  display: inline-block;
   align-self: flex-start;
   font-size: 0.76rem;
   text-transform: uppercase;

@@ -69,7 +69,29 @@ const CATEGORIES = [
       {
         title: "WIN",
         year: "2026",
-        desc: "Experimental video art.",
+        desc: "A bystander passes through Jerusalem, Israel, where barbarism and joy are one, winning their way through destruction. Experimental documentary.",
+        photos: [
+          "PHOTOS/WIN/WIN 1.jpg",
+          "PHOTOS/WIN/WIN 2.jpg",
+          "PHOTOS/WIN/WIN 3.jpg",
+          "PHOTOS/WIN/WIN 4.jpg",
+          "PHOTOS/WIN/WIN 5.jpg",
+          "PHOTOS/WIN/WIN 6.jpg",
+          "PHOTOS/WIN/WIN 7.jpg",
+        ],
+        // Replaces the "Awards / Screening History" heading/section for
+        // this project only - other projects keep that default label.
+        screeningsLabel: "Commissioned for the exhibition:",
+        screenings: [
+          { text: "Vogue Zion, ", linkLabel: "Barbur Gallery", linkUrl: "https://barburgallery.org/", suffix: " (Jerusalem)" },
+        ],
+        // This project has no runtime/format/resolution info to show,
+        // unlike Venus Sucks - omit the section rather than show a
+        // "Technical Details - TBD" placeholder that will never fill in.
+        hideTechnicalDetails: true,
+        // "Ask for a Screener" mailto button (see buildScreenerRequestButton) -
+        // there's no embedded video link to gate behind a password here.
+        hasScreenerButton: true,
       },
       {
         title: "Sun's Too Hot",
@@ -651,6 +673,21 @@ function buildPasswordRequestButton(title) {
 }
 
 // ---------------------------------------------------------------
+// Same mailto-button pattern as buildPasswordRequestButton, for
+// projects with no embedded video link at all to gate a password
+// behind (e.g. WIN) - reuses the same .request-password-btn styling.
+// ---------------------------------------------------------------
+function buildScreenerRequestButton(title) {
+  const btn = document.createElement("a");
+  btn.className = "request-password-btn";
+  const subject = `Screener Request - ${title}`;
+  const body = `Hi Sivan,\n\nCould you send me a screener for "${title}"?\n\nThanks!`;
+  btn.href = `mailto:sivaneyal23@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  btn.textContent = "Ask for a Screener";
+  return btn;
+}
+
+// ---------------------------------------------------------------
 // For content that isn't safe to embed at all — e.g. a Drive file
 // shared as "anyone with the link can view", where embedding it would
 // just show the content directly with no gate, unlike Vimeo's own
@@ -942,23 +979,39 @@ function buildProjectPanel(item, mediaRole) {
 
   info.appendChild(buildProjectSection("Synopsis", item.desc));
 
+  if (item.hasScreenerButton) info.appendChild(buildScreenerRequestButton(item.title));
+
+  const screeningsLabel = item.screeningsLabel || "Awards / Screening History";
   if (item.screenings && item.screenings.length) {
     const section = document.createElement("div");
     section.className = "project-section";
     const label = document.createElement("h4");
     label.className = "project-section-label";
-    label.textContent = "Awards / Screening History";
+    label.textContent = screeningsLabel;
     section.appendChild(label);
     const ul = document.createElement("ul");
     ul.className = "work-item-screenings";
     item.screenings.forEach((s) => {
       const li = document.createElement("li");
-      // Plain strings stay plain text; an object with a url makes the
-      // festival name itself a link (the year prefix, if any, stays
-      // plain text) - see the "directing" category's Venus Sucks entry.
       if (typeof s === "string") {
+        // Plain strings stay plain text.
         li.textContent = s;
+      } else if (s.linkLabel) {
+        // Prefix text + an inline link + suffix text, e.g. "Vogue Zion,
+        // [Barbur Gallery] (Jerusalem)" - see the "directing" category's
+        // WIN entry.
+        if (s.text) li.appendChild(document.createTextNode(s.text));
+        const a = document.createElement("a");
+        a.href = s.linkUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.className = "work-item-link";
+        a.textContent = s.linkLabel;
+        li.appendChild(a);
+        if (s.suffix) li.appendChild(document.createTextNode(s.suffix));
       } else {
+        // An object with a url makes the festival name itself a link
+        // (the year prefix, if any, stays plain text) - see Venus Sucks.
         if (s.year) li.appendChild(document.createTextNode(`${s.year} `));
         if (s.url) {
           const a = document.createElement("a");
@@ -977,30 +1030,35 @@ function buildProjectPanel(item, mediaRole) {
     section.appendChild(ul);
     info.appendChild(section);
   } else {
-    info.appendChild(buildProjectSection("Awards / Screening History", ""));
+    info.appendChild(buildProjectSection(screeningsLabel, ""));
   }
 
-  if (item.specs && item.specs.length) {
-    const section = document.createElement("div");
-    section.className = "project-section";
-    const label = document.createElement("h4");
-    label.className = "project-section-label";
-    label.textContent = "Technical Details";
-    section.appendChild(label);
-    const dl = document.createElement("dl");
-    dl.className = "work-item-specs";
-    item.specs.forEach(([k, v]) => {
-      const dt = document.createElement("dt");
-      dt.textContent = k;
-      const dd = document.createElement("dd");
-      dd.textContent = v;
-      dl.appendChild(dt);
-      dl.appendChild(dd);
-    });
-    section.appendChild(dl);
-    info.appendChild(section);
-  } else {
-    info.appendChild(buildProjectSection("Technical Details", ""));
+  // hideTechnicalDetails opts out of the section entirely (not even the
+  // TBD placeholder) - for projects with no runtime/format/resolution
+  // info to ever show, unlike Venus Sucks.
+  if (!item.hideTechnicalDetails) {
+    if (item.specs && item.specs.length) {
+      const section = document.createElement("div");
+      section.className = "project-section";
+      const label = document.createElement("h4");
+      label.className = "project-section-label";
+      label.textContent = "Technical Details";
+      section.appendChild(label);
+      const dl = document.createElement("dl");
+      dl.className = "work-item-specs";
+      item.specs.forEach(([k, v]) => {
+        const dt = document.createElement("dt");
+        dt.textContent = k;
+        const dd = document.createElement("dd");
+        dd.textContent = v;
+        dl.appendChild(dt);
+        dl.appendChild(dd);
+      });
+      section.appendChild(dl);
+      info.appendChild(section);
+    } else {
+      info.appendChild(buildProjectSection("Technical Details", ""));
+    }
   }
 
   if (textLinks.length) {
