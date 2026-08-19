@@ -160,7 +160,7 @@ const CATEGORIES = [
           },
           {
             title: "Daniela Spector - Live Session",
-            desc: "Gig at Ba'ozen Hashlishit.",
+            desc: "Gig at Ha'ozen Hashlishit.",
             links: [{ label: "Watch", url: "https://youtu.be/iBNx4tyA220?si=aVh2pf7uhHQRzvxe" }],
           },
           {
@@ -169,17 +169,14 @@ const CATEGORIES = [
             links: [{ label: "Watch", url: "https://youtu.be/-kOJDlvIh2s" }],
           },
           {
-            // Labels are placeholder "Video N" — real per-video titles
-            // can be swapped in later, YouTube's own oEmbed/API isn't
-            // reachable from this environment to pull them automatically.
             title: "Focus JLM - Live Sessions",
             desc: "Live session videos for the Focus JLM youth culture platform.",
             links: [
-              { label: "Video 1", url: "https://youtu.be/fNEhufcJS9A" },
-              { label: "Video 2", url: "https://youtu.be/UyUGFBrGghc" },
-              { label: "Video 3", url: "https://youtu.be/jlC5KxEyWIw" },
-              { label: "Video 4", url: "https://youtu.be/QHTqVJeIF3w" },
-              { label: "Video 5", url: "https://youtu.be/iZq0XjqSbdE" },
+              { url: "https://youtu.be/fNEhufcJS9A" },
+              { url: "https://youtu.be/UyUGFBrGghc" },
+              { url: "https://youtu.be/jlC5KxEyWIw" },
+              { url: "https://youtu.be/QHTqVJeIF3w" },
+              { url: "https://youtu.be/iZq0XjqSbdE" },
             ],
           },
         ],
@@ -778,7 +775,7 @@ function buildWorkItem(item, mediaRole) {
     mediaLinks.forEach((link) => {
       const block = document.createElement("div");
       block.className = "work-item-media-block";
-      if (mediaLinks.length > 1) {
+      if (mediaLinks.length > 1 && link.label) {
         const cap = document.createElement("span");
         cap.className = "work-item-media-label";
         cap.textContent = link.label;
