@@ -96,11 +96,13 @@ const CATEGORIES = [
       {
         title: "Sun's Too Hot",
         desc: "Soli, a young activist, meets Ameline in an anarchist eco rebel camp in Jerusalem. Soli's search for tenderness and intimacy leads her to guide Ameline through her existential struggle, living in a toxic world.",
-        // Only 2 of the 5 photos uploaded for this film actually made
-        // it through intact - the other 3 ("banana 2shot happy",
-        // "kiss with hands", "soli pure joy cu") arrived as empty/
-        // corrupt files and need to be re-uploaded.
-        photos: ["PHOTOS/SUNSTOOHOT/night fire soli.jpg", "PHOTOS/SUNSTOOHOT/1.jpg"],
+        photos: [
+          "PHOTOS/SUNSTOOHOT/night fire soli.jpg",
+          "PHOTOS/SUNSTOOHOT/1.jpg",
+          "PHOTOS/SUNSTOOHOT/kiss with hands.jpg",
+          "PHOTOS/SUNSTOOHOT/soli pure joy cu.jpg",
+          "PHOTOS/SUNSTOOHOT/banana 2shot happy.jpg",
+        ],
         links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/suns-too-hot/" }],
       },
     ],

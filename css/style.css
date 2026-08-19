@@ -782,7 +782,6 @@ section {
   max-width: 100%;
   max-height: calc(100vh - 160px);
   object-fit: contain;
-  border: 1px solid var(--line);
 }
 
 .image-lightbox-close {
