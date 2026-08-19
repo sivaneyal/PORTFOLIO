@@ -948,6 +948,11 @@ section {
   top: 0;
   background: var(--bg);
   z-index: 2;
+  /* Fully opaque background alone still read as a floating strip once
+     it pinned to the top - this shadow gives it real depth against
+     whatever's scrolling underneath, so it reads as a deliberate
+     fixed header bar rather than a disconnected panel. */
+  box-shadow: 0 16px 24px -12px rgba(0, 0, 0, 0.65);
 }
 
 .overlay-subnav:empty {
