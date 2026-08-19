@@ -105,6 +105,12 @@ const CATEGORIES = [
           { linkLabel: "TLVFest 23", linkUrl: "https://www.tlvfest.com/fest_movie/arava-shrt-heb/" },
           "Winner, Best Long Short at the Milwaukee Illuminate Film Festival, December 16, 2023",
         ],
+        specs: [
+          ["Length", "16:46"],
+          ["Format", "DCP"],
+          ["Resolution", "4K DCI Scope, Color"],
+          ["Subtitles", "Hebrew, English"],
+        ],
         links: [{ label: "Letterboxd", url: "https://letterboxd.com/film/suns-too-hot/" }],
         hasScreenerButton: true,
       },
