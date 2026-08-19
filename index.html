@@ -125,25 +125,19 @@
     </video>
     <div class="hero-video-scrim" aria-hidden="true"></div>
 
-    <div class="hero-intro">
+    <!-- Name sits directly above the category nav as one bottom-anchored
+         group (.hero-bottom) instead of being vertically centered on its
+         own - see .hero-bottom in css/style.css. -->
+    <div class="hero-bottom">
       <h1 class="hero-name reveal">Sivan&nbsp;Eyal</h1>
-      <p class="hero-bio reveal">
-        Sivan Eyal is a filmmaker, performer, alien, anarchist and the most ordinary human
-        walking on earth. She has good sense of humor and an OK style, not sure why she can
-        also be shy. Now she's coming out of her persona closet and reveals online she
-        literally has some experience and a distinguished point of view. Shocking. She wrote
-        this by herself but the message was approved by colleagues, bosses, friends, mom and
-        of course, her agent.
-      </p>
-    </div>
 
-    <!-- Category nav as an organic scatter of minimal text labels over
-         the video (desktop). On mobile this collapses to a centered row —
-         see .hero-orbit responsive rules in css/style.css.
-         Each item is a <button>, not a link — clicking opens the full-screen
-         #categoryOverlay via JS (see openCategoryOverlay in js/main.js).
-         There is no href/anchor involved, so it never scrolls the page. -->
-    <nav class="hero-orbit" aria-label="Work categories">
+      <!-- Category nav as an organic scatter of minimal text labels over
+           the video (desktop). On mobile this collapses to a centered row —
+           see .hero-orbit responsive rules in css/style.css.
+           Each item is a <button>, not a link — clicking opens the full-screen
+           #categoryOverlay via JS (see openCategoryOverlay in js/main.js).
+           There is no href/anchor involved, so it never scrolls the page. -->
+      <nav class="hero-orbit" aria-label="Work categories">
       <ul class="orbit-list" id="orbitList">
         <li class="orbit-item orbit-item--1" data-target="directing">
           <button type="button" class="orbit-link">
@@ -194,24 +188,13 @@
           </button>
         </li>
       </ul>
-    </nav>
+      </nav>
+    </div>
 
     <a href="#about" class="scroll-cue" aria-label="Scroll to about section">
       <span class="scroll-cue-line"></span>
       <span>Scroll</span>
     </a>
-  </section>
-
-  <!-- ========== SELECTED HIGHLIGHTS ========== -->
-  <!-- Hidden for now per request — remove "is-hidden" to bring back. -->
-  <section class="highlights is-hidden" id="highlights">
-    <div class="section-frame">
-      <p class="section-kicker reveal">Highlights</p>
-      <h2 class="section-title reveal">Selected Work</h2>
-    </div>
-    <div class="highlight-grid" id="highlightGrid">
-      <!-- Rendered dynamically from js/main.js (see HIGHLIGHTS data array) -->
-    </div>
   </section>
 
   <!-- ========== ABOUT ========== -->
@@ -230,7 +213,7 @@
           directing track at Sam Spiegel Film &amp; Television School (2024), she wrote and
           directed two independent short films that went on to screen at festivals including
           TLVFest and the Haifa International Film Festival. Alongside her own directing
-          work, she edits fiction, documentary, and live performance content, and curates
+          work, she edits short fiction, documentary, and live performance content, and curates
           and produces screenings and events.
         </p>
       </div>
@@ -264,8 +247,8 @@
       <p class="section-kicker reveal">Contact</p>
       <a class="contact-email reveal" href="mailto:sivaneyal23@gmail.com">sivaneyal23@gmail.com</a>
       <div class="contact-links reveal">
-        <a href="https://www.instagram.com/sivaneyal/" target="_blank" rel="noopener noreferrer">Instagram</a>
         <a href="https://www.linkedin.com/in/sivan-eyal-0b756b272" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://www.instagram.com/sivaneyal/" target="_blank" rel="noopener noreferrer">Instagram</a>
       </div>
       <p class="contact-foot">&copy; <span id="year"></span> Sivan Eyal <span lang="he" dir="rtl">(סיון איל)</span>. All rights reserved.</p>
       <p class="contact-legal"><a href="privacy.html">Privacy Policy</a></p>

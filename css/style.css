@@ -252,9 +252,9 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* generous bottom padding shrinks the space .hero-intro is centered
-     within, pushing the name/bio upward so the orbit row below has real
-     clearance instead of crowding the bio text above it */
+  /* On desktop .hero-bottom is absolutely positioned and ignores this;
+     on mobile it's the sole in-flow child, and this bottom padding is
+     what keeps it from centering too low, past the scroll cue. */
   padding: calc(var(--nav-h) + 24px) clamp(20px, 5vw, 56px) 220px;
   z-index: 2;
   overflow: hidden;
@@ -280,45 +280,36 @@ img { max-width: 100%; display: block; }
     linear-gradient(to top, rgba(10, 10, 10, 0.55) 0%, rgba(10, 10, 10, 0) 30%);
 }
 
-.hero-intro {
-  position: relative;
+/* Name + category nav as one bottom-anchored group, instead of the
+   name being vertically centered on its own with the nav positioned
+   separately - see the "Fix hero nav button sizing"/name-simplification
+   request this came from. */
+.hero-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* clearance below the row so it never crowds the scroll cue */
+  bottom: clamp(96px, 13vh, 130px);
   z-index: 2;
-  max-width: 620px;
+  padding: 0 clamp(20px, 5vw, 56px);
 }
 
 .hero-name {
   font-family: var(--font-head);
   font-weight: 400;
-  font-size: clamp(2.8rem, 8.6vw, 6.4rem);
-  line-height: 0.95;
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  line-height: 1;
   letter-spacing: -0.01em;
-  margin: 0 0 24px;
+  margin: 0 0 22px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 6px 26px rgba(0, 0, 0, 0.5);
 }
 
-.hero-bio {
-  font-size: clamp(0.88rem, 1.15vw, 0.98rem);
-  line-height: 1.75;
-  color: var(--bone-dim);
-  max-width: 560px;
-  margin: 0;
-}
-
-/* Category nav — a single organized row near the bottom of the hero,
-   above the scroll cue, rather than scattered across the frame. By
-   this point in the hero the name/bio column (upper-left) has already
-   ended vertically, so a full-width row here doesn't compete with it. */
+/* Category nav — a single organized row directly under the name,
+   above the scroll cue, rather than scattered across the frame. */
 .hero-orbit {
-  position: absolute;
-  left: 0;
-  right: 0;
-  /* clearance below the row so it never crowds the scroll cue; the bulk
-     of the separation from the bio above now comes from .hero's own
-     padding-bottom, which shifts .hero-intro upward */
-  bottom: clamp(96px, 13vh, 130px);
-  z-index: 2;
-  padding: 30px clamp(20px, 5vw, 56px) 0;
-  /* a quiet top rule + the padding above are what separate this from
-     the bio text above it, rather than it reading as a continuation */
+  padding: 24px 0 0;
+  /* a quiet top rule + the padding above are the aesthetic gap that
+     separates this from the name above it */
   border-top: 1px solid var(--line);
   pointer-events: none;
 }
@@ -352,17 +343,12 @@ img { max-width: 100%; display: block; }
   will-change: transform;
 }
 
-/* --label-size carries the requested hierarchy: Film Directing/Editing
-   largest, Photography/Curation mid, Performance Artist/Production
-   smallest. */
-.orbit-item--1,
-.orbit-item--2 { --label-size: clamp(1.7rem, 2.6vw, 2.3rem); }
-
-.orbit-item--3,
-.orbit-item--4 { --label-size: clamp(1.3rem, 2vw, 1.8rem); }
-
-.orbit-item--5,
-.orbit-item--6 { --label-size: clamp(1.05rem, 1.5vw, 1.4rem); }
+/* One balanced size for all six labels - sized to still fit in a
+   single row at common desktop widths (see .orbit-list's column-gap
+   comment above on why label width matters here). */
+.orbit-item {
+  --label-size: clamp(1.3rem, 2vw, 1.8rem);
+}
 
 .orbit-link {
   display: flex;
@@ -436,13 +422,17 @@ img { max-width: 100%; display: block; }
   .orbit-text { animation: none; }
 }
 
-/* Mobile: not enough width for one row of six — flow it below the
-   bio instead, centered and wrapping, at one uniform readable size. */
+/* Mobile: not enough width for one row of six — let it flow in normal
+   document order below the name instead, centered and wrapping, at
+   one uniform readable size. */
 @media (max-width: 860px) {
-  .hero-orbit {
+  .hero-bottom {
     position: static;
     margin-top: 56px;
-    padding: 24px 0 0;
+  }
+
+  .hero-name {
+    text-align: center;
   }
 
   .orbit-list {
@@ -570,8 +560,8 @@ section {
   color: var(--bone-faint);
 }
 
-/* Body copy set in the site's body font (matching hero-bio,
-   work-item-desc, etc.) rather than the headline serif — the
+/* Body copy set in the site's body font (matching work-item-desc,
+   etc.) rather than the headline serif — the
    italic-Bodoni treatment this used to have read as a different,
    unrelated typeface next to the rest of the site. */
 .about-bio {
@@ -1953,71 +1943,6 @@ section {
 
 .reel-caption {
   margin-top: 24px;
-}
-
-/* ============================================================
-   Highlights
-   ============================================================ */
-.highlight-grid {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 clamp(20px, 5vw, 56px);
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: clamp(28px, 3vw, 48px);
-}
-
-.highlight-card { display: block; }
-
-.highlight-thumb {
-  aspect-ratio: 16 / 10;
-  background:
-    repeating-linear-gradient(
-      135deg,
-      rgba(242, 240, 236, 0.04),
-      rgba(242, 240, 236, 0.04) 2px,
-      transparent 2px,
-      transparent 14px
-    ),
-    var(--bg-raised);
-  border: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 18px;
-  transition: transform 0.5s var(--ease), border-color 0.5s var(--ease);
-}
-
-.highlight-card:hover .highlight-thumb {
-  transform: translateY(-4px);
-  border-color: var(--accent-soft);
-}
-
-.highlight-thumb span {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--bone-faint);
-}
-
-.highlight-cat {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  margin: 0 0 8px;
-}
-
-.highlight-title {
-  font-family: var(--font-head);
-  font-weight: 400;
-  font-size: 1.3rem;
-  margin: 0 0 6px;
-}
-
-.highlight-year {
-  font-size: 0.85rem;
-  color: var(--bone-faint);
 }
 
 /* ============================================================

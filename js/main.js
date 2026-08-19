@@ -1,15 +1,12 @@
 /* ============================================================
    Sivan Eyal — Portfolio
-   All content below is placeholder. Swap the CATEGORIES and
-   HIGHLIGHTS arrays with real copy/media once the content
-   document is available — no markup restructuring needed.
 
    Style rule: never use an em dash (—) in any visible copy — titles,
    descriptions, labels, alt text, button/link text, anything a
    visitor or a screen reader encounters. Use a period, comma, or a
    plain hyphen ("-") instead. This file's own comments are exempt
-   (not user-facing), but CATEGORIES/HIGHLIGHTS data and any string
-   built for on-page display are not.
+   (not user-facing), but CATEGORIES data and any string built for
+   on-page display are not.
 
    A link object (inside `links`/`items[].links`) supports:
      label      — link text
@@ -126,12 +123,16 @@ const CATEGORIES = [
           {
             title: "Field Trip",
             desc: "Directed and edited by Yehuda Bogomolny. Co-edited with Sivan Eyal. Won first prize at the Israeli Film Festival in Paris 2025, and second place in the short film competition at 'Epos'.",
-            links: [{ label: "Watch", url: "https://vimeo.com/730740409?share=copy", password: "GR@31", thumbnail: "PHOTOS/EDITOR/SHORT NARRATIVE/Field Trip 1.jpg" }],
+            // passwordOnly: the real Vimeo URL/password never ship to the
+            // browser at all (see buildPasswordOnlyMedia) - previously
+            // embedding the video with its password inline meant anyone
+            // could read the password straight from page source.
+            links: [{ label: "Request Screener", passwordOnly: true }],
           },
           {
             title: "Orange Juice",
             desc: "A short film by Yahali Maoz.",
-            links: [{ label: "Watch", url: "https://vimeo.com/444188059?share=copy", password: "MaOz#E", thumbnail: "PHOTOS/EDITOR/SHORT NARRATIVE/Orange Juice 1.jpg" }],
+            links: [{ label: "Request Screener", passwordOnly: true }],
           },
         ],
       },
@@ -142,7 +143,10 @@ const CATEGORIES = [
           {
             title: "Today I Am",
             desc: "By Rotem Amitai. Documented and edited Rotem's workshop with elderly women centered on poetry. The short film combines readings of the works produced in the workshop with documentary footage of the group's unique dynamic.",
-            links: [{ label: "Watch", url: "https://drive.google.com/file/d/1oBrubMnNph92jBJvaMCwtPjvPm-Kt6IS/view?usp=sharing", screenerButton: true, thumbnail: "PHOTOS/EDITOR/SHORT NARRATIVE/Today I Am 1.jpg" }],
+            // passwordOnly: the real Drive URL never ships to the browser -
+            // an "anyone with the link" Drive share is viewable by anyone
+            // who reads it out of the page source, same issue as Biofeedback.
+            links: [{ label: "Request Screener", passwordOnly: true }],
           },
         ],
       },
@@ -153,7 +157,10 @@ const CATEGORIES = [
           {
             title: "Modus Sessions 2026 - Young Artists",
             desc: "Six live sessions with young artists for the Modus Sessions 2026 project.",
-            links: [{ label: "Watch Playlist", url: "https://youtube.com/playlist?list=PLqkKsxATvseqrMdN86tTiMM0QS-0z8q6p&si=rDb5QuRJsdXBukN_" }],
+            // A YouTube playlist URL has no predictable per-video thumbnail
+            // path the way a single video ID does (see parseEmbedUrl), so
+            // this is a hand-picked still instead of the generic placeholder.
+            links: [{ label: "Watch Playlist", url: "https://youtube.com/playlist?list=PLqkKsxATvseqrMdN86tTiMM0QS-0z8q6p&si=rDb5QuRJsdXBukN_", thumbnail: "PHOTOS/LIVE SESSIONS/Modus Sessions 2026.jpg" }],
           },
           {
             title: "Daniela Spector - Live Session",
@@ -345,12 +352,6 @@ const CATEGORIES = [
       { title: "Untitled Production", year: "2023", desc: "Placeholder description of the project, format, and context." },
     ],
   },
-];
-
-const HIGHLIGHTS = [
-  { title: "Venus Sucks", category: "Film Directing", year: "2025" },
-  { title: "Untitled Campaign", category: "Social Media & Strategy", year: "2024" },
-  { title: "Untitled Exhibition", category: "Curation", year: "2023" },
 ];
 
 // Chronological, oldest first (see renderNews). Each item links out to
@@ -2006,22 +2007,6 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   initializing = false;
 }
 
-function renderHighlights() {
-  const grid = document.getElementById("highlightGrid");
-  if (!grid) return;
-  HIGHLIGHTS.forEach((h) => {
-    const card = document.createElement("div");
-    card.className = "highlight-card";
-    card.innerHTML = `
-      <div class="highlight-thumb"><span>Image / Video Placeholder</span></div>
-      <p class="highlight-cat">${h.category}</p>
-      <h3 class="highlight-title">${h.title}</h3>
-      <span class="highlight-year">${h.year}</span>
-    `;
-    grid.appendChild(card);
-  });
-}
-
 // ---------------------------------------------------------------
 // News strip — a fixed-height horizontal row (see .news-strip in
 // css/style.css) browsed via the two arrow buttons, which just nudge
@@ -2292,7 +2277,6 @@ function initAboutPhoto() {
 // Init
 // ---------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  renderHighlights();
   renderNews();
   initNewsNav();
   wireHeroLinks();
