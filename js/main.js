@@ -314,33 +314,40 @@ const CATEGORIES = [
     id: "curation",
     index: "04",
     title: "Curation",
-    description: "Placeholder category description - a short line of context on Sivan's curatorial work goes here.",
+    description: "",
     mediaRole: "curating",
     items: [
       {
         title: "Shablulim Films Streaming Platform",
+        synopsisLabel: "About the Project",
         desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
-        // No production photos for a curated website - a real, hand-
-        // picked site screenshot (link.thumbnail below) is the visual,
-        // so the generic placeholder photo gallery is turned off.
-        photoCount: 0,
-        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/", thumbnail: "PHOTOS/CURATION/Shablulim Films.jpg" }],
+        // A real, hand-picked site screenshot as the gallery image (not
+        // a production photoshoot) - the "Visit The Site" link below is
+        // a plain textLink rather than a link.thumbnail preview card,
+        // so the screenshot sits beside the text as this project's
+        // gallery column instead of stacked above it inside project-info.
+        photos: ["PHOTOS/CURATION/Shablulim Films.jpg"],
+        hideScreenings: true,
+        hideTechnicalDetails: true,
+        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
       },
       {
-        title: "Content Editing - Outline Festival 2025",
+        title: "Content Editing - Outline Illustration Festival",
+        year: "2025",
+        synopsisLabel: "About the Project",
         desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
-        photoCount: 0,
-        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/", thumbnail: "PHOTOS/CURATION/Outline Festival 2025.jpg" }],
+        photos: ["PHOTOS/CURATION/Outline Festival 2025.jpg"],
+        hideScreenings: true,
+        hideTechnicalDetails: true,
+        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
       },
-      { title: "Untitled Screening Series", year: "2024", desc: "Placeholder description of the project, format, and context." },
-      { title: "Untitled Exhibition", year: "2022", desc: "Placeholder description of the project, format, and context." },
     ],
   },
   {
     id: "performance",
     index: "05",
     title: "Performance Artist",
-    description: "Placeholder category description - a short line of context on Sivan's performance work goes here.",
+    description: "",
     mediaRole: "performing in",
     items: [
       { title: "Untitled Performance", year: "2024", desc: "Placeholder description of the project, format, and context." },
@@ -351,9 +358,32 @@ const CATEGORIES = [
     id: "production",
     index: "06",
     title: "Production",
-    description: "Placeholder category description - a short line of context on Sivan's production work goes here.",
+    description: "",
     mediaRole: "producing",
     items: [
+      {
+        title: "Digital Diary",
+        year: "2023",
+        desc: "18-year-old Anton hangs out with thugs who steal cell phones and blackmail their owners. But when Anton gets a hold of Meitar's phone, he becomes obsessed with the world she has compulsively recorded.",
+        photos: ["PHOTOS/NEWS/DIGITAL DIARY POSTER.jpg"],
+        credits: [
+          ["Director", "Yasmine Scheft"],
+          ["Writers", "Pratt Keshet, Yasmine Scheft"],
+          ["Stars", "Svetlana Demidov, Tomer Krkye, Shaked Mochiach"],
+          ["Producer", "Sivan Eyal"],
+        ],
+        screenings: [
+          "Jerusalem Film Festival, 2023 Nominee, Award for Israeli Cinema, Diamond Competition for Israeli Short Films",
+          "Short Shorts Film Festival & Asia, 2024 Nominee, International Competition, Best Short Film",
+          "Poitiers Film Festival, 2023 Nominee, Grand Prize, Best Short Film",
+        ],
+        specs: [
+          ["Length", "18m"],
+          ["Format", "DCP"],
+          ["Subtitles", "Hebrew, English"],
+        ],
+        hasScreenerButton: true,
+      },
       { title: "Untitled Production", year: "2024", desc: "Placeholder description of the project, format, and context." },
       { title: "Untitled Production", year: "2023", desc: "Placeholder description of the project, format, and context." },
     ],
@@ -744,10 +774,17 @@ function buildPasswordOnlyMedia(title) {
 
   const thumb = document.createElement("div");
   thumb.className = "work-thumb";
+  const lockWrap = document.createElement("div");
+  lockWrap.className = "work-thumb-locked";
+  const lock = document.createElement("span");
+  lock.className = "work-thumb-lock";
+  lock.setAttribute("aria-hidden", "true");
+  lockWrap.appendChild(lock);
   const label = document.createElement("span");
   label.className = "work-thumb-label";
   label.textContent = "Screener Protected";
-  thumb.appendChild(label);
+  lockWrap.appendChild(label);
+  thumb.appendChild(lockWrap);
   block.appendChild(thumb);
 
   block.appendChild(buildScreenerRequestButton(title));
@@ -1049,10 +1086,40 @@ function buildProjectPanel(item, mediaRole) {
     info.appendChild(previewWrap);
   }
 
-  info.appendChild(buildProjectSection("Synopsis", item.desc));
+  info.appendChild(buildProjectSection(item.synopsisLabel || "Synopsis", item.desc));
+
+  // Credits (Director/Writers/Stars/Producer, etc.) - opt-in only, not
+  // a TBD-if-missing section like Synopsis/Technical Details, since it
+  // only applies to a project that actually has a cast/crew to list
+  // (see Digital Diary under Production).
+  if (item.credits && item.credits.length) {
+    const section = document.createElement("div");
+    section.className = "project-section";
+    const label = document.createElement("h4");
+    label.className = "project-section-label";
+    label.textContent = "Credits";
+    section.appendChild(label);
+    const dl = document.createElement("dl");
+    dl.className = "work-item-specs";
+    item.credits.forEach(([k, v]) => {
+      const dt = document.createElement("dt");
+      dt.textContent = k;
+      const dd = document.createElement("dd");
+      dd.textContent = v;
+      dl.appendChild(dt);
+      dl.appendChild(dd);
+    });
+    section.appendChild(dl);
+    info.appendChild(section);
+  }
 
   const screeningsLabel = item.screeningsLabel || "Awards / Screening History";
-  if (item.screenings && item.screenings.length) {
+  // hideScreenings opts out of the section entirely (not even the TBD
+  // placeholder) - for content types like Curation entries where an
+  // awards/screening history doesn't apply at all.
+  if (item.hideScreenings) {
+    // no-op - section omitted entirely
+  } else if (item.screenings && item.screenings.length) {
     const section = document.createElement("div");
     section.className = "project-section";
     const label = document.createElement("h4");

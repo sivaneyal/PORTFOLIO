@@ -343,11 +343,12 @@ img { max-width: 100%; display: block; }
   will-change: transform;
 }
 
-/* One balanced size for all six labels - sized to still fit in a
-   single row at common desktop widths (see .orbit-list's column-gap
-   comment above on why label width matters here). */
+/* One balanced size for all five labels (Performance Artist hidden -
+   see index.html) - sized up slightly from the six-item version so
+   the row still reads as intentional rather than sparse, while still
+   fitting in a single line at common desktop widths. */
 .orbit-item {
-  --label-size: clamp(1.3rem, 2vw, 1.8rem);
+  --label-size: clamp(1.4rem, 2.3vw, 2.1rem);
 }
 
 .orbit-link {
@@ -378,7 +379,6 @@ img { max-width: 100%; display: block; }
 .orbit-item--3 .orbit-text { --float-delay: 1.2; }
 .orbit-item--4 .orbit-text { --float-delay: 1.8; }
 .orbit-item--5 .orbit-text { --float-delay: 2.4; }
-.orbit-item--6 .orbit-text { --float-delay: 3.0; }
 
 @keyframes float-breathe {
   0%, 100% { transform: translateY(0); }
@@ -1326,6 +1326,50 @@ section {
   color: var(--bone-faint);
   text-align: center;
   padding: 0 16px;
+}
+
+/* A CSS-drawn padlock for password/screener-gated tiles (Field Trip,
+   Orange Juice, Today I Am, Biofeedback) - previously these just
+   showed the tiny "Screener Protected" label alone in a large empty
+   frame, reading as a missing thumbnail rather than a deliberately
+   locked one. */
+.work-thumb-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.work-thumb-lock {
+  position: relative;
+  width: 26px;
+  height: 20px;
+  background: var(--bone-faint);
+  border-radius: 3px;
+  transition: background 0.4s var(--ease);
+}
+
+.work-thumb-lock::before {
+  content: "";
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: 15px;
+  height: 15px;
+  border: 3px solid var(--bone-faint);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  transition: border-color 0.4s var(--ease);
+}
+
+.work-item:hover .work-thumb-lock {
+  background: var(--accent-soft);
+}
+
+.work-item:hover .work-thumb-lock::before {
+  border-color: var(--accent-soft);
 }
 
 .work-item-meta {
