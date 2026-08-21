@@ -110,15 +110,20 @@
          universally-supported fallback. poster is a real still frame
          extracted from this same re-encoded footage (see
          assets/images/hero-poster.jpg) - shown until the video can
-         play, and as the fallback if it ever fails to load.
-         Mobile-only: hidden in favor of .hero-video-poster below - see
-         that image's comment for why. -->
+         play, and as the fallback if it ever fails to load. autoplay +
+         muted + playsinline together are what iOS Safari requires for
+         inline (non-fullscreen) autoplay - all three are set below.
+         js/main.js also calls video.play() directly on load (see
+         initHeroVideoAutoplay), since a script-initiated play() after
+         load succeeds on some mobile browsers/OS versions where the
+         plain declarative attributes alone don't kick in. -->
     <video
       class="hero-video"
       autoplay
       muted
       loop
       playsinline
+      webkit-playsinline
       preload="auto"
       poster="assets/images/hero-poster.jpg"
       aria-hidden="true"
@@ -126,14 +131,6 @@
       <source src="videos/silent-trailer.webm" type="video/webm">
       <source src="videos/silent-trailer.mp4" type="video/mp4">
     </video>
-    <!-- Mobile-only static replacement for .hero-video (hidden there via
-         CSS) - autoplay of a muted/playsinline video is still routinely
-         blocked on mobile (e.g. iOS Low Power Mode), which left Safari's
-         native "tap to play" button sitting frozen over the poster
-         frame instead of it just quietly looping. A plain <img> can
-         never show that control, so this sidesteps the problem instead
-         of fighting mobile autoplay policy. -->
-    <img class="hero-video-poster" src="assets/images/hero-poster.jpg" alt="" aria-hidden="true">
     <div class="hero-video-scrim" aria-hidden="true"></div>
 
     <!-- Name sits directly above the category nav as one bottom-anchored

@@ -2359,6 +2359,25 @@ function initAboutPhoto() {
 }
 
 // ---------------------------------------------------------------
+// The autoplay/muted/playsinline attributes alone are enough on most
+// browsers, but a script-initiated play() call after load succeeds on
+// some mobile browsers/OS versions where the plain declarative
+// attributes don't actually kick in - this is a defensive extra
+// attempt, not a replacement for the HTML attributes. The rejection
+// from an actually-blocked autoplay (e.g. iOS Low Power Mode, which
+// blocks video decoding outright) is silently caught - there's no web
+// standard way to override that from the page.
+// ---------------------------------------------------------------
+function initHeroVideoAutoplay() {
+  const video = document.querySelector(".hero-video");
+  if (!video) return;
+  const tryPlay = () => video.play().catch(() => {});
+  tryPlay();
+  video.addEventListener("loadedmetadata", tryPlay, { once: true });
+  video.addEventListener("canplay", tryPlay, { once: true });
+}
+
+// ---------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
@@ -2373,6 +2392,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initNavScrollState();
   initOverlayRouting();
   initAboutPhoto();
+  initHeroVideoAutoplay();
 
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
