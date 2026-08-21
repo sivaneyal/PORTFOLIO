@@ -389,8 +389,6 @@ const CATEGORIES = [
         ],
         hasScreenerButton: true,
       },
-      { title: "Untitled Production", year: "2024", desc: "Placeholder description of the project, format, and context." },
-      { title: "Untitled Production", year: "2023", desc: "Placeholder description of the project, format, and context." },
     ],
   },
 ];
