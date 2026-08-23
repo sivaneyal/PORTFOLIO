@@ -24,7 +24,7 @@
                   arbitrary/first video frame.
 
    A group object (inside a category's `groups`) — or an item object
-   inside a flat-item category's `items`, e.g. Content and Curation's
+   inside a flat-item category's `items`, e.g. Content & Curation's
    "Selected Social Media Content" — supports:
      layout: "reels" — renders as a compact clickable-thumbnail grid
                   that opens a playlist-style viewer, instead of the
@@ -264,7 +264,7 @@ const CATEGORIES = [
   {
     id: "curation",
     index: "04",
-    title: "Content and Curation",
+    title: "Content & Curation",
     description: "",
     mediaRole: "curating",
     items: [
@@ -294,7 +294,7 @@ const CATEGORIES = [
       },
       {
         // Moved here from Editing - video editing for social media
-        // platforms fits Content and Curation's scope better than
+        // platforms fits Content & Curation's scope better than
         // sitting alongside Editing's short-form film/documentary work.
         title: "Selected Social Media Content",
         layout: "reels",
@@ -1259,7 +1259,7 @@ function renderTabbedContent(cat, subnavEl, bodyEl, initialTabSlug, onTabChange)
     : cat.items.map((item) => ({
         label: item.title,
         // A flat-item category can still mix in a reels-layout tab
-        // (e.g. Content and Curation's Selected Social Media Content)
+        // (e.g. Content & Curation's Selected Social Media Content)
         // alongside its normal single-project tabs.
         build: () =>
           item.layout === "reels"
