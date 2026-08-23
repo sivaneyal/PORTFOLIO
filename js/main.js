@@ -23,11 +23,12 @@
                   Left unset, a plain placeholder is shown instead of an
                   arbitrary/first video frame.
 
-   A group object (inside a category's `groups`) supports:
+   A group object (inside a category's `groups`) — or an item object
+   inside a flat-item category's `items`, e.g. Content and Curation's
+   "Selected Social Media Content" — supports:
      layout: "reels" — renders as a compact clickable-thumbnail grid
                   that opens a playlist-style viewer, instead of the
-                  standard full-size work-item cards. Used for Editing's
-                  "Selected Social Media Content".
+                  standard full-size work-item cards / project panel.
    ============================================================ */
 
 // ---------------------------------------------------------------
@@ -211,7 +212,90 @@ const CATEGORIES = [
           },
         ],
       },
+    ],
+  },
+  {
+    id: "photography",
+    index: "03",
+    title: "Photography",
+    type: "gallery",
+    description: "",
+    // Photography uses its own swipe/zoom gallery viewer (see
+    // renderGallery in this file) instead of the standard work-grid —
+    // `series` replaces `items`/`groups` for this category. Each
+    // series' `photoCount` placeholder slides stand in for real
+    // photos, which will be supplied separately; `year`/`note` left
+    // as "" render as visible TBD placeholders rather than being
+    // hidden, so they're easy to fill in later.
+    series: [
       {
+        title: "Strangers",
+        year: "",
+        note: "",
+        photoCount: 3,
+      },
+      {
+        title: "ThE StAr",
+        model: "Eden Degany",
+        year: "",
+        note: "",
+        photoCount: 3,
+      },
+      {
+        title: "Magic Realism",
+        year: "",
+        note: "",
+        photoCount: 3,
+      },
+      {
+        title: "When in Heaven",
+        year: "",
+        note: "Magical fairies of \"heaven\", a special secret spot by the Jordan River.",
+        photoCount: 3,
+      },
+      {
+        title: "All This Crazy Gift Of Time",
+        year: "",
+        note: "Early adulthood memoir.",
+        photoCount: 3,
+      },
+    ],
+  },
+  {
+    id: "curation",
+    index: "04",
+    title: "Content and Curation",
+    description: "",
+    mediaRole: "curating",
+    items: [
+      {
+        title: "Shablulim Films Streaming Platform",
+        synopsisLabel: "About the Project",
+        desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
+        // A real, hand-picked site screenshot as the gallery image (not
+        // a production photoshoot) - the "Visit The Site" link below is
+        // a plain textLink rather than a link.thumbnail preview card,
+        // so the screenshot sits beside the text as this project's
+        // gallery column instead of stacked above it inside project-info.
+        photos: ["PHOTOS/CURATION/Shablulim Films.jpg"],
+        hideScreenings: true,
+        hideTechnicalDetails: true,
+        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
+      },
+      {
+        title: "Content Editing - Outline Illustration Festival",
+        year: "2025",
+        synopsisLabel: "About the Project",
+        desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
+        photos: ["PHOTOS/CURATION/Outline Festival 2025.jpg"],
+        hideScreenings: true,
+        hideTechnicalDetails: true,
+        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
+      },
+      {
+        // Moved here from Editing - video editing for social media
+        // platforms fits Content and Curation's scope better than
+        // sitting alongside Editing's short-form film/documentary work.
         title: "Selected Social Media Content",
         layout: "reels",
         items: [
@@ -265,86 +349,6 @@ const CATEGORIES = [
             links: [{ label: "Watch", url: "https://youtu.be/PIhOwgrXQZI?si=7ml4pPbf_Un0m8D8" }],
           },
         ],
-      },
-    ],
-  },
-  {
-    id: "photography",
-    index: "03",
-    title: "Photography",
-    type: "gallery",
-    description: "",
-    // Photography uses its own swipe/zoom gallery viewer (see
-    // renderGallery in this file) instead of the standard work-grid —
-    // `series` replaces `items`/`groups` for this category. Each
-    // series' `photoCount` placeholder slides stand in for real
-    // photos, which will be supplied separately; `year`/`note` left
-    // as "" render as visible TBD placeholders rather than being
-    // hidden, so they're easy to fill in later.
-    series: [
-      {
-        title: "Strangers",
-        year: "",
-        note: "",
-        photoCount: 3,
-      },
-      {
-        title: "ThE StAr",
-        model: "Eden Degany",
-        year: "",
-        note: "",
-        photoCount: 3,
-      },
-      {
-        title: "Magic Realism",
-        year: "",
-        note: "",
-        photoCount: 3,
-      },
-      {
-        title: "When in Heaven",
-        year: "",
-        note: "Magical fairies of \"heaven\", a special secret spot by the Jordan River.",
-        photoCount: 3,
-      },
-      {
-        title: "All This Crazy Gift Of Time",
-        year: "",
-        note: "Early adulthood memoir.",
-        photoCount: 3,
-      },
-    ],
-  },
-  {
-    id: "curation",
-    index: "04",
-    title: "Curation",
-    description: "",
-    mediaRole: "curating",
-    items: [
-      {
-        title: "Shablulim Films Streaming Platform",
-        synopsisLabel: "About the Project",
-        desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
-        // A real, hand-picked site screenshot as the gallery image (not
-        // a production photoshoot) - the "Visit The Site" link below is
-        // a plain textLink rather than a link.thumbnail preview card,
-        // so the screenshot sits beside the text as this project's
-        // gallery column instead of stacked above it inside project-info.
-        photos: ["PHOTOS/CURATION/Shablulim Films.jpg"],
-        hideScreenings: true,
-        hideTechnicalDetails: true,
-        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
-      },
-      {
-        title: "Content Editing - Outline Illustration Festival",
-        year: "2025",
-        synopsisLabel: "About the Project",
-        desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
-        photos: ["PHOTOS/CURATION/Outline Festival 2025.jpg"],
-        hideScreenings: true,
-        hideTechnicalDetails: true,
-        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
       },
     ],
   },
@@ -1254,7 +1258,13 @@ function renderTabbedContent(cat, subnavEl, bodyEl, initialTabSlug, onTabChange)
       }))
     : cat.items.map((item) => ({
         label: item.title,
-        build: () => ({ el: buildProjectPanel(item, cat.mediaRole) }),
+        // A flat-item category can still mix in a reels-layout tab
+        // (e.g. Content and Curation's Selected Social Media Content)
+        // alongside its normal single-project tabs.
+        build: () =>
+          item.layout === "reels"
+            ? buildSocialReelsPanel(item.items)
+            : { el: buildProjectPanel(item, cat.mediaRole) },
       }));
 
   const built = tabs.map((t) => t.build());
