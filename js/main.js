@@ -139,7 +139,7 @@ const CATEGORIES = [
           },
           {
             title: "Orange Juice",
-            desc: "A short film by Yahali Maoz.",
+            desc: "Yahali Maoz's short film explores the experience of aging, routine, and melancholy through the eyes of an elderly woman. A very short silent film screened as part of TikTok's International Short Film Competition and the 2022 Cannes Film Festival at the Tel Aviv Cinematheque.",
             links: [{ label: "Request Screener", passwordOnly: true }],
             poster: "PHOTOS/EDITOR/SHORT NARRATIVE/Orange Juice 1.jpg",
           },
