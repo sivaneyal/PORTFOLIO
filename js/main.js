@@ -289,11 +289,6 @@ const CATEGORIES = [
           "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 14.jpg",
           "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 15.jpg",
           "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 16.jpg",
-          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 17.jpg",
-          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 18.jpg",
-          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 19.jpg",
-          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 20.jpg",
-          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 21.jpg",
         ],
       },
       {
@@ -1630,6 +1625,7 @@ function openCategoryOverlay(categoryId, triggerEl, options = {}) {
   bodyEl.classList.remove("overlay-body--gallery");
   activeGalleryStep = null;
   activeGalleryUnzoom = null;
+  activeGalleryBackToGrid = null;
 
   // Tracks whichever sub-tab ends up active once rendering settles
   // (a requested tabSlug that doesn't match anything falls back to
@@ -1690,6 +1686,7 @@ function closeCategoryOverlay(options = {}) {
   unlockBodyScroll();
   activeGalleryStep = null;
   activeGalleryUnzoom = null;
+  activeGalleryBackToGrid = null;
 
   if (overlayLastFocused && typeof overlayLastFocused.focus === "function") {
     overlayLastFocused.focus();
@@ -1913,6 +1910,9 @@ function initCategoryOverlay() {
       // If a gallery photo is zoomed in, the first Escape backs out of
       // the zoom rather than closing the whole overlay.
       if (activeGalleryUnzoom && activeGalleryUnzoom()) return;
+      // From inside a series' browse/stage view, the next Escape backs
+      // out to that series' grid rather than closing the whole overlay.
+      if (activeGalleryBackToGrid && activeGalleryBackToGrid()) return;
       closeCategoryOverlay();
       return;
     }
@@ -1929,12 +1929,27 @@ function initCategoryOverlay() {
 // click-to-zoom stage, and a persistent caption (title/year/note/
 // model) that stays visible while browsing. Placeholder photos stand
 // in for real images (per series `photoCount`) until real photos are
-// supplied. `activeGalleryStep`/`activeGalleryUnzoom` are module-level
-// so the single global keydown handler (see initCategoryOverlay) can
-// reach whichever gallery instance is currently open.
+// supplied. `activeGalleryStep`/`activeGalleryUnzoom`/
+// `activeGalleryBackToGrid` are module-level so the single global
+// keydown handler (see initCategoryOverlay) can reach whichever
+// gallery instance is currently open.
 // ---------------------------------------------------------------
 let activeGalleryStep = null;
 let activeGalleryUnzoom = null;
+let activeGalleryBackToGrid = null;
+
+// ---------------------------------------------------------------
+// A casual-download deterrent for the Photography gallery images
+// (grid thumbs + the full-size stage photo): blocks the right-click
+// save menu, drag-to-desktop saving, and marks the element
+// non-draggable. This is NOT real protection - anyone can still
+// screenshot the page - it just stops the easy right-click-save path.
+// ---------------------------------------------------------------
+function deterImageDownload(img) {
+  img.draggable = false;
+  img.addEventListener("contextmenu", (e) => e.preventDefault());
+  img.addEventListener("dragstart", (e) => e.preventDefault());
+}
 
 function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   bodyEl.classList.add("overlay-body--gallery");
@@ -2021,6 +2036,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
         img.src = series.photos[i];
         img.alt = "";
         img.loading = "lazy";
+        deterImageDownload(img);
         // A missing/renamed file falls back to the plain numbered
         // placeholder instead of a broken-image icon.
         img.addEventListener("error", () => {
@@ -2066,6 +2082,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
       img.className = "gallery-photo-img";
       img.src = series.photos[state.photoIndex];
       img.alt = altText;
+      deterImageDownload(img);
       img.addEventListener("error", () => showStagePlaceholder(series, photoCount), { once: true });
       photoEl.appendChild(img);
     } else {
@@ -2179,6 +2196,16 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     return true;
   }
 
+  // Escape's second-tier behavior: back out of the single-photo browse
+  // view to the current series' grid, rather than closing the whole
+  // overlay. A no-op (returns false) when already in grid mode, so the
+  // global handler falls through to closeCategoryOverlay as before.
+  function backToGrid() {
+    if (state.mode !== "browse") return false;
+    setMode("grid");
+    return true;
+  }
+
   prevBtn.addEventListener("click", () => step(-1));
   nextBtn.addEventListener("click", () => step(1));
   photoEl.addEventListener("click", () => {
@@ -2199,6 +2226,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
 
   activeGalleryStep = step;
   activeGalleryUnzoom = unzoom;
+  activeGalleryBackToGrid = backToGrid;
 
   const startIndex = initialTabSlug
     ? Math.max(0, cat.series.findIndex((s) => slugify(s.title) === initialTabSlug))

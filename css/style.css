@@ -1592,8 +1592,8 @@ section {
    (the one-by-one stage) at that photo. */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
   width: 100%;
 }
 
@@ -1623,6 +1623,11 @@ section {
   height: 100%;
   object-fit: cover;
   display: block;
+  /* Casual-download deterrent, paired with deterImageDownload in JS -
+     not real protection, just removes the easy drag/select affordance. */
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .gallery-grid-thumb:hover,
@@ -1721,6 +1726,11 @@ section {
   object-fit: contain;
   display: block;
   transition: transform 0.5s var(--ease);
+  /* Casual-download deterrent, paired with deterImageDownload in JS -
+     not real protection, just removes the easy drag/select affordance. */
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .gallery-photo.is-zoomed .gallery-photo-img {
