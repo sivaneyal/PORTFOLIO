@@ -68,7 +68,7 @@ const CATEGORIES = [
       {
         title: "WIN",
         year: "2026",
-        desc: "A bystander passes through Jerusalem, Israel, where barbarism and joy are one, winning their way through destruction. Experimental short documentary.",
+        desc: "A bystander passes through Jerusalem, Israel, where barbarism and joy are manifested as destruction unfolds. Is documenting all we can do? Experimental short documentary.",
         photos: [
           "PHOTOS/WIN/WIN 1.jpg",
           "PHOTOS/WIN/WIN 2.jpg",
@@ -211,16 +211,16 @@ const CATEGORIES = [
             poster: "PHOTOS/EDITOR/PERFORMANCE DOCUMENTATION/Biofeedback.jpg",
           },
           {
-            title: "SEX LIFE OF SLUGS",
+            title: "Slug Sex Life",
             desc: "By Odeya Basha. Edited a performance art piece by Odeya, a visual artist based in Jerusalem.",
-            // passwordOnly: same protected pattern as Biofeedback - no
-            // real video url in this file at all, requests route through
-            // Sivan via the Request Screener mailto button below.
-            // TODO: no poster still has been supplied for this one yet
-            // (see poster on Biofeedback above) - add `poster: "PHOTOS/
-            // EDITOR/PERFORMANCE DOCUMENTATION/Sex Life Of Slugs.jpg"`
-            // once a frame is available; buildPasswordOnlyMedia falls
-            // back to the plain placeholder frame without it.
+            // TEMPORARY: still using the locked/passwordOnly pattern
+            // (see Biofeedback above) as a placeholder - the real intent
+            // is an openly-viewable embedded video with its own poster
+            // frame, once the video file is actually available (still
+            // not found in the repo as of this pass). Swap this whole
+            // entry for a normal `links: [{ url: "..." }]` (a Vimeo/
+            // YouTube/etc URL that buildMediaEmbed understands) plus
+            // `poster` set to a frame from that video once it lands.
             links: [{ label: "Request Screener", passwordOnly: true }],
           },
         ],
