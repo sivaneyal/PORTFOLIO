@@ -213,15 +213,13 @@ const CATEGORIES = [
           {
             title: "Slug Sex Life",
             desc: "By Odeya Basha. Edited a performance art piece by Odeya, a visual artist based in Jerusalem.",
-            // TEMPORARY: still using the locked/passwordOnly pattern
-            // (see Biofeedback above) as a placeholder - the real intent
-            // is an openly-viewable embedded video with its own poster
-            // frame, once the video file is actually available (still
-            // not found in the repo as of this pass). Swap this whole
-            // entry for a normal `links: [{ url: "..." }]` (a Vimeo/
-            // YouTube/etc URL that buildMediaEmbed understands) plus
-            // `poster` set to a frame from that video once it lands.
-            links: [{ label: "Request Screener", passwordOnly: true }],
+            // Openly viewable, unlike Biofeedback above - a self-hosted
+            // video file (see parseEmbedUrl's "file" platform), click-
+            // to-play with a real frame from the video as its poster.
+            links: [{
+              url: "videos/SEX LIFE OF SLUGS SMALL.mp4",
+              thumbnail: "PHOTOS/EDITOR/PERFORMANCE DOCUMENTATION/Slug Sex Life.jpg",
+            }],
           },
         ],
       },
@@ -516,6 +514,15 @@ const NEWS = [
 // outbound link.
 // ---------------------------------------------------------------
 function parseEmbedUrl(url) {
+  // A self-hosted video file (e.g. Performance Documentation's openly-
+  // viewable pieces, no Vimeo/YouTube account needed) - detected by
+  // extension since a plain relative path like "videos/foo.mp4" throws
+  // when handed to the URL constructor below rather than parsing as a
+  // recognized platform.
+  if (/\.(mp4|webm|mov|m4v)$/i.test(url)) {
+    return { platform: "file", embedUrl: url };
+  }
+
   let u;
   try {
     u = new URL(url);
@@ -657,6 +664,19 @@ function buildMediaEmbed(link, title, altText) {
   facade.appendChild(play);
 
   facade.addEventListener("click", () => {
+    if (embed.platform === "file") {
+      const video = document.createElement("video");
+      video.className = "media-embed-video";
+      video.src = embed.embedUrl;
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.title = title;
+      wrap.innerHTML = "";
+      wrap.appendChild(video);
+      return;
+    }
+
     const iframe = document.createElement("iframe");
     const sep = embed.embedUrl.includes("?") ? "&" : "?";
     // Autoplay is only meaningful for Vimeo/YouTube — Drive/Instagram

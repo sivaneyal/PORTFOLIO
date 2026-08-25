@@ -1227,6 +1227,16 @@ section {
   display: block;
 }
 
+/* A self-hosted video file (see parseEmbedUrl's "file" platform) swaps
+   in a native <video> instead of an <iframe> - same click-to-play
+   facade, same box. */
+.media-embed-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}
+
 /* A plain external-link card with a real preview image (e.g. a
    screenshot of a curated website) instead of a click-to-play video
    facade - the whole card just links straight out to the site. */
