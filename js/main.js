@@ -216,9 +216,12 @@ const CATEGORIES = [
             // Openly viewable, unlike Biofeedback above - a self-hosted
             // video file (see parseEmbedUrl's "file" platform), click-
             // to-play with a real frame from the video as its poster.
+            // aspect: 4/3 to match Biofeedback's .work-thumb size, since
+            // the two sit side by side (the embed's own default is 16/9).
             links: [{
               url: "videos/SEX LIFE OF SLUGS SMALL.mp4",
               thumbnail: "PHOTOS/EDITOR/PERFORMANCE DOCUMENTATION/Slug Sex Life.jpg",
+              aspect: "4 / 3",
             }],
           },
         ],
@@ -625,6 +628,10 @@ function buildMediaEmbed(link, title, altText) {
   const wrap = document.createElement("div");
   wrap.className = "media-embed";
   wrap.dataset.platform = embed.platform;
+  // link.aspect: an opt-in override for the embed box's aspect-ratio
+  // (default 16/9, see .media-embed) - e.g. Slug Sex Life uses 4/3 to
+  // match Biofeedback's .work-thumb size since they sit side by side.
+  if (link.aspect) wrap.style.aspectRatio = link.aspect;
 
   const facade = document.createElement("button");
   facade.type = "button";
