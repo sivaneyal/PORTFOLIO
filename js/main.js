@@ -431,6 +431,11 @@ const CATEGORIES = [
         year: "2023",
         desc: "18-year-old Anton hangs out with thugs who steal cell phones and blackmail their owners. But when Anton gets a hold of Meitar's phone, he becomes obsessed with the world she has compulsively recorded.",
         photos: ["PHOTOS/NEWS/DIGITAL DIARY POSTER.jpg"],
+        // A movie poster, not a production still - show it in full
+        // (no crop) at its own portrait proportions instead of the
+        // default 4:3 edge-to-edge crop frame.
+        galleryFit: "contain",
+        galleryAspect: "4 / 5",
         credits: [
           ["Director", "Yasmine Scheft"],
           ["Writers", "Pratt Keshet, Yasmine Scheft"],
@@ -986,8 +991,14 @@ function buildProjectSection(label, text) {
 // (e.g. Directing's Venus Sucks); anything else (a bare count, or no
 // photos yet) falls back to the placeholder-frame look this always
 // had, with no other code changes needed when real photos do land.
+// options.fit: "contain" shows the whole image within the frame
+// instead of the default edge-to-edge crop (see options.aspect) - for
+// a poster or other image that must never be cropped (e.g. Production's
+// Digital Diary). options.aspect: a CSS aspect-ratio to match the
+// image's own proportions, so "contain" doesn't letterbox it.
 // ---------------------------------------------------------------
-function buildProjectGallery(photos, title) {
+function buildProjectGallery(photos, title, options = {}) {
+  const { fit = "cover", aspect = null } = options;
   const realPhotos = Array.isArray(photos) ? photos : null;
   const count = realPhotos ? realPhotos.length : photos;
   // A slide is a video (not a photo) when it's an object with a
@@ -1000,6 +1011,8 @@ function buildProjectGallery(photos, title) {
 
   const main = document.createElement("div");
   main.className = "project-gallery-main";
+  if (fit === "contain") main.classList.add("project-gallery-main--contain");
+  if (aspect) main.style.aspectRatio = aspect;
   wrap.appendChild(main);
 
   function showPlaceholder(i) {
@@ -1099,7 +1112,10 @@ function buildProjectPanel(item, mediaRole) {
   // curated website's screenshot via a link.thumbnail below) instead
   // of an actual film/photo shoot to gallery-ize.
   if (item.photoCount !== 0) {
-    el.appendChild(buildProjectGallery(item.photos || item.photoCount || 3, item.title));
+    el.appendChild(buildProjectGallery(item.photos || item.photoCount || 3, item.title, {
+      fit: item.galleryFit,
+      aspect: item.galleryAspect,
+    }));
   }
 
   const info = document.createElement("div");
@@ -1625,7 +1641,6 @@ function openCategoryOverlay(categoryId, triggerEl, options = {}) {
   bodyEl.classList.remove("overlay-body--gallery");
   activeGalleryStep = null;
   activeGalleryUnzoom = null;
-  activeGalleryBackToGrid = null;
 
   // Tracks whichever sub-tab ends up active once rendering settles
   // (a requested tabSlug that doesn't match anything falls back to
@@ -1686,7 +1701,6 @@ function closeCategoryOverlay(options = {}) {
   unlockBodyScroll();
   activeGalleryStep = null;
   activeGalleryUnzoom = null;
-  activeGalleryBackToGrid = null;
 
   if (overlayLastFocused && typeof overlayLastFocused.focus === "function") {
     overlayLastFocused.focus();
@@ -1910,9 +1924,6 @@ function initCategoryOverlay() {
       // If a gallery photo is zoomed in, the first Escape backs out of
       // the zoom rather than closing the whole overlay.
       if (activeGalleryUnzoom && activeGalleryUnzoom()) return;
-      // From inside a series' browse/stage view, the next Escape backs
-      // out to that series' grid rather than closing the whole overlay.
-      if (activeGalleryBackToGrid && activeGalleryBackToGrid()) return;
       closeCategoryOverlay();
       return;
     }
@@ -1929,14 +1940,12 @@ function initCategoryOverlay() {
 // click-to-zoom stage, and a persistent caption (title/year/note/
 // model) that stays visible while browsing. Placeholder photos stand
 // in for real images (per series `photoCount`) until real photos are
-// supplied. `activeGalleryStep`/`activeGalleryUnzoom`/
-// `activeGalleryBackToGrid` are module-level so the single global
-// keydown handler (see initCategoryOverlay) can reach whichever
-// gallery instance is currently open.
+// supplied. `activeGalleryStep`/`activeGalleryUnzoom` are module-level
+// so the single global keydown handler (see initCategoryOverlay) can
+// reach whichever gallery instance is currently open.
 // ---------------------------------------------------------------
 let activeGalleryStep = null;
 let activeGalleryUnzoom = null;
-let activeGalleryBackToGrid = null;
 
 // ---------------------------------------------------------------
 // A casual-download deterrent for the Photography gallery images
@@ -1954,26 +1963,17 @@ function deterImageDownload(img) {
 function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   bodyEl.classList.add("overlay-body--gallery");
 
-  // mode: "grid" shows the active series as a gallery of thumbnails
-  // (what a series *is*, at a glance); "browse" is the one-by-one
-  // swipe/zoom viewer, entered by clicking any thumbnail.
-  const state = { seriesIndex: 0, photoIndex: 0, mode: "grid" };
+  // Contact-sheet layout: one photo shown large at a time (state.photoIndex
+  // within the active series) with a caption beside it, and a horizontal
+  // strip of every photo in the series below for reference/selection -
+  // there's no separate "grid" screen to navigate back out of.
+  const state = { seriesIndex: 0, photoIndex: 0 };
 
   const viewer = document.createElement("div");
   viewer.className = "gallery-viewer";
 
-  const gridEl = document.createElement("div");
-  gridEl.className = "gallery-grid";
-
-  const browseEl = document.createElement("div");
-  browseEl.className = "gallery-browse";
-
-  const backBtn = document.createElement("button");
-  backBtn.type = "button";
-  backBtn.className = "gallery-back";
-  backBtn.innerHTML = '<span aria-hidden="true">&#8249;</span> Back to Gallery';
-  backBtn.addEventListener("click", () => setMode("grid"));
-  browseEl.appendChild(backBtn);
+  const stageRow = document.createElement("div");
+  stageRow.className = "gallery-stage-row";
 
   const stage = document.createElement("div");
   stage.className = "gallery-stage";
@@ -1981,6 +1981,23 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   const photoEl = document.createElement("div");
   photoEl.className = "gallery-photo";
   stage.appendChild(photoEl);
+
+  // Two stacked <img> layers crossfade between photos (see renderStage):
+  // whichever is "front" (activeLayer) is fully opaque, the other is
+  // primed with the next photo and faded in only once it has loaded.
+  const imgLayers = [document.createElement("img"), document.createElement("img")];
+  imgLayers.forEach((img) => {
+    img.className = "gallery-photo-img";
+    deterImageDownload(img);
+    photoEl.appendChild(img);
+  });
+  let activeLayer = 0;
+
+  const placeholderEl = document.createElement("div");
+  placeholderEl.className = "gallery-photo-placeholder";
+  const placeholderLabel = document.createElement("span");
+  placeholderEl.appendChild(placeholderLabel);
+  photoEl.appendChild(placeholderEl);
 
   const prevBtn = document.createElement("button");
   prevBtn.type = "button";
@@ -1995,18 +2012,18 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   nextBtn.setAttribute("aria-label", "Next photo");
   nextBtn.innerHTML = '<span aria-hidden="true">&#8250;</span>';
   stage.appendChild(nextBtn);
-  browseEl.appendChild(stage);
-
-  const dotsEl = document.createElement("div");
-  dotsEl.className = "gallery-dots";
-  browseEl.appendChild(dotsEl);
 
   const caption = document.createElement("div");
-  caption.className = "gallery-caption";
+  caption.className = "gallery-caption gallery-caption--sidebar";
 
-  viewer.appendChild(gridEl);
-  viewer.appendChild(browseEl);
-  viewer.appendChild(caption);
+  stageRow.appendChild(stage);
+  stageRow.appendChild(caption);
+
+  const stripEl = document.createElement("div");
+  stripEl.className = "gallery-strip";
+
+  viewer.appendChild(stageRow);
+  viewer.appendChild(stripEl);
   bodyEl.appendChild(viewer);
 
   const pills = cat.series.map((series, i) => {
@@ -2023,79 +2040,58 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     return series.photos ? series.photos.length : (series.photoCount || 1);
   }
 
-  function renderGrid() {
-    const series = cat.series[state.seriesIndex];
-    const photoCount = seriesPhotoCount(series);
-    gridEl.innerHTML = "";
-    for (let i = 0; i < photoCount; i++) {
-      const thumb = document.createElement("button");
-      thumb.type = "button";
-      thumb.className = "gallery-grid-thumb";
-      if (series.photos) {
-        const img = document.createElement("img");
-        img.src = series.photos[i];
-        img.alt = "";
-        img.loading = "lazy";
-        deterImageDownload(img);
-        // A missing/renamed file falls back to the plain numbered
-        // placeholder instead of a broken-image icon.
-        img.addEventListener("error", () => {
-          img.remove();
-          const label = document.createElement("span");
-          label.textContent = String(i + 1);
-          thumb.appendChild(label);
-        }, { once: true });
-        thumb.appendChild(img);
-      } else {
-        const label = document.createElement("span");
-        label.textContent = String(i + 1);
-        thumb.appendChild(label);
-      }
-      thumb.setAttribute("aria-label", `Open photo ${i + 1} of ${photoCount}`);
-      thumb.addEventListener("click", () => {
-        state.photoIndex = i;
-        setMode("browse");
-      });
-      gridEl.appendChild(thumb);
-    }
-  }
-
   function showStagePlaceholder(series, photoCount) {
-    photoEl.innerHTML = "";
-    const placeholder = document.createElement("div");
-    placeholder.className = "gallery-photo-placeholder";
-    const label = document.createElement("span");
-    label.textContent = `Image Placeholder - ${series.title} (${state.photoIndex + 1}/${photoCount})`;
-    placeholder.appendChild(label);
-    photoEl.appendChild(placeholder);
+    placeholderLabel.textContent = `Image Placeholder - ${series.title} (${state.photoIndex + 1}/${photoCount})`;
+    placeholderEl.classList.add("is-visible");
+    imgLayers.forEach((img) => img.classList.remove("is-visible"));
   }
 
-  function renderStage() {
+  function hideStagePlaceholder() {
+    placeholderEl.classList.remove("is-visible");
+  }
+
+  // instant: true for a freshly-activated series (there's no prior photo
+  // to fade from) - swaps the front layer's src directly. Otherwise the
+  // back layer is primed with the new photo and only faded in once it
+  // has actually loaded, so the crossfade never dips through a blank or
+  // broken frame.
+  function renderStage(instant) {
     const series = cat.series[state.seriesIndex];
     const photoCount = seriesPhotoCount(series);
-
     photoEl.classList.remove("is-zoomed");
-    photoEl.innerHTML = "";
-    if (series.photos) {
-      const altText = `${series.title} - photo ${state.photoIndex + 1} of ${photoCount}`;
-      const img = document.createElement("img");
-      img.className = "gallery-photo-img";
-      img.src = series.photos[state.photoIndex];
-      img.alt = altText;
-      deterImageDownload(img);
-      img.addEventListener("error", () => showStagePlaceholder(series, photoCount), { once: true });
-      photoEl.appendChild(img);
-    } else {
+
+    if (!series.photos) {
       showStagePlaceholder(series, photoCount);
+      return;
+    }
+    hideStagePlaceholder();
+
+    const altText = `${series.title} - photo ${state.photoIndex + 1} of ${photoCount}`;
+    const src = series.photos[state.photoIndex];
+
+    if (instant) {
+      const front = imgLayers[activeLayer];
+      const back = imgLayers[1 - activeLayer];
+      back.classList.remove("is-visible");
+      back.onload = null;
+      back.onerror = null;
+      front.onload = null;
+      front.onerror = () => showStagePlaceholder(series, photoCount);
+      front.alt = altText;
+      front.src = src;
+      front.classList.add("is-visible");
+      return;
     }
 
-    dotsEl.innerHTML = "";
-    dotsEl.style.display = photoCount > 1 ? "flex" : "none";
-    for (let i = 0; i < photoCount; i++) {
-      const dot = document.createElement("span");
-      dot.className = "gallery-dot" + (i === state.photoIndex ? " is-active" : "");
-      dotsEl.appendChild(dot);
-    }
+    const back = imgLayers[1 - activeLayer];
+    back.alt = altText;
+    back.onerror = () => showStagePlaceholder(series, photoCount);
+    back.onload = () => {
+      imgLayers[activeLayer].classList.remove("is-visible");
+      back.classList.add("is-visible");
+      activeLayer = 1 - activeLayer;
+    };
+    back.src = src;
   }
 
   function renderCaption() {
@@ -2139,70 +2135,108 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     }
   }
 
-  // Caption (title/year/note/model) stays visible in both modes;
-  // only the grid-vs-single-photo view underneath it swaps.
-  function setMode(mode) {
-    state.mode = mode;
-    gridEl.style.display = mode === "grid" ? "grid" : "none";
-    browseEl.style.display = mode === "browse" ? "block" : "none";
-    if (mode === "grid") renderGrid();
-    else renderStage();
+  // The contact-sheet strip: one small square frame per photo in the
+  // active series. Rebuilt whenever the series changes; within a series,
+  // updateActiveThumb just toggles which frame carries the accent border.
+  let stripThumbs = [];
+  function renderStrip() {
+    const series = cat.series[state.seriesIndex];
+    const photoCount = seriesPhotoCount(series);
+    stripEl.innerHTML = "";
+    stripThumbs = [];
+    for (let i = 0; i < photoCount; i++) {
+      const thumb = document.createElement("button");
+      thumb.type = "button";
+      thumb.className = "gallery-strip-thumb" + (i === state.photoIndex ? " is-active" : "");
+      if (series.photos) {
+        const img = document.createElement("img");
+        img.src = series.photos[i];
+        img.alt = "";
+        img.loading = "lazy";
+        deterImageDownload(img);
+        // A missing/renamed file falls back to the plain numbered
+        // placeholder instead of a broken-image icon.
+        img.addEventListener("error", () => {
+          img.remove();
+          const label = document.createElement("span");
+          label.textContent = String(i + 1);
+          thumb.appendChild(label);
+        }, { once: true });
+        thumb.appendChild(img);
+      } else {
+        const label = document.createElement("span");
+        label.textContent = String(i + 1);
+        thumb.appendChild(label);
+      }
+      thumb.setAttribute("aria-label", `Show photo ${i + 1} of ${photoCount}`);
+      thumb.addEventListener("click", () => selectPhoto(i));
+      stripEl.appendChild(thumb);
+      stripThumbs.push(thumb);
+    }
+  }
+
+  function updateActiveThumb(scrollIntoView) {
+    stripThumbs.forEach((btn, j) => {
+      const active = j === state.photoIndex;
+      btn.classList.toggle("is-active", active);
+      if (active && scrollIntoView) {
+        btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+    });
+  }
+
+  function selectPhoto(i) {
+    if (i === state.photoIndex) return;
+    state.photoIndex = i;
+    renderStage(false);
+    updateActiveThumb(true);
   }
 
   let initializing = true;
-  function setSeries(i) {
+  // Shared by setSeries and step()'s series-rollover: rebuilds the
+  // caption/strip/stage for a newly-active series and lands on
+  // photoIndex within it (0 moving forward, the last photo moving back).
+  function activateSeries(index, photoIndex) {
     const count = cat.series.length;
-    state.seriesIndex = ((i % count) + count) % count;
-    state.photoIndex = 0;
+    state.seriesIndex = ((index % count) + count) % count;
+    state.photoIndex = photoIndex;
     renderCaption();
-    setMode("grid");
+    renderStrip();
+    renderStage(true);
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
     if (onTabChange) onTabChange(slugify(cat.series[state.seriesIndex].title), initializing);
+    const activeThumb = stripThumbs[state.photoIndex];
+    if (activeThumb) activeThumb.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+  }
+
+  function setSeries(i) {
+    activateSeries(i, 0);
   }
 
   // Stepping past the last/first photo of a series rolls over into
   // the next/previous series — one continuous swipe/arrow gesture
   // covers both "move within a series" and "move between series".
-  // Only active in browse mode.
   function step(direction) {
-    if (state.mode !== "browse") return;
     const series = cat.series[state.seriesIndex];
     const photoCount = seriesPhotoCount(series);
     const newPhoto = state.photoIndex + direction;
 
     if (newPhoto >= photoCount) {
-      const count = cat.series.length;
-      state.seriesIndex = (state.seriesIndex + 1) % count;
-      state.photoIndex = 0;
-      renderCaption();
-      pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
-      renderStage();
+      setSeries(state.seriesIndex + 1);
     } else if (newPhoto < 0) {
       const count = cat.series.length;
-      state.seriesIndex = ((state.seriesIndex - 1) % count + count) % count;
-      state.photoIndex = seriesPhotoCount(cat.series[state.seriesIndex]) - 1;
-      renderCaption();
-      pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
-      renderStage();
+      const prevIndex = ((state.seriesIndex - 1) % count + count) % count;
+      activateSeries(prevIndex, seriesPhotoCount(cat.series[prevIndex]) - 1);
     } else {
       state.photoIndex = newPhoto;
-      renderStage();
+      renderStage(false);
+      updateActiveThumb(true);
     }
   }
 
   function unzoom() {
     if (!photoEl.classList.contains("is-zoomed")) return false;
     photoEl.classList.remove("is-zoomed");
-    return true;
-  }
-
-  // Escape's second-tier behavior: back out of the single-photo browse
-  // view to the current series' grid, rather than closing the whole
-  // overlay. A no-op (returns false) when already in grid mode, so the
-  // global handler falls through to closeCategoryOverlay as before.
-  function backToGrid() {
-    if (state.mode !== "browse") return false;
-    setMode("grid");
     return true;
   }
 
@@ -2226,7 +2260,6 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
 
   activeGalleryStep = step;
   activeGalleryUnzoom = unzoom;
-  activeGalleryBackToGrid = backToGrid;
 
   const startIndex = initialTabSlug
     ? Math.max(0, cat.series.findIndex((s) => slugify(s.title) === initialTabSlug))

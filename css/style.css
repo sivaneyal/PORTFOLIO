@@ -1455,6 +1455,13 @@ section {
   display: block;
 }
 
+/* Opt-in for images that must never be cropped (e.g. a movie poster) -
+   paired with a matching aspect-ratio (set inline per-project via
+   options.aspect) so "contain" doesn't letterbox it. */
+.project-gallery-main--contain .project-gallery-main-img {
+  object-fit: contain;
+}
+
 .project-gallery-thumbs {
   display: flex;
   flex-wrap: wrap;
@@ -1587,61 +1594,22 @@ section {
   align-items: center;
 }
 
-/* Series-as-a-gallery: a grid of thumbnails represents the whole
-   series at a glance. Clicking any of them opens .gallery-browse
-   (the one-by-one stage) at that photo. */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  width: 100%;
-}
-
-.gallery-grid-thumb {
-  aspect-ratio: 1;
-  background:
-    repeating-linear-gradient(
-      135deg,
-      rgba(242, 240, 236, 0.04),
-      rgba(242, 240, 236, 0.04) 2px,
-      transparent 2px,
-      transparent 14px
-    ),
-    var(--bg-raised);
-  border: 1px solid var(--line);
+/* Contact-sheet layout: the large stage + caption sit side by side
+   (stacked on narrow screens), with the full-series thumbnail strip
+   running below as one continuous horizontally-scrolling row. */
+.gallery-stage-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  color: var(--bone-faint);
-  font-size: 0.9rem;
-  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
-}
-
-.gallery-grid-thumb img {
+  align-items: flex-start;
+  gap: 40px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  /* Casual-download deterrent, paired with deterImageDownload in JS -
-     not real protection, just removes the easy drag/select affordance. */
-  -webkit-user-drag: none;
-  user-select: none;
-  -webkit-touch-callout: none;
 }
 
-.gallery-grid-thumb:hover,
-.gallery-grid-thumb:focus-visible {
-  border-color: var(--accent);
-  color: var(--bone);
-  transform: translateY(-3px);
-}
-
-.gallery-browse {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+@media (max-width: 760px) {
+  .gallery-stage-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
 }
 
 .gallery-back {
@@ -1670,12 +1638,13 @@ section {
 
 .gallery-stage {
   position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
   width: 100%;
-  max-width: 920px;
+  max-width: 760px;
   aspect-ratio: 3 / 2;
-  margin: 0 auto;
   touch-action: pan-y;
-  transition: max-width 0.5s var(--ease), aspect-ratio 0.5s var(--ease);
+  transition: aspect-ratio 0.5s var(--ease);
 }
 
 @media (max-width: 640px) {
@@ -1685,6 +1654,7 @@ section {
 }
 
 .gallery-photo {
+  position: relative;
   width: 100%;
   height: 100%;
   cursor: zoom-in;
@@ -1694,9 +1664,13 @@ section {
   cursor: zoom-out;
 }
 
+/* Both the placeholder and the two crossfading photo layers below stack
+   on top of one another edge to edge, then toggle opacity via
+   .is-visible - that overlap is what makes the swap a real crossfade
+   instead of a fade-to-blank-then-in. */
 .gallery-photo-placeholder {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background:
     repeating-linear-gradient(
       135deg,
@@ -1712,7 +1686,14 @@ section {
   justify-content: center;
   text-align: center;
   padding: 24px;
-  transition: transform 0.5s var(--ease), border-color 0.4s var(--ease);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease), transform 0.5s var(--ease), border-color 0.4s var(--ease);
+}
+
+.gallery-photo-placeholder.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .gallery-photo.is-zoomed .gallery-photo-placeholder {
@@ -1721,16 +1702,23 @@ section {
 }
 
 .gallery-photo-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
-  transition: transform 0.5s var(--ease);
+  opacity: 0;
+  transition: opacity 0.45s var(--ease), transform 0.5s var(--ease);
   /* Casual-download deterrent, paired with deterImageDownload in JS -
      not real protection, just removes the easy drag/select affordance. */
   -webkit-user-drag: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+.gallery-photo-img.is-visible {
+  opacity: 1;
 }
 
 .gallery-photo.is-zoomed .gallery-photo-img {
@@ -1771,29 +1759,37 @@ section {
 .gallery-nav--prev { left: -10px; }
 .gallery-nav--next { right: -10px; }
 
-.gallery-dots {
-  display: flex;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.gallery-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--line);
-  transition: background 0.3s var(--ease), transform 0.3s var(--ease);
-}
-
-.gallery-dot.is-active {
-  background: var(--accent);
-  transform: scale(1.4);
-}
-
 .gallery-caption {
   max-width: 560px;
   margin: 32px auto 0;
   text-align: center;
+}
+
+/* The contact-sheet stage's caption sits beside the large photo
+   instead of centered underneath it - same fields, different frame. */
+.gallery-caption--sidebar {
+  flex: 0 0 280px;
+  max-width: 280px;
+  margin: 0;
+  padding-top: 4px;
+  text-align: left;
+}
+
+.gallery-caption--sidebar .gallery-caption-meta {
+  justify-content: flex-start;
+}
+
+@media (max-width: 760px) {
+  .gallery-caption--sidebar {
+    flex: none;
+    width: 100%;
+    max-width: 560px;
+    text-align: center;
+  }
+
+  .gallery-caption--sidebar .gallery-caption-meta {
+    justify-content: center;
+  }
 }
 
 .gallery-caption-title {
@@ -1840,6 +1836,89 @@ section {
 @media (max-width: 640px) {
   .gallery-nav--prev { left: 6px; }
   .gallery-nav--next { right: 6px; }
+}
+
+/* The film-strip row of small square frames underneath the stage -
+   one per photo in the active series. Scrolls horizontally as one
+   continuous strip rather than wrapping to multiple rows. */
+.gallery-strip {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 28px;
+  padding-bottom: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.gallery-strip::-webkit-scrollbar {
+  height: 6px;
+}
+
+.gallery-strip::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.gallery-strip-thumb {
+  flex: 0 0 auto;
+  width: 84px;
+  height: 84px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--bone-faint);
+  font-size: 0.7rem;
+  opacity: 0.55;
+  transition: border-color 0.3s var(--ease), opacity 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+@media (max-width: 640px) {
+  .gallery-strip-thumb {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+.gallery-strip-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* Casual-download deterrent, paired with deterImageDownload in JS -
+     not real protection, just removes the easy drag/select affordance. */
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.gallery-strip-thumb:hover,
+.gallery-strip-thumb:focus-visible {
+  opacity: 0.85;
+  border-color: var(--bone-dim);
+}
+
+/* The currently-displayed frame - a visible accent-colored border,
+   using box-shadow instead of a wider border so the strip doesn't
+   shift layout when the active frame changes. */
+.gallery-strip-thumb.is-active {
+  opacity: 1;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 /* ============================================================
