@@ -222,42 +222,103 @@ const CATEGORIES = [
     description: "",
     // Photography uses its own swipe/zoom gallery viewer (see
     // renderGallery in this file) instead of the standard work-grid —
-    // `series` replaces `items`/`groups` for this category. Each
-    // series' `photoCount` placeholder slides stand in for real
-    // photos, which will be supplied separately; `year`/`note` left
-    // as "" render as visible TBD placeholders rather than being
-    // hidden, so they're easy to fill in later.
+    // `series` replaces `items`/`groups` for this category. A series
+    // with a real `photos` array renders those images (grid thumbs +
+    // full-size stage, both lightbox-zoomable); `photoCount` alone
+    // still falls back to numbered placeholder slides for series with
+    // no photos yet. `year`/`note` left as "" render as visible TBD
+    // placeholders rather than being hidden, so they're easy to fill
+    // in later.
     series: [
       {
         title: "Strangers",
         year: "",
         note: "",
-        photoCount: 3,
+        photos: [
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 1.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 2.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 3.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 4.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 5.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 6.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 7.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 8.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 9.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 10.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 11.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 12.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 13.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 14.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 15.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 16.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 17.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 18.jpg",
+          "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 19.jpg",
+        ],
       },
       {
         title: "ThE StAr",
         model: "Eden Degany",
         year: "",
         note: "",
-        photoCount: 3,
+        photos: [
+          "PHOTOS/PHOTOGRAPHY/THE STAR/The Star 1.jpg",
+          "PHOTOS/PHOTOGRAPHY/THE STAR/The Star 2.jpg",
+          "PHOTOS/PHOTOGRAPHY/THE STAR/The Star 3.jpg",
+          "PHOTOS/PHOTOGRAPHY/THE STAR/The Star 4.jpg",
+        ],
       },
       {
         title: "Magic Realism",
         year: "",
         note: "",
-        photoCount: 3,
+        photos: [
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 1.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 2.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 3.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 4.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 5.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 6.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 7.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 8.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 9.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 10.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 11.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 12.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 13.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 14.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 15.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 16.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 17.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 18.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 19.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 20.jpg",
+          "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 21.jpg",
+        ],
       },
       {
         title: "When in Heaven",
         year: "",
         note: "Magical fairies of \"heaven\", a special secret spot by the Jordan River.",
-        photoCount: 3,
+        photos: [
+          "PHOTOS/PHOTOGRAPHY/WHEN IN HEAVEN/When In Heaven 1.jpg",
+          "PHOTOS/PHOTOGRAPHY/WHEN IN HEAVEN/When In Heaven 2.jpg",
+          "PHOTOS/PHOTOGRAPHY/WHEN IN HEAVEN/When In Heaven 3.jpg",
+          "PHOTOS/PHOTOGRAPHY/WHEN IN HEAVEN/When In Heaven 4.jpg",
+          "PHOTOS/PHOTOGRAPHY/WHEN IN HEAVEN/When In Heaven 5.jpg",
+          "PHOTOS/PHOTOGRAPHY/WHEN IN HEAVEN/When In Heaven 6.jpg",
+        ],
       },
       {
         title: "All This Crazy Gift Of Time",
         year: "",
         note: "Early adulthood memoir.",
-        photoCount: 3,
+        photos: [
+          "PHOTOS/PHOTOGRAPHY/ALL THIS CRAZY GIFT OF TIME/All This Crazy Gift Of Time 1.jpg",
+          "PHOTOS/PHOTOGRAPHY/ALL THIS CRAZY GIFT OF TIME/All This Crazy Gift Of Time 2.jpg",
+          "PHOTOS/PHOTOGRAPHY/ALL THIS CRAZY GIFT OF TIME/All This Crazy Gift Of Time 3.jpg",
+          "PHOTOS/PHOTOGRAPHY/ALL THIS CRAZY GIFT OF TIME/All This Crazy Gift Of Time 4.jpg",
+        ],
       },
     ],
   },
@@ -1943,17 +2004,37 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     return btn;
   });
 
+  function seriesPhotoCount(series) {
+    return series.photos ? series.photos.length : (series.photoCount || 1);
+  }
+
   function renderGrid() {
     const series = cat.series[state.seriesIndex];
-    const photoCount = series.photoCount || 1;
+    const photoCount = seriesPhotoCount(series);
     gridEl.innerHTML = "";
     for (let i = 0; i < photoCount; i++) {
       const thumb = document.createElement("button");
       thumb.type = "button";
       thumb.className = "gallery-grid-thumb";
-      const label = document.createElement("span");
-      label.textContent = String(i + 1);
-      thumb.appendChild(label);
+      if (series.photos) {
+        const img = document.createElement("img");
+        img.src = series.photos[i];
+        img.alt = "";
+        img.loading = "lazy";
+        // A missing/renamed file falls back to the plain numbered
+        // placeholder instead of a broken-image icon.
+        img.addEventListener("error", () => {
+          img.remove();
+          const label = document.createElement("span");
+          label.textContent = String(i + 1);
+          thumb.appendChild(label);
+        }, { once: true });
+        thumb.appendChild(img);
+      } else {
+        const label = document.createElement("span");
+        label.textContent = String(i + 1);
+        thumb.appendChild(label);
+      }
       thumb.setAttribute("aria-label", `Open photo ${i + 1} of ${photoCount}`);
       thumb.addEventListener("click", () => {
         state.photoIndex = i;
@@ -1963,11 +2044,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     }
   }
 
-  function renderStage() {
-    const series = cat.series[state.seriesIndex];
-    const photoCount = series.photoCount || 1;
-
-    photoEl.classList.remove("is-zoomed");
+  function showStagePlaceholder(series, photoCount) {
     photoEl.innerHTML = "";
     const placeholder = document.createElement("div");
     placeholder.className = "gallery-photo-placeholder";
@@ -1975,6 +2052,25 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     label.textContent = `Image Placeholder - ${series.title} (${state.photoIndex + 1}/${photoCount})`;
     placeholder.appendChild(label);
     photoEl.appendChild(placeholder);
+  }
+
+  function renderStage() {
+    const series = cat.series[state.seriesIndex];
+    const photoCount = seriesPhotoCount(series);
+
+    photoEl.classList.remove("is-zoomed");
+    photoEl.innerHTML = "";
+    if (series.photos) {
+      const altText = `${series.title} - photo ${state.photoIndex + 1} of ${photoCount}`;
+      const img = document.createElement("img");
+      img.className = "gallery-photo-img";
+      img.src = series.photos[state.photoIndex];
+      img.alt = altText;
+      img.addEventListener("error", () => showStagePlaceholder(series, photoCount), { once: true });
+      photoEl.appendChild(img);
+    } else {
+      showStagePlaceholder(series, photoCount);
+    }
 
     dotsEl.innerHTML = "";
     dotsEl.style.display = photoCount > 1 ? "flex" : "none";
@@ -2043,7 +2139,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   function step(direction) {
     if (state.mode !== "browse") return;
     const series = cat.series[state.seriesIndex];
-    const photoCount = series.photoCount || 1;
+    const photoCount = seriesPhotoCount(series);
     const newPhoto = state.photoIndex + direction;
 
     if (newPhoto >= photoCount) {
@@ -2056,7 +2152,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     } else if (newPhoto < 0) {
       const count = cat.series.length;
       state.seriesIndex = ((state.seriesIndex - 1) % count + count) % count;
-      state.photoIndex = (cat.series[state.seriesIndex].photoCount || 1) - 1;
+      state.photoIndex = seriesPhotoCount(cat.series[state.seriesIndex]) - 1;
       renderCaption();
       pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
       renderStage();
