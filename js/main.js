@@ -212,7 +212,7 @@ const CATEGORIES = [
           },
           {
             title: "Slug Sex Life",
-            desc: "By Odeya Basha. Edited a performance art piece by Odeya, a visual artist based in Jerusalem.",
+            desc: "Edited a performance art teaser of Odeya Basha, a visual artist based in Jerusalem.",
             // Openly viewable, unlike Biofeedback above - a self-hosted
             // video file (see parseEmbedUrl's "file" platform), click-
             // to-play with a real frame from the video as its poster.
