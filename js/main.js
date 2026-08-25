@@ -210,6 +210,19 @@ const CATEGORIES = [
             links: [{ label: "Request Screener", passwordOnly: true }],
             poster: "PHOTOS/EDITOR/PERFORMANCE DOCUMENTATION/Biofeedback.jpg",
           },
+          {
+            title: "SEX LIFE OF SLUGS",
+            desc: "By Odeya Basha. Edited a performance art piece by Odeya, a visual artist based in Jerusalem.",
+            // passwordOnly: same protected pattern as Biofeedback - no
+            // real video url in this file at all, requests route through
+            // Sivan via the Request Screener mailto button below.
+            // TODO: no poster still has been supplied for this one yet
+            // (see poster on Biofeedback above) - add `poster: "PHOTOS/
+            // EDITOR/PERFORMANCE DOCUMENTATION/Sex Life Of Slugs.jpg"`
+            // once a frame is available; buildPasswordOnlyMedia falls
+            // back to the plain placeholder frame without it.
+            links: [{ label: "Request Screener", passwordOnly: true }],
+          },
         ],
       },
     ],
