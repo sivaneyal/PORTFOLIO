@@ -232,8 +232,8 @@ const CATEGORIES = [
     series: [
       {
         title: "Strangers",
-        year: "",
-        note: "",
+        hideYear: true,
+        hideNote: true,
         photos: [
           "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 1.jpg",
           "PHOTOS/PHOTOGRAPHY/STRANGERS/Strangers 2.jpg",
@@ -259,7 +259,7 @@ const CATEGORIES = [
       {
         title: "ThE StAr",
         model: "Eden Degany",
-        year: "",
+        year: "2024",
         note: "",
         photos: [
           "PHOTOS/PHOTOGRAPHY/THE STAR/The Star 1.jpg",
@@ -270,8 +270,8 @@ const CATEGORIES = [
       },
       {
         title: "Magic Realism",
-        year: "",
-        note: "",
+        hideYear: true,
+        hideNote: true,
         photos: [
           "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 1.jpg",
           "PHOTOS/PHOTOGRAPHY/MAGIC REALISM/Magic Realism 2.jpg",
@@ -298,7 +298,7 @@ const CATEGORIES = [
       },
       {
         title: "When in Heaven",
-        year: "",
+        year: "2023",
         note: "Magical fairies of \"heaven\", a special secret spot by the Jordan River.",
         photos: [
           "PHOTOS/PHOTOGRAPHY/WHEN IN HEAVEN/When In Heaven 1.jpg",
@@ -311,7 +311,7 @@ const CATEGORIES = [
       },
       {
         title: "All This Crazy Gift Of Time",
-        year: "",
+        hideYear: true,
         note: "Early adulthood memoir.",
         photos: [
           "PHOTOS/PHOTOGRAPHY/ALL THIS CRAZY GIFT OF TIME/All This Crazy Gift Of Time 1.jpg",
@@ -2089,26 +2089,37 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     titleEl.textContent = series.title;
     caption.appendChild(titleEl);
 
-    const metaRow = document.createElement("div");
-    metaRow.className = "gallery-caption-meta";
+    // hideYear opts a series out of the Year field entirely (not even
+    // the TBD placeholder) - Model still renders alongside it when set,
+    // same row, so the row itself is only skipped if there's neither.
+    if (!series.hideYear || series.model) {
+      const metaRow = document.createElement("div");
+      metaRow.className = "gallery-caption-meta";
 
-    const yearEl = document.createElement("span");
-    yearEl.className = "gallery-caption-field" + (series.year ? "" : " is-placeholder");
-    yearEl.textContent = series.year ? series.year : "Year - TBD";
-    metaRow.appendChild(yearEl);
+      if (!series.hideYear) {
+        const yearEl = document.createElement("span");
+        yearEl.className = "gallery-caption-field" + (series.year ? "" : " is-placeholder");
+        yearEl.textContent = series.year ? series.year : "Year - TBD";
+        metaRow.appendChild(yearEl);
+      }
 
-    if (series.model) {
-      const modelEl = document.createElement("span");
-      modelEl.className = "gallery-caption-field";
-      modelEl.textContent = `Model - ${series.model}`;
-      metaRow.appendChild(modelEl);
+      if (series.model) {
+        const modelEl = document.createElement("span");
+        modelEl.className = "gallery-caption-field";
+        modelEl.textContent = `Model - ${series.model}`;
+        metaRow.appendChild(modelEl);
+      }
+      caption.appendChild(metaRow);
     }
-    caption.appendChild(metaRow);
 
-    const noteEl = document.createElement("p");
-    noteEl.className = "gallery-caption-note" + (series.note ? "" : " is-placeholder");
-    noteEl.textContent = series.note ? series.note : "Note - TBD";
-    caption.appendChild(noteEl);
+    // hideNote works the same way - omitted entirely rather than
+    // showing a "Note - TBD" placeholder.
+    if (!series.hideNote) {
+      const noteEl = document.createElement("p");
+      noteEl.className = "gallery-caption-note" + (series.note ? "" : " is-placeholder");
+      noteEl.textContent = series.note ? series.note : "Note - TBD";
+      caption.appendChild(noteEl);
+    }
   }
 
   // Caption (title/year/note/model) stays visible in both modes;
