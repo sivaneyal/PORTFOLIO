@@ -1453,7 +1453,8 @@ function buildSocialReelsPanel(items) {
   const wrap = document.createElement("div");
   wrap.className = "reel-panel";
 
-  const state = { mode: "grid", index: 0 };
+  // Starts directly in "browse" mode (reels player) instead of "grid"
+  const state = { mode: "browse", index: 0 };
 
   const gridEl = document.createElement("div");
   gridEl.className = "reel-grid";
@@ -1464,7 +1465,7 @@ function buildSocialReelsPanel(items) {
   const backBtn = document.createElement("button");
   backBtn.type = "button";
   backBtn.className = "gallery-back";
-  backBtn.innerHTML = '<span aria-hidden="true">&#8249;</span> Back to All Reels';
+  backBtn.innerHTML = '<span aria-hidden="true">&times;</span> Back to Gallery';
   backBtn.addEventListener("click", () => setMode("grid"));
   browseEl.appendChild(backBtn);
 
@@ -1548,7 +1549,7 @@ function buildSocialReelsPanel(items) {
 
     if (parsed && parsed.platform === "instagram") {
       // Instagram's own official widget, not the custom facade+iframe
-      // used for every other platform — see buildInstagramEmbed.
+      // used for every platform — see buildInstagramEmbed.
       stage.classList.add("reel-stage--auto");
       stageMedia.appendChild(buildInstagramEmbed(reel.url));
       return;
@@ -1632,17 +1633,38 @@ function buildSocialReelsPanel(items) {
   nextBtn.addEventListener("click", () => step(1));
 
   let touchStartX = null;
+  let touchStartY = null;
   stage.addEventListener("touchstart", (e) => {
     touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
   }, { passive: true });
+  
   stage.addEventListener("touchend", (e) => {
-    if (touchStartX === null) return;
+    if (touchStartX === null || touchStartY === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    
+    // Support both horizontal and vertical swiping
+    if (Math.abs(dy) > Math.abs(dx)) {
+        if (Math.abs(dy) > 40) step(dy < 0 ? 1 : -1);
+    } else {
+        if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
+    }
     touchStartX = null;
+    touchStartY = null;
   }, { passive: true });
 
-  setMode("grid");
+  // Add mouse wheel vertical scroll support
+  let wheelTimeout;
+  stage.addEventListener("wheel", (e) => {
+    if (wheelTimeout) return;
+    if (Math.abs(e.deltaY) > 30) {
+      step(e.deltaY > 0 ? 1 : -1);
+      wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 1000);
+    }
+  }, { passive: true });
+
+  setMode("browse");
 
   return { el: wrap, step, unzoom: backToGrid };
 }
