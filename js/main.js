@@ -376,7 +376,20 @@ const CATEGORIES = [
           {
             title: "Teasers for \"Focus\" Youth Live Sessions Project",
             links: [
+                      {
+            title: "Club Rafi",
+            links: [
+              { label: "Watch", url: "https://www.instagram.com/p/DdUCTDjswEY/", thumbnail: "PHOTOS/club-rafi-social-thumbnail.png" },
+            ],
+          },
+          {
+            title: "Teasers for \"Focus\" Youth Live Sessions Project",
+            links: [
               { label: "Project Trailer", url: "https://www.instagram.com/p/DZSzOPTONfs/" },
+              { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
+            ],
+          },
+               { label: "Project Trailer", url: "https://www.instagram.com/p/DZSzOPTONfs/" },
               { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
             ],
           },
