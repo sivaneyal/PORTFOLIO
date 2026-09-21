@@ -374,9 +374,6 @@ const CATEGORIES = [
         layout: "reels",
         items: [
           {
-            title: "Teasers for \"Focus\" Youth Live Sessions Project",
-            links: [
-                      {
             title: "Club Rafi",
             links: [
               { label: "Watch", url: "https://www.instagram.com/p/DdUCTDjswEY/", thumbnail: "PHOTOS/club-rafi-social-thumbnail.png" },
@@ -386,10 +383,6 @@ const CATEGORIES = [
             title: "Teasers for \"Focus\" Youth Live Sessions Project",
             links: [
               { label: "Project Trailer", url: "https://www.instagram.com/p/DZSzOPTONfs/" },
-              { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
-            ],
-          },
-               { label: "Project Trailer", url: "https://www.instagram.com/p/DZSzOPTONfs/" },
               { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
             ],
           },
@@ -1156,7 +1149,7 @@ function buildProjectGallery(photos, title, options = {}) {
 // ---------------------------------------------------------------
 // The full detail view for a single project (Directing, Curation,
 // Performance Artist, Production): a small image gallery plus
-// Synopsis / Technical Details / Awards &amp; Screening History,
+// Synopsis / Technical Details / Awards & Screening History,
 // always shown in full — no collapse toggle, since only one project
 // is ever visible at a time in the tab-isolated overlay.
 // ---------------------------------------------------------------
