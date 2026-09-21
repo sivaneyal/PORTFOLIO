@@ -1471,6 +1471,8 @@ function buildSocialReelsPanel(items) {
 
   const stage = document.createElement("div");
   stage.className = "reel-stage";
+  // Add vertical layout class for reels
+  stage.classList.add("reel-stage-vertical");
 
   const stageMedia = document.createElement("div");
   stageMedia.className = "reel-stage-media";
@@ -1619,6 +1621,11 @@ function buildSocialReelsPanel(items) {
     state.index = ((state.index + direction) % reels.length + reels.length) % reels.length;
     renderStage();
     renderCaption();
+    
+    // Animate the transition vertically (swipe effect)
+    stageMedia.classList.remove("slide-up-anim", "slide-down-anim");
+    void stageMedia.offsetWidth; // trigger reflow to restart animation
+    stageMedia.classList.add(direction > 0 ? "slide-up-anim" : "slide-down-anim");
   }
 
   // First Escape backs out to the grid rather than closing the whole
@@ -2624,6 +2631,38 @@ function initHeroVideoAutoplay() {
   video.addEventListener("loadedmetadata", tryPlay, { once: true });
   video.addEventListener("canplay", tryPlay, { once: true });
 }
+
+// ---------------------------------------------------------------
+// Dynamic Styles for Vertical Reels Player
+// (Injected here instead of changing the original CSS file)
+// ---------------------------------------------------------------
+const reelsStyle = document.createElement("style");
+reelsStyle.textContent = `
+  .reel-stage-vertical { position: relative; overflow: hidden; }
+  .reel-stage-vertical .gallery-nav--prev {
+    top: 15px !important; bottom: auto !important;
+    left: 50% !important; right: auto !important;
+    transform: translateX(-50%) rotate(90deg) !important;
+    z-index: 100;
+  }
+  .reel-stage-vertical .gallery-nav--next {
+    bottom: 15px !important; top: auto !important;
+    left: 50% !important; right: auto !important;
+    transform: translateX(-50%) rotate(90deg) !important;
+    z-index: 100;
+  }
+  .slide-up-anim { animation: slideUpAnim 0.3s ease-out; }
+  .slide-down-anim { animation: slideDownAnim 0.3s ease-out; }
+  @keyframes slideUpAnim { 
+    from { transform: translateY(100%); opacity: 0.5; } 
+    to { transform: translateY(0); opacity: 1; } 
+  }
+  @keyframes slideDownAnim { 
+    from { transform: translateY(-100%); opacity: 0.5; } 
+    to { transform: translateY(0); opacity: 1; } 
+  }
+`;
+document.head.appendChild(reelsStyle);
 
 // ---------------------------------------------------------------
 // Init
