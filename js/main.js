@@ -441,7 +441,11 @@ const CATEGORIES = [
             title: "Teasers for \"Focus\" Youth Live Sessions Project",
             tag: "Focus",
             links: [
-              { label: "Project Trailer", url: "https://www.instagram.com/p/DZSzOPTONfs/" },
+              {
+                label: "Project Trailer",
+                url: "https://www.instagram.com/p/DZSzOPTONfs/",
+                video: "videos/focus-youth-live-sessions-teaser.mp4",
+              },
               { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
             ],
           },
@@ -1678,11 +1682,14 @@ function buildSocialReelsPanel(items) {
   // (e.g. the automatic advance that fires on the previous clip ending)
   // even once already unmuted elsewhere on the page - fall back to a
   // muted attempt rather than leaving the video stalled/paused, same as
-  // a browser's own native player would.
+  // a browser's own native player would. Goes through setMuted (not a
+  // direct stageVideo.muted write) so the mute button's icon/label
+  // stay truthful about this - otherwise it would keep showing
+  // "unmuted" while the clip actually plays silently.
   function playStageVideo() {
     stageVideo.play().catch(() => {
       if (!stageVideo.muted) {
-        stageVideo.muted = true;
+        setMuted(true);
         stageVideo.play().catch(() => {});
       }
     });
