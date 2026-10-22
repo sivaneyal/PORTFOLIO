@@ -407,16 +407,14 @@ const CATEGORIES = [
           {
             title: "JOHNNY D - TEDER.FM",
             tag: "Teder.FM",
-            // Real thumbnail not uploaded yet - swap this one path for
-            // the real image once it lands, nothing else needs to change.
-            // (The preview clip itself is a captioned talking-head edit
-            // throughout, so there's no clean caption-free frame in it
-            // worth extracting as a poster the way Moscoman's was.)
+            // Thumbnail auto-generated from the preview clip's own first
+            // frame (~0.1s in), same as the others below - no more
+            // hand-picking a "clean" caption-free moment.
             links: [
               {
                 label: "Watch",
                 url: "https://www.instagram.com/p/DdoxTifsZ1t/",
-                thumbnail: "PHOTOS/johnny-d-teder-social-thumbnail.png",
+                thumbnail: "PHOTOS/johnny-d-teder-social-thumbnail.jpg",
                 video: "videos/johnny-d-teder-preview.mp4",
               },
             ],
@@ -424,15 +422,12 @@ const CATEGORIES = [
           {
             title: "WHITESQUARE - TEDER.FM",
             tag: "Teder.FM",
-            // Real thumbnail not uploaded yet - swap this one path for
-            // the real image once it lands, nothing else needs to change.
-            // (Same situation as JOHNNY D above: captioned throughout,
-            // so no clean frame worth extracting as a poster.)
+            // Thumbnail auto-generated from the preview clip's first frame.
             links: [
               {
                 label: "Watch",
                 url: "https://www.instagram.com/p/Dd6eHmFMa4T/",
-                thumbnail: "PHOTOS/whitesquare-teder-social-thumbnail.png",
+                thumbnail: "PHOTOS/whitesquare-teder-social-thumbnail.jpg",
                 video: "videos/whitesquare-teder-preview.mp4",
               },
             ],
@@ -444,6 +439,8 @@ const CATEGORIES = [
               {
                 label: "Project Trailer",
                 url: "https://www.instagram.com/p/DZSzOPTONfs/",
+                // Thumbnail auto-generated from the preview clip's first frame.
+                thumbnail: "PHOTOS/focus-youth-live-sessions-teaser-thumbnail.jpg",
                 video: "videos/focus-youth-live-sessions-teaser.mp4",
               },
               { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
@@ -453,7 +450,13 @@ const CATEGORIES = [
             title: "Documentary for Jerusalem Youth",
             tag: "Documentary",
             links: [
-              { label: "Tiferet in Mea Shearim", url: "https://www.instagram.com/p/DXKBoehIiHg/" },
+              {
+                label: "Tiferet in Mea Shearim",
+                url: "https://www.instagram.com/p/DXKBoehIiHg/",
+                // Thumbnail auto-generated from the preview clip's first frame.
+                thumbnail: "PHOTOS/tiferet-mea-shearim-thumbnail.jpg",
+                video: "videos/tiferet-mea-shearim-preview.mp4",
+              },
               { label: "Interview with Gilad Lesser", url: "https://www.instagram.com/p/DVEFZt1CB8D/" },
             ],
           },
