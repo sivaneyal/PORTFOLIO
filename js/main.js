@@ -443,7 +443,13 @@ const CATEGORIES = [
                 thumbnail: "PHOTOS/focus-youth-live-sessions-teaser-thumbnail.jpg",
                 video: "videos/focus-youth-live-sessions-teaser.mp4",
               },
-              { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
+              {
+                label: "Young Creators' Festival",
+                url: "https://www.instagram.com/p/DYz3oJHunfs/",
+                // Thumbnail auto-generated from the preview clip's first frame.
+                thumbnail: "PHOTOS/focus-young-creators-festival-thumbnail.jpg",
+                video: "videos/focus-young-creators-festival-preview.mp4",
+              },
             ],
           },
           {
@@ -488,32 +494,62 @@ const CATEGORIES = [
                 thumbnail: "PHOTOS/open-call-focus-thumbnail.jpg",
                 video: "videos/open-call-focus-preview.mp4",
               },
-              { label: "Vibe Video", url: "https://www.instagram.com/p/DRZkbntCBqO/" },
+              {
+                label: "Vibe Video",
+                url: "https://www.instagram.com/p/DRZkbntCBqO/",
+                // Thumbnail auto-generated from the preview clip's first frame.
+                thumbnail: "PHOTOS/open-call-focus-vibe-video-thumbnail.jpg",
+                video: "videos/open-call-focus-vibe-video-preview.mp4",
+              },
             ],
           },
           {
             title: "New Year's Eve Teaser - Snail Cinema",
             tag: "Event teaser",
             desc: "Comedic teaser for a New Year's Eve event with Snail Cinema.",
-            links: [{ label: "Watch", url: "https://www.instagram.com/p/DELOx8yt2qX/" }],
+            links: [{
+              label: "Watch",
+              url: "https://www.instagram.com/p/DELOx8yt2qX/",
+              // Thumbnail auto-generated from the preview clip's first frame.
+              thumbnail: "PHOTOS/nye-teaser-snail-cinema-thumbnail.jpg",
+              video: "videos/nye-teaser-snail-cinema-preview.mp4",
+            }],
           },
           {
             title: "Longing - Short Film Screening Teaser",
             tag: "Event teaser",
             desc: "Teaser for a short film screening event on the theme of longing.",
-            links: [{ label: "Watch", url: "https://www.instagram.com/p/DO1K0NmCPat/" }],
+            links: [{
+              label: "Watch",
+              url: "https://www.instagram.com/p/DO1K0NmCPat/",
+              // Thumbnail auto-generated from the preview clip's first frame.
+              thumbnail: "PHOTOS/longing-screening-teaser-thumbnail.jpg",
+              video: "videos/longing-screening-teaser-preview.mp4",
+            }],
           },
           {
             title: "Liel Magen - Peace Delegations to Northern Ireland",
             tag: "Social content",
             desc: "Liel Magen talks about peace delegations to Northern Ireland.",
-            links: [{ label: "Watch", url: "https://www.instagram.com/reel/DEKjEz2tZDC/" }],
+            links: [{
+              label: "Watch",
+              url: "https://www.instagram.com/reel/DEKjEz2tZDC/",
+              // Thumbnail auto-generated from the preview clip's first frame.
+              thumbnail: "PHOTOS/liel-magen-peace-delegations-thumbnail.jpg",
+              video: "videos/liel-magen-peace-delegations-preview.mp4",
+            }],
           },
           {
             title: "Cabaret in the Square",
             tag: "Social content",
             desc: "\"Behind the scenes\" of a cabaret in the square.",
-            links: [{ label: "Watch", url: "https://www.instagram.com/p/DHGHUtToMyN/" }],
+            links: [{
+              label: "Watch",
+              url: "https://www.instagram.com/p/DHGHUtToMyN/",
+              // Thumbnail auto-generated from the preview clip's first frame.
+              thumbnail: "PHOTOS/cabaret-in-the-square-thumbnail.jpg",
+              video: "videos/cabaret-in-the-square-preview.mp4",
+            }],
           },
           {
             title: "Yoni Bloch - Live Session Teaser",
