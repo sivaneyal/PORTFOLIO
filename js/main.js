@@ -25,10 +25,12 @@
      video      — reels only (see "layout: reels" below): optional path
                   to a short, self-hosted preview clip (e.g. "videos/
                   club-rafi-preview.mp4"). When set, the stage plays it
-                  muted/looping/silent instead of showing a static
-                  thumbnail - `thumbnail` still doubles as its poster
-                  frame while it loads. Left unset, the stage just shows
-                  `thumbnail` as a still image, same as before.
+                  through once at its own real length (not cut off or
+                  looped), starting muted with a button to unmute, in
+                  place of a static thumbnail - `thumbnail` still
+                  doubles as its poster frame while it loads. Left
+                  unset, the stage just shows `thumbnail` as a still
+                  image, same as before.
      stats      — reels only: optional { views, likes, comments }, each
                   a plain string typed exactly as Instagram shows it
                   (e.g. "1.2K", "340"). This is a hand-entered snapshot,
@@ -424,8 +426,15 @@ const CATEGORIES = [
             tag: "Teder.FM",
             // Real thumbnail not uploaded yet - swap this one path for
             // the real image once it lands, nothing else needs to change.
+            // (Same situation as JOHNNY D above: captioned throughout,
+            // so no clean frame worth extracting as a poster.)
             links: [
-              { label: "Watch", url: "https://www.instagram.com/p/Dd6eHmFMa4T/", thumbnail: "PHOTOS/whitesquare-teder-social-thumbnail.png" },
+              {
+                label: "Watch",
+                url: "https://www.instagram.com/p/Dd6eHmFMa4T/",
+                thumbnail: "PHOTOS/whitesquare-teder-social-thumbnail.png",
+                video: "videos/whitesquare-teder-preview.mp4",
+              },
             ],
           },
           {
@@ -1467,7 +1476,7 @@ function buildSocialReelsPanel(items) {
   });
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const state = { index: 0, playing: true };
+  const state = { index: 0, playing: true, muted: true };
 
   const wrap = document.createElement("div");
   wrap.className = "reel-panel";
@@ -1492,13 +1501,15 @@ function buildSocialReelsPanel(items) {
   stageImg.className = "reel-sq-stage-img";
   stage.appendChild(stageImg);
 
-  // Shown instead of stageImg when a reel has a `video` preview clip -
-  // muted/looping/silent, so it reads as a live preview rather than a
-  // video with its own soundtrack competing with the rest of the page.
+  // Shown instead of stageImg when a reel has a `video` preview clip.
+  // Starts muted (autoplay with sound is blocked by browsers without a
+  // user gesture) - the mute button below lets a visitor turn sound on
+  // explicitly. Plays through once at its own real length rather than
+  // looping or being cut off at a fixed duration (see the stage-video
+  // "ended" handling below), so `loop` is deliberately left off.
   const stageVideo = document.createElement("video");
   stageVideo.className = "reel-sq-stage-video";
   stageVideo.muted = true;
-  stageVideo.loop = true;
   stageVideo.playsInline = true;
   stage.appendChild(stageVideo);
 
@@ -1517,6 +1528,18 @@ function buildSocialReelsPanel(items) {
   playPauseIcon.setAttribute("aria-hidden", "true");
   playPauseBtn.appendChild(playPauseIcon);
   stage.appendChild(playPauseBtn);
+
+  // Only shown for reels with an actual video (see renderStage) - a
+  // static thumbnail has no sound to unmute. Starts muted (is-muted),
+  // matching stageVideo's own default above.
+  const muteBtn = document.createElement("button");
+  muteBtn.type = "button";
+  muteBtn.className = "reel-sq-mute is-muted";
+  const muteIcon = document.createElement("span");
+  muteIcon.className = "reel-sq-mute-icon";
+  muteIcon.setAttribute("aria-hidden", "true");
+  muteBtn.appendChild(muteIcon);
+  stage.appendChild(muteBtn);
 
   // ---- Info column ----
   const info = document.createElement("div");
@@ -1631,21 +1654,38 @@ function buildSocialReelsPanel(items) {
         stageVideo.classList.remove("is-visible");
         if (!reel.thumbnail) stagePlaceholder.classList.add("is-visible");
       };
+      stageVideo.muted = state.muted;
       stageVideo.src = reel.video;
       stageVideo.classList.add("is-visible");
+      muteBtn.classList.add("is-visible");
       // Reduced motion skips autoplay entirely - the poster frame (or
       // stageImg beneath it) stands in as a static preview instead.
       if (state.playing && !reducedMotion) {
-        stageVideo.play().catch(() => {});
+        playStageVideo();
       } else {
         stageVideo.pause();
       }
     } else {
       stageVideo.classList.remove("is-visible");
+      muteBtn.classList.remove("is-visible");
       stageVideo.pause();
       stageVideo.removeAttribute("src");
       stageVideo.load();
     }
+  }
+
+  // Autoplay-with-sound can be blocked outside a direct user gesture
+  // (e.g. the automatic advance that fires on the previous clip ending)
+  // even once already unmuted elsewhere on the page - fall back to a
+  // muted attempt rather than leaving the video stalled/paused, same as
+  // a browser's own native player would.
+  function playStageVideo() {
+    stageVideo.play().catch(() => {
+      if (!stageVideo.muted) {
+        stageVideo.muted = true;
+        stageVideo.play().catch(() => {});
+      }
+    });
   }
 
   function renderInfo() {
@@ -1673,20 +1713,37 @@ function buildSocialReelsPanel(items) {
     queueThumbs.forEach((btn, i) => btn.classList.toggle("is-active", i === state.index));
   }
 
-  // The progress bar's own CSS animation is the single source of truth
-  // for timing - advancing on its "animationend" rather than a parallel
-  // setTimeout means pause/resume (animation-play-state) and restarting
-  // it on manual navigation both stay trivially in sync with what's
+  // A reel with a video drives the progress bar directly off real
+  // playback (see the stageVideo "timeupdate"/"ended" listeners below)
+  // instead of a fixed-duration CSS animation, so the full clip plays
+  // through at its own length rather than being cut off at ~4s - that
+  // fixed-duration animation is only for reels that are just a still
+  // image, where there's no natural "how long" to measure against.
+  // Either way, advancing is driven by a real event ("animationend" or
+  // "ended") rather than a parallel setTimeout, so pause/resume and
+  // restarting on manual navigation stay trivially in sync with what's
   // actually on screen, with no elapsed-time bookkeeping in JS at all.
   function restartProgress() {
     progressFill.classList.remove("is-animating", "is-paused");
+    progressFill.style.width = "0%";
     void progressFill.offsetWidth; // reflow - re-adding the class below must restart the animation, not no-op
+    if (reels[state.index].video) return;
     if (reducedMotion || reels.length < 2) return;
     progressFill.classList.add("is-animating");
     if (!state.playing) progressFill.classList.add("is-paused");
   }
 
   progressFill.addEventListener("animationend", () => step(1));
+
+  stageVideo.addEventListener("timeupdate", () => {
+    if (!reels[state.index].video || !stageVideo.duration) return;
+    progressFill.style.width = `${(stageVideo.currentTime / stageVideo.duration) * 100}%`;
+  });
+
+  stageVideo.addEventListener("ended", () => {
+    if (!reels[state.index].video || reels.length < 2) return;
+    step(1);
+  });
 
   function selectReel(i) {
     state.index = ((i % reels.length) + reels.length) % reels.length;
@@ -1709,18 +1766,37 @@ function buildSocialReelsPanel(items) {
     // always actually plays/pauses the video regardless of reduced
     // motion - only the auto-advance progress bar below stays gated.
     if (reels[state.index].video) {
-      if (playing) stageVideo.play().catch(() => {});
+      if (playing) playStageVideo();
       else stageVideo.pause();
     }
     if (reducedMotion || reels.length < 2) return;
     progressFill.classList.toggle("is-paused", !playing);
   }
 
+  // Same "explicit click is deliberate user intent" reasoning as
+  // setPlaying: unmuting always takes effect immediately, even under
+  // reduced motion. Carries over across reels (see renderStage, which
+  // applies state.muted to whichever video loads next) rather than
+  // re-muting every time the stage advances, matching how a visitor
+  // would expect a volume preference to behave.
+  function setMuted(muted) {
+    state.muted = muted;
+    stageVideo.muted = muted;
+    muteBtn.classList.toggle("is-muted", muted);
+    muteBtn.setAttribute("aria-label", muted ? "Unmute" : "Mute");
+  }
+
   playPauseBtn.addEventListener("click", () => setPlaying(!state.playing));
+  muteBtn.addEventListener("click", () => setMuted(!state.muted));
   prevBtn.addEventListener("click", () => step(-1));
   nextBtn.addEventListener("click", () => step(1));
 
-  setPlaying(true);
+  // Under reduced motion nothing auto-starts (see renderStage/
+  // restartProgress), so the initial state should say "paused" too -
+  // otherwise the button would claim "Pause" while nothing is playing,
+  // and the first click would toggle the wrong way.
+  setPlaying(!reducedMotion);
+  setMuted(true);
   selectReel(0);
 
   return { el: wrap, step };
