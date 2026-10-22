@@ -1147,7 +1147,6 @@ section {
   position: relative;
   aspect-ratio: 16 / 9;
   background: var(--bg-raised);
-  border: 1px solid var(--line);
   overflow: hidden;
 }
 
@@ -1332,18 +1331,12 @@ section {
       transparent 14px
     ),
     var(--bg-raised);
-  border: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.4s var(--ease);
-}
-
-.work-item:hover .work-thumb {
-  border-color: var(--accent-soft);
 }
 
 .work-thumb-label {
