@@ -375,12 +375,32 @@ const CATEGORIES = [
         items: [
           {
             title: "Club Rafi",
+            tag: "Social content",
             links: [
               { label: "Watch", url: "https://www.instagram.com/p/DdUCTDjswEY/", thumbnail: "PHOTOS/club-rafi-social-thumbnail.png" },
             ],
           },
           {
+            title: "JOHNNY D - TEDER.FM",
+            tag: "Teder.FM",
+            // Real thumbnail not uploaded yet - swap this one path for
+            // the real image once it lands, nothing else needs to change.
+            links: [
+              { label: "Watch", url: "https://www.instagram.com/p/DdoxTifsZ1t/", thumbnail: "PHOTOS/johnny-d-teder-social-thumbnail.png" },
+            ],
+          },
+          {
+            title: "WHITESQUARE - TEDER.FM",
+            tag: "Teder.FM",
+            // Real thumbnail not uploaded yet - swap this one path for
+            // the real image once it lands, nothing else needs to change.
+            links: [
+              { label: "Watch", url: "https://www.instagram.com/p/Dd6eHmFMa4T/", thumbnail: "PHOTOS/whitesquare-teder-social-thumbnail.png" },
+            ],
+          },
+          {
             title: "Teasers for \"Focus\" Youth Live Sessions Project",
+            tag: "Focus",
             links: [
               { label: "Project Trailer", url: "https://www.instagram.com/p/DZSzOPTONfs/" },
               { label: "Young Creators' Festival", url: "https://www.instagram.com/p/DYz3oJHunfs/" },
@@ -388,6 +408,7 @@ const CATEGORIES = [
           },
           {
             title: "Documentary for Jerusalem Youth",
+            tag: "Documentary",
             links: [
               { label: "Tiferet in Mea Shearim", url: "https://www.instagram.com/p/DXKBoehIiHg/" },
               { label: "Interview with Gilad Lesser", url: "https://www.instagram.com/p/DVEFZt1CB8D/" },
@@ -395,10 +416,12 @@ const CATEGORIES = [
           },
           {
             title: "Studio Visit at Wild Kids Jerusalem",
+            tag: "Social content",
             links: [{ label: "Watch", url: "https://www.instagram.com/p/DUYtmy0AkK9/" }],
           },
           {
             title: "Open Call for Focus",
+            tag: "Focus",
             links: [
               { label: "Open Call", url: "https://www.instagram.com/p/DRe_VzHAtGy/" },
               { label: "Vibe Video", url: "https://www.instagram.com/p/DRZkbntCBqO/" },
@@ -406,26 +429,31 @@ const CATEGORIES = [
           },
           {
             title: "New Year's Eve Teaser - Snail Cinema",
+            tag: "Event teaser",
             desc: "Comedic teaser for a New Year's Eve event with Snail Cinema.",
             links: [{ label: "Watch", url: "https://www.instagram.com/p/DELOx8yt2qX/" }],
           },
           {
             title: "Longing - Short Film Screening Teaser",
+            tag: "Event teaser",
             desc: "Teaser for a short film screening event on the theme of longing.",
             links: [{ label: "Watch", url: "https://www.instagram.com/p/DO1K0NmCPat/" }],
           },
           {
             title: "Liel Magen - Peace Delegations to Northern Ireland",
+            tag: "Social content",
             desc: "Liel Magen talks about peace delegations to Northern Ireland.",
             links: [{ label: "Watch", url: "https://www.instagram.com/reel/DEKjEz2tZDC/" }],
           },
           {
             title: "Cabaret in the Square",
+            tag: "Social content",
             desc: "\"Behind the scenes\" of a cabaret in the square.",
             links: [{ label: "Watch", url: "https://www.instagram.com/p/DHGHUtToMyN/" }],
           },
           {
             title: "Yoni Bloch - Live Session Teaser",
+            tag: "Event teaser",
             links: [{ label: "Watch", url: "https://youtu.be/PIhOwgrXQZI?si=7ml4pPbf_Un0m8D8" }],
           },
         ],
@@ -755,72 +783,6 @@ function buildLinkPreview(link, altText) {
   a.appendChild(label);
 
   return a;
-}
-
-// ---------------------------------------------------------------
-// Instagram's official oEmbed widget (blockquote + embed.js), used in
-// place of a custom iframe facade so the real post thumbnail, caption,
-// and engagement UI render exactly as Instagram intends, pulled live
-// from Instagram itself rather than guessed at. The script is only
-// injected the first time a visitor actually opens a reel (not on
-// every page load, since most visitors never open this tab), and is
-// only ever added once regardless of how many reels get viewed.
-// ---------------------------------------------------------------
-let instagramScriptPromise = null;
-
-function loadInstagramEmbedScript() {
-  if (window.instgrm) return Promise.resolve();
-  if (instagramScriptPromise) return instagramScriptPromise;
-  instagramScriptPromise = new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://www.instagram.com/embed.js";
-    script.addEventListener("load", () => resolve());
-    // Fail open — if Instagram's script can't load, the blockquote is
-    // still there with a real permalink, so the page doesn't break.
-    script.addEventListener("error", () => resolve());
-    document.body.appendChild(script);
-  });
-  return instagramScriptPromise;
-}
-
-// embed.js only scans the page for .instagram-media blockquotes once,
-// at its own load time — it doesn't watch the DOM for ones added
-// later. Since every reel here is inserted well after that (a visitor
-// has to open the overlay and click into a reel first), process()
-// must be called explicitly after each blockquote is inserted, or it
-// would just sit there unrendered.
-function buildInstagramEmbed(url) {
-  const wrap = document.createElement("div");
-  wrap.className = "instagram-embed-wrap";
-
-  const blockquote = document.createElement("blockquote");
-  blockquote.className = "instagram-media";
-  blockquote.setAttribute("data-instgrm-permalink", url);
-  blockquote.setAttribute("data-instgrm-version", "14");
-
-  // Fallback content Instagram's own script replaces once it
-  // successfully processes this blockquote. Left in place (rather
-  // than empty) for when it can't — e.g. an ad/privacy blocker
-  // stopping embed.js outright, which is common enough in the real
-  // world to be worth a real fallback, not just a blank gap.
-  const fallback = document.createElement("a");
-  fallback.className = "instagram-embed-fallback";
-  fallback.href = url;
-  fallback.target = "_blank";
-  fallback.rel = "noopener noreferrer";
-  fallback.textContent = "View this post on Instagram";
-  blockquote.appendChild(fallback);
-
-  wrap.appendChild(blockquote);
-
-  loadInstagramEmbedScript().then(() => {
-    if (window.instgrm && window.instgrm.Embeds) {
-      window.instgrm.Embeds.process();
-    }
-  });
-
-  return wrap;
 }
 
 // ---------------------------------------------------------------
@@ -1430,251 +1392,233 @@ function renderTabbedContent(cat, subnavEl, bodyEl, initialTabSlug, onTabChange)
 // Returns { el, step, unzoom } for renderTabbedContent to wire into
 // the shared arrow-key / Escape handling while this tab is active.
 // ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// "Stage + queue" viewer for social media content: one large 9:16
+// stage shows the current reel's thumbnail (not a live embed - the
+// real video stays on Instagram, reached via the "Open on Instagram"
+// link) with a slim auto-advancing progress bar, next to the title/
+// tag/controls, and a wrapping queue of small thumbnails below/beside
+// it. No numbering anywhere (no "x of y") by design - this is a
+// preview carousel, not a ranked list.
+// Returns { el, step } for renderTabbedContent to wire Left/Right
+// arrow keys into while this tab is active (see activeGalleryStep in
+// initCategoryOverlay). There's no "unzoom"/grid to back out of here,
+// so Escape just closes the whole overlay directly, same as it does
+// for any other tab.
+// ---------------------------------------------------------------
 function buildSocialReelsPanel(items) {
   const reels = [];
   items.forEach((item) => {
-    (item.links || []).forEach((link) => {
+    const links = item.links || [];
+    links.forEach((link) => {
       const parsed = parseEmbedUrl(link.url);
+      // An item with more than one link needs its link's own label
+      // folded into the title - otherwise two reels under the same
+      // item (e.g. a project's two teasers) would show the identical
+      // title with nothing but the thumbnail to tell them apart.
+      const title = links.length > 1 && link.label ? `${item.title} - ${link.label}` : item.title;
       reels.push({
-        title: item.title,
-        label: link.label,
-        desc: item.desc,
+        title,
+        tag: item.tag || "Social content",
         url: link.url,
         // link.thumbnail (a hand-picked frame) wins if set; otherwise
         // fall back to whatever the platform can supply automatically
         // (e.g. Instagram's screenshot-based thumbnailUrl - see
-        // parseEmbedUrl) so every grid tile gets a real preview image
-        // instead of the plain text-label placeholder.
+        // parseEmbedUrl) so the stage/queue always gets a real image
+        // instead of a placeholder when one is available.
         thumbnail: link.thumbnail || (parsed && parsed.thumbnailUrl) || null,
       });
     });
   });
 
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const state = { index: 0, playing: true };
+
   const wrap = document.createElement("div");
   wrap.className = "reel-panel";
 
-  // Starts directly in "browse" mode (reels player) instead of "grid"
-  const state = { mode: "browse", index: 0 };
+  const row = document.createElement("div");
+  row.className = "reel-sq-row";
+  wrap.appendChild(row);
 
-  const gridEl = document.createElement("div");
-  gridEl.className = "reel-grid";
-
-  const browseEl = document.createElement("div");
-  browseEl.className = "reel-browse";
-
-  const backBtn = document.createElement("button");
-  backBtn.type = "button";
-  backBtn.className = "gallery-back";
-  backBtn.innerHTML = '<span aria-hidden="true">&times;</span> Back to Gallery';
-  backBtn.addEventListener("click", () => setMode("grid"));
-  browseEl.appendChild(backBtn);
-
+  // ---- Stage ----
   const stage = document.createElement("div");
-  stage.className = "reel-stage";
-  // Add vertical layout class for reels
-  stage.classList.add("reel-stage-vertical");
+  stage.className = "reel-sq-stage";
+  row.appendChild(stage);
 
-  const stageMedia = document.createElement("div");
-  stageMedia.className = "reel-stage-media";
-  stage.appendChild(stageMedia);
+  const progressTrack = document.createElement("div");
+  progressTrack.className = "reel-sq-progress";
+  const progressFill = document.createElement("div");
+  progressFill.className = "reel-sq-progress-fill";
+  progressTrack.appendChild(progressFill);
+  stage.appendChild(progressTrack);
+
+  const stageImg = document.createElement("img");
+  stageImg.className = "reel-sq-stage-img";
+  stage.appendChild(stageImg);
+
+  const stagePlaceholder = document.createElement("div");
+  stagePlaceholder.className = "reel-sq-stage-placeholder";
+  const stagePlaceholderLabel = document.createElement("span");
+  stagePlaceholderLabel.textContent = "Thumbnail coming soon";
+  stagePlaceholder.appendChild(stagePlaceholderLabel);
+  stage.appendChild(stagePlaceholder);
+
+  const playPauseBtn = document.createElement("button");
+  playPauseBtn.type = "button";
+  playPauseBtn.className = "reel-sq-playpause";
+  const playPauseIcon = document.createElement("span");
+  playPauseIcon.className = "reel-sq-playpause-icon";
+  playPauseIcon.setAttribute("aria-hidden", "true");
+  playPauseBtn.appendChild(playPauseIcon);
+  stage.appendChild(playPauseBtn);
+
+  // ---- Info column ----
+  const info = document.createElement("div");
+  info.className = "reel-sq-info";
+  row.appendChild(info);
+
+  const tagEl = document.createElement("span");
+  tagEl.className = "reel-sq-tag";
+  info.appendChild(tagEl);
+
+  const titleEl = document.createElement("h3");
+  titleEl.className = "reel-sq-title";
+  info.appendChild(titleEl);
+
+  const controls = document.createElement("div");
+  controls.className = "reel-sq-controls";
+  info.appendChild(controls);
 
   const prevBtn = document.createElement("button");
   prevBtn.type = "button";
-  prevBtn.className = "gallery-nav gallery-nav--prev";
+  prevBtn.className = "reel-sq-navbtn";
+  prevBtn.textContent = "Previous";
   prevBtn.setAttribute("aria-label", "Previous reel");
-  prevBtn.innerHTML = '<span aria-hidden="true">&#8249;</span>';
-  stage.appendChild(prevBtn);
+  controls.appendChild(prevBtn);
 
   const nextBtn = document.createElement("button");
   nextBtn.type = "button";
-  nextBtn.className = "gallery-nav gallery-nav--next";
+  nextBtn.className = "reel-sq-navbtn";
+  nextBtn.textContent = "Next";
   nextBtn.setAttribute("aria-label", "Next reel");
-  nextBtn.innerHTML = '<span aria-hidden="true">&#8250;</span>';
-  stage.appendChild(nextBtn);
-  browseEl.appendChild(stage);
+  controls.appendChild(nextBtn);
 
-  const caption = document.createElement("div");
-  caption.className = "gallery-caption reel-caption";
-  browseEl.appendChild(caption);
+  const openLink = document.createElement("a");
+  openLink.className = "reel-sq-open-link";
+  openLink.textContent = "Open on Instagram";
+  openLink.target = "_blank";
+  openLink.rel = "noopener noreferrer";
+  controls.appendChild(openLink);
 
-  wrap.appendChild(gridEl);
-  wrap.appendChild(browseEl);
+  const queueLabel = document.createElement("span");
+  queueLabel.className = "reel-sq-queue-label";
+  queueLabel.textContent = "Up next";
+  info.appendChild(queueLabel);
 
-  function renderGrid() {
-    gridEl.innerHTML = "";
-    reels.forEach((reel, i) => {
-      const tile = document.createElement("button");
-      tile.type = "button";
-      tile.className = "reel-tile";
-      tile.setAttribute("aria-label", `Play ${reel.label}`);
+  const queueEl = document.createElement("div");
+  queueEl.className = "reel-sq-queue";
+  info.appendChild(queueEl);
 
-      if (reel.thumbnail) {
-        const img = document.createElement("img");
-        img.className = "reel-tile-thumb";
-        img.src = reel.thumbnail;
-        img.alt = `Sivan Eyal social media content - ${reel.label}, ${reel.title}`;
-        img.loading = "lazy";
-        // Screenshot services can fail/rate-limit - fall back to the
-        // plain text-label placeholder instead of a broken-image icon.
-        img.addEventListener("error", () => {
-          img.remove();
-          const ph = document.createElement("span");
-          ph.className = "reel-tile-thumb-placeholder";
-          ph.textContent = reel.label;
-          tile.insertBefore(ph, tile.firstChild);
-        }, { once: true });
-        tile.appendChild(img);
-      } else {
-        const ph = document.createElement("span");
-        ph.className = "reel-tile-thumb-placeholder";
-        ph.textContent = reel.label;
-        tile.appendChild(ph);
-      }
-
-      const play = document.createElement("span");
-      play.className = "reel-tile-play";
-      play.setAttribute("aria-hidden", "true");
-      tile.appendChild(play);
-
-      tile.addEventListener("click", () => {
-        state.index = i;
-        setMode("browse");
-      });
-      gridEl.appendChild(tile);
-    });
-  }
+  // ---- Queue thumbnails (built once; only src/active state change) ----
+  const queueThumbs = reels.map((reel, i) => {
+    const thumb = document.createElement("button");
+    thumb.type = "button";
+    thumb.className = "reel-sq-queue-thumb";
+    if (reel.thumbnail) {
+      const img = document.createElement("img");
+      img.src = reel.thumbnail;
+      img.alt = "";
+      img.loading = "lazy";
+      // A missing/renamed file falls back to the plain textured frame
+      // instead of a broken-image icon, same pattern used elsewhere.
+      img.addEventListener("error", () => {
+        img.remove();
+        thumb.classList.add("is-empty");
+      }, { once: true });
+      thumb.appendChild(img);
+    } else {
+      thumb.classList.add("is-empty");
+    }
+    thumb.setAttribute("aria-label", `Show "${reel.title}"`);
+    thumb.addEventListener("click", () => selectReel(i));
+    queueEl.appendChild(thumb);
+    return thumb;
+  });
 
   function renderStage() {
     const reel = reels[state.index];
-    stageMedia.innerHTML = "";
-    const parsed = parseEmbedUrl(reel.url);
-
-    if (parsed && parsed.platform === "instagram") {
-      // Instagram's own official widget, not the custom facade+iframe
-      // used for every platform — see buildInstagramEmbed.
-      stage.classList.add("reel-stage--auto");
-      stageMedia.appendChild(buildInstagramEmbed(reel.url));
-      return;
-    }
-
-    stage.classList.remove("reel-stage--auto");
-    const altText = `Sivan Eyal social media content - ${reel.label}, ${reel.title}`;
-    const embedEl = buildMediaEmbed(reel, reel.title, altText);
-    if (embedEl) {
-      stageMedia.appendChild(embedEl);
+    if (reel.thumbnail) {
+      stagePlaceholder.classList.remove("is-visible");
+      stageImg.classList.add("is-visible");
+      stageImg.alt = `Sivan Eyal social media content - ${reel.tag}, ${reel.title}`;
+      stageImg.onerror = () => {
+        stageImg.classList.remove("is-visible");
+        stagePlaceholder.classList.add("is-visible");
+      };
+      stageImg.src = reel.thumbnail;
     } else {
-      const a = document.createElement("a");
-      a.href = reel.url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.className = "work-item-link";
-      a.textContent = `View "${reel.label}"`;
-      stageMedia.appendChild(a);
+      stageImg.classList.remove("is-visible");
+      stagePlaceholder.classList.add("is-visible");
     }
   }
 
-  function renderCaption() {
+  function renderInfo() {
     const reel = reels[state.index];
-    caption.innerHTML = "";
-
-    const titleEl = document.createElement("h3");
-    titleEl.className = "gallery-caption-title";
+    tagEl.textContent = reel.tag;
     titleEl.textContent = reel.title;
-    caption.appendChild(titleEl);
-
-    const metaRow = document.createElement("div");
-    metaRow.className = "gallery-caption-meta";
-    const labelEl = document.createElement("span");
-    labelEl.className = "gallery-caption-field";
-    labelEl.textContent = reel.label;
-    metaRow.appendChild(labelEl);
-    const countEl = document.createElement("span");
-    countEl.className = "gallery-caption-field";
-    countEl.textContent = `${state.index + 1} / ${reels.length}`;
-    metaRow.appendChild(countEl);
-    caption.appendChild(metaRow);
-
-    if (reel.desc) {
-      const noteEl = document.createElement("p");
-      noteEl.className = "gallery-caption-note";
-      noteEl.textContent = reel.desc;
-      caption.appendChild(noteEl);
-    }
+    openLink.href = reel.url;
   }
 
-  function setMode(mode) {
-    state.mode = mode;
-    gridEl.style.display = mode === "grid" ? "grid" : "none";
-    browseEl.style.display = mode === "browse" ? "block" : "none";
-    if (mode === "grid") renderGrid();
-    else {
-      renderStage();
-      renderCaption();
-    }
+  function updateQueueActive() {
+    queueThumbs.forEach((btn, i) => btn.classList.toggle("is-active", i === state.index));
   }
 
-  // Stepping past the last/first reel wraps around, same as
-  // Photography's cross-series rollover — one continuous gesture
-  // covers the whole playlist. Only active in browse mode.
-  function step(direction) {
-    if (state.mode !== "browse") return;
-    state.index = ((state.index + direction) % reels.length + reels.length) % reels.length;
+  // The progress bar's own CSS animation is the single source of truth
+  // for timing - advancing on its "animationend" rather than a parallel
+  // setTimeout means pause/resume (animation-play-state) and restarting
+  // it on manual navigation both stay trivially in sync with what's
+  // actually on screen, with no elapsed-time bookkeeping in JS at all.
+  function restartProgress() {
+    progressFill.classList.remove("is-animating", "is-paused");
+    void progressFill.offsetWidth; // reflow - re-adding the class below must restart the animation, not no-op
+    if (reducedMotion || reels.length < 2) return;
+    progressFill.classList.add("is-animating");
+    if (!state.playing) progressFill.classList.add("is-paused");
+  }
+
+  progressFill.addEventListener("animationend", () => step(1));
+
+  function selectReel(i) {
+    state.index = ((i % reels.length) + reels.length) % reels.length;
     renderStage();
-    renderCaption();
-    
-    // Animate the transition vertically (swipe effect)
-    stageMedia.classList.remove("slide-up-anim", "slide-down-anim");
-    void stageMedia.offsetWidth; // trigger reflow to restart animation
-    stageMedia.classList.add(direction > 0 ? "slide-up-anim" : "slide-down-anim");
+    renderInfo();
+    updateQueueActive();
+    restartProgress();
   }
 
-  // First Escape backs out to the grid rather than closing the whole
-  // overlay, matching the Photography gallery's zoom-then-close order.
-  function backToGrid() {
-    if (state.mode !== "browse") return false;
-    setMode("grid");
-    return true;
+  function step(direction) {
+    selectReel(state.index + direction);
   }
 
+  function setPlaying(playing) {
+    state.playing = playing;
+    playPauseBtn.classList.toggle("is-paused", !playing);
+    playPauseBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+    if (reducedMotion || reels.length < 2) return;
+    progressFill.classList.toggle("is-paused", !playing);
+  }
+
+  playPauseBtn.addEventListener("click", () => setPlaying(!state.playing));
   prevBtn.addEventListener("click", () => step(-1));
   nextBtn.addEventListener("click", () => step(1));
 
-  let touchStartX = null;
-  let touchStartY = null;
-  stage.addEventListener("touchstart", (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-  
-  stage.addEventListener("touchend", (e) => {
-    if (touchStartX === null || touchStartY === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-    
-    // Support both horizontal and vertical swiping
-    if (Math.abs(dy) > Math.abs(dx)) {
-        if (Math.abs(dy) > 40) step(dy < 0 ? 1 : -1);
-    } else {
-        if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
-    }
-    touchStartX = null;
-    touchStartY = null;
-  }, { passive: true });
+  setPlaying(true);
+  selectReel(0);
 
-  // Add mouse wheel vertical scroll support
-  let wheelTimeout;
-  stage.addEventListener("wheel", (e) => {
-    if (wheelTimeout) return;
-    if (Math.abs(e.deltaY) > 30) {
-      step(e.deltaY > 0 ? 1 : -1);
-      wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 1000);
-    }
-  }, { passive: true });
-
-  setMode("browse");
-
-  return { el: wrap, step, unzoom: backToGrid };
+  return { el: wrap, step };
 }
+
 
 // ---------------------------------------------------------------
 // Full-screen category overlay — open/close + internal subnav.
@@ -2631,38 +2575,6 @@ function initHeroVideoAutoplay() {
   video.addEventListener("loadedmetadata", tryPlay, { once: true });
   video.addEventListener("canplay", tryPlay, { once: true });
 }
-
-// ---------------------------------------------------------------
-// Dynamic Styles for Vertical Reels Player
-// (Injected here instead of changing the original CSS file)
-// ---------------------------------------------------------------
-const reelsStyle = document.createElement("style");
-reelsStyle.textContent = `
-  .reel-stage-vertical { position: relative; overflow: hidden; }
-  .reel-stage-vertical .gallery-nav--prev {
-    top: 15px !important; bottom: auto !important;
-    left: 50% !important; right: auto !important;
-    transform: translateX(-50%) rotate(90deg) !important;
-    z-index: 100;
-  }
-  .reel-stage-vertical .gallery-nav--next {
-    bottom: 15px !important; top: auto !important;
-    left: 50% !important; right: auto !important;
-    transform: translateX(-50%) rotate(90deg) !important;
-    z-index: 100;
-  }
-  .slide-up-anim { animation: slideUpAnim 0.3s ease-out; }
-  .slide-down-anim { animation: slideDownAnim 0.3s ease-out; }
-  @keyframes slideUpAnim { 
-    from { transform: translateY(100%); opacity: 0.5; } 
-    to { transform: translateY(0); opacity: 1; } 
-  }
-  @keyframes slideDownAnim { 
-    from { transform: translateY(-100%); opacity: 0.5; } 
-    to { transform: translateY(0); opacity: 1; } 
-  }
-`;
-document.head.appendChild(reelsStyle);
 
 // ---------------------------------------------------------------
 // Init

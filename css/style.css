@@ -1933,25 +1933,92 @@ section {
 }
 
 /* ============================================================
-   Social "reels" playlist viewer — a compact grid of small clickable
-   thumbnails (Selected Social Media Content) that opens a one-at-a-
-   time playlist stage. Reuses .gallery-back / .gallery-nav /
-   .gallery-caption from the Photography viewer above for a
-   consistent look, rather than duplicating that styling.
+   Social "stage + queue" viewer (Selected Social Media Content):
+   one large 9:16 stage showing the current reel's thumbnail with an
+   auto-advancing progress bar, a title/tag/controls column beside it,
+   and a wrapping queue of small thumbnails to jump to any reel
+   directly. No ranked numbering anywhere, by design.
    ============================================================ */
 .reel-panel {
   width: 100%;
 }
 
-.reel-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 10px;
+.reel-sq-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
 }
 
-.reel-tile {
+@media (max-width: 760px) {
+  .reel-sq-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+}
+
+.reel-sq-stage {
   position: relative;
-  aspect-ratio: 9 / 16;
+  flex: 0 0 auto;
+  width: 240px;
+  height: 427px;
+  border: 1px solid #2a2a28;
+  overflow: hidden;
+  background: var(--bg-raised);
+}
+
+.reel-sq-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(242, 240, 236, 0.15);
+  z-index: 2;
+}
+
+.reel-sq-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--accent);
+}
+
+@keyframes reelSqProgress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+.reel-sq-progress-fill.is-animating {
+  animation: reelSqProgress 4s linear forwards;
+}
+
+.reel-sq-progress-fill.is-paused {
+  animation-play-state: paused;
+}
+
+.reel-sq-stage-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+.reel-sq-stage-img.is-visible {
+  opacity: 1;
+}
+
+.reel-sq-stage-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
   background:
     repeating-linear-gradient(
       135deg,
@@ -1961,136 +2028,226 @@ section {
       transparent 14px
     ),
     var(--bg-raised);
-  border: 1px solid var(--line);
-  overflow: hidden;
-  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone-faint);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
 }
 
-.reel-tile:hover,
-.reel-tile:focus-visible {
-  border-color: var(--accent);
-  transform: translateY(-3px);
+.reel-sq-stage-placeholder.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.reel-tile-thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* A screenshot thumbnail (see buildScreenshotThumbnailUrl) is a
-     full page capture, much taller than this 9:16 tile - anchoring to
-     the top keeps the actual post content in frame instead of
-     whatever happens to fall at the vertical center of the page. */
-  object-position: top;
-  display: block;
-}
-
-.reel-tile-thumb-placeholder {
+.reel-sq-playpause {
   position: absolute;
-  inset: 0;
+  left: 12px;
+  bottom: 12px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 0 10px;
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--bone-faint);
-  line-height: 1.4;
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid rgba(242, 240, 236, 0.6);
+  z-index: 3;
+  transition: border-color 0.3s var(--ease);
 }
 
-.reel-tile-play {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(10, 10, 10, 0.65);
-  border: 1px solid var(--line);
+.reel-sq-playpause:hover,
+.reel-sq-playpause:focus-visible {
+  border-color: var(--accent);
 }
 
-.reel-tile-play::before {
+/* Pause icon (two bars) - shown while playing (the default state). */
+.reel-sq-playpause-icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+
+.reel-sq-playpause-icon::before,
+.reel-sq-playpause-icon::after {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 58%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  width: 4px;
+  height: 14px;
+  background: var(--bone);
+}
+
+.reel-sq-playpause-icon::before { left: 1px; }
+.reel-sq-playpause-icon::after { right: 1px; }
+
+/* Play icon (triangle) - shown once paused. */
+.reel-sq-playpause.is-paused .reel-sq-playpause-icon::before {
+  left: 2px;
+  width: 0;
+  height: 0;
+  background: none;
   border-style: solid;
-  border-width: 4px 0 4px 7px;
+  border-width: 7px 0 7px 12px;
   border-color: transparent transparent transparent var(--bone);
 }
 
-.reel-browse {
-  width: 100%;
+.reel-sq-playpause.is-paused .reel-sq-playpause-icon::after {
+  content: none;
+}
+
+.reel-sq-info {
+  flex: 1 1 320px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
 }
 
-.reel-stage {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  aspect-ratio: 9 / 16;
-  margin: 0 auto;
-  touch-action: pan-y;
+@media (max-width: 760px) {
+  .reel-sq-info {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+  }
 }
 
-/* Instagram's official embed widget sizes its own iframe internally
-   (Instagram, not this stylesheet, decides its height) rather than
-   filling a container the way the custom media-embed iframe does, so
-   forcing the usual fixed 9:16 box here would just clip or leave a
-   large gap. Used instead of aspect-ratio on .reel-stage whenever the
-   current reel is Instagram-sourced. */
-.reel-stage--auto {
-  aspect-ratio: auto;
-  min-height: 200px;
+.reel-sq-tag {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
 }
 
-.reel-stage-media {
-  width: 100%;
-  height: 100%;
+.reel-sq-title {
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.25;
+  margin: 0 0 4px;
 }
 
-.reel-stage--auto .reel-stage-media {
-  height: auto;
-}
-
-.reel-stage-media .media-embed {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
-}
-
-.instagram-embed-wrap {
-  width: 100%;
-  min-height: 200px;
+.reel-sq-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
-/* Shown only until (or unless) Instagram's script replaces the
-   blockquote with the real embed — see buildInstagramEmbed. */
-.instagram-embed-fallback {
+@media (max-width: 760px) {
+  .reel-sq-controls {
+    justify-content: center;
+  }
+}
+
+.reel-sq-navbtn {
+  height: 44px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--bone);
   font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--bone);
+  letter-spacing: 0.08em;
+  transition: border-color 0.3s var(--ease), color 0.3s var(--ease);
+}
+
+.reel-sq-navbtn:hover,
+.reel-sq-navbtn:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.reel-sq-open-link {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
   border-bottom: 1px solid var(--accent);
   padding-bottom: 2px;
   transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
 }
 
-.instagram-embed-fallback:hover,
-.instagram-embed-fallback:focus-visible {
-  color: var(--accent);
+.reel-sq-open-link:hover,
+.reel-sq-open-link:focus-visible {
+  color: var(--bone);
   border-color: var(--bone);
 }
 
-.reel-caption {
-  margin-top: 24px;
+.reel-sq-queue-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bone-faint);
+  margin-top: 6px;
+}
+
+.reel-sq-queue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 760px) {
+  .reel-sq-queue {
+    justify-content: center;
+  }
+}
+
+.reel-sq-queue-thumb {
+  width: 56px;
+  height: 100px;
+  flex: 0 0 auto;
+  padding: 0;
+  display: block;
+  background: var(--bg-raised);
+  border: 1px solid transparent;
+  overflow: hidden;
+  opacity: 0.7;
+  transition: opacity 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.reel-sq-queue-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reel-sq-queue-thumb.is-empty {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(242, 240, 236, 0.04),
+      rgba(242, 240, 236, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    var(--bg-raised);
+}
+
+.reel-sq-queue-thumb:hover,
+.reel-sq-queue-thumb:focus-visible {
+  opacity: 0.9;
+}
+
+.reel-sq-queue-thumb.is-active {
+  opacity: 1;
+  border-color: var(--accent);
+}
+
+.reel-sq-navbtn:focus-visible,
+.reel-sq-open-link:focus-visible,
+.reel-sq-playpause:focus-visible,
+.reel-sq-queue-thumb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ============================================================
