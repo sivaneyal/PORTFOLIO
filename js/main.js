@@ -362,30 +362,6 @@ const CATEGORIES = [
     mediaRole: "curating",
     items: [
       {
-        title: "Shablulim Films Streaming Platform",
-        synopsisLabel: "About the Project",
-        desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
-        // A real, hand-picked site screenshot as the gallery image (not
-        // a production photoshoot) - the "Visit The Site" link below is
-        // a plain textLink rather than a link.thumbnail preview card,
-        // so the screenshot sits beside the text as this project's
-        // gallery column instead of stacked above it inside project-info.
-        photos: ["PHOTOS/CURATION/Shablulim Films.jpg"],
-        hideScreenings: true,
-        hideTechnicalDetails: true,
-        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
-      },
-      {
-        title: "Content Editing - Outline Illustration Festival",
-        year: "2025",
-        synopsisLabel: "About the Project",
-        desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
-        photos: ["PHOTOS/CURATION/Outline Festival 2025.jpg"],
-        hideScreenings: true,
-        hideTechnicalDetails: true,
-        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
-      },
-      {
         // Moved here from Editing - video editing for social media
         // platforms fits Content & Curation's scope better than
         // sitting alongside Editing's short-form film/documentary work.
@@ -563,6 +539,30 @@ const CATEGORIES = [
             }],
           },
         ],
+      },
+      {
+        title: "Content Editing - Outline Illustration Festival",
+        year: "2025",
+        synopsisLabel: "About the Project",
+        desc: "Content editing for the illustration exhibitions and digital platforms of the 'Outline, Illustration and Words in Jerusalem' festival. The role combined guiding and drafting curatorial texts for the 13 participating exhibitions, as well as editing and uploading content to the website.",
+        photos: ["PHOTOS/CURATION/Outline Festival 2025.jpg"],
+        hideScreenings: true,
+        hideTechnicalDetails: true,
+        links: [{ label: "Visit The Site", url: "https://outlinejerusalem.com/" }],
+      },
+      {
+        title: "Shablulim Films Streaming Platform",
+        synopsisLabel: "About the Project",
+        desc: "Curated and edited the content for an indie project aimed at creating a streaming platform for watching Israeli short films.",
+        // A real, hand-picked site screenshot as the gallery image (not
+        // a production photoshoot) - the "Visit The Site" link below is
+        // a plain textLink rather than a link.thumbnail preview card,
+        // so the screenshot sits beside the text as this project's
+        // gallery column instead of stacked above it inside project-info.
+        photos: ["PHOTOS/CURATION/Shablulim Films.jpg"],
+        hideScreenings: true,
+        hideTechnicalDetails: true,
+        links: [{ label: "Visit The Site", url: "https://shablulimfilm.com/" }],
       },
     ],
   },
