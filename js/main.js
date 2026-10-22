@@ -22,13 +22,21 @@
                   at it (e.g. "assets/images/work/field-trip-poster.jpg").
                   Left unset, a plain placeholder is shown instead of an
                   arbitrary/first video frame.
+     video      — reels only (see "layout: reels" below): optional path
+                  to a short, self-hosted preview clip (e.g. "videos/
+                  club-rafi-preview.mp4"). When set, the stage plays it
+                  muted/looping/silent instead of showing a static
+                  thumbnail - `thumbnail` still doubles as its poster
+                  frame while it loads. Left unset, the stage just shows
+                  `thumbnail` as a still image, same as before.
 
    A group object (inside a category's `groups`) — or an item object
    inside a flat-item category's `items`, e.g. Content & Curation's
    "Selected Social Media Content" — supports:
-     layout: "reels" — renders as a compact clickable-thumbnail grid
-                  that opens a playlist-style viewer, instead of the
-                  standard full-size work-item cards / project panel.
+     layout: "reels" — renders as a "stage + queue" viewer (one large
+                  reel shown large, a queue of small thumbnails below it
+                  to jump to any other one) instead of the standard
+                  full-size work-item cards / project panel.
    ============================================================ */
 
 // ---------------------------------------------------------------
@@ -1427,6 +1435,9 @@ function buildSocialReelsPanel(items) {
         // parseEmbedUrl) so the stage/queue always gets a real image
         // instead of a placeholder when one is available.
         thumbnail: link.thumbnail || (parsed && parsed.thumbnailUrl) || null,
+        // A short self-hosted preview clip (see the `video` doc above) -
+        // most reels won't have one yet, so this is null until supplied.
+        video: link.video || null,
       });
     });
   });
@@ -1456,6 +1467,16 @@ function buildSocialReelsPanel(items) {
   const stageImg = document.createElement("img");
   stageImg.className = "reel-sq-stage-img";
   stage.appendChild(stageImg);
+
+  // Shown instead of stageImg when a reel has a `video` preview clip -
+  // muted/looping/silent, so it reads as a live preview rather than a
+  // video with its own soundtrack competing with the rest of the page.
+  const stageVideo = document.createElement("video");
+  stageVideo.className = "reel-sq-stage-video";
+  stageVideo.muted = true;
+  stageVideo.loop = true;
+  stageVideo.playsInline = true;
+  stage.appendChild(stageVideo);
 
   const stagePlaceholder = document.createElement("div");
   stagePlaceholder.className = "reel-sq-stage-placeholder";
@@ -1548,18 +1569,52 @@ function buildSocialReelsPanel(items) {
 
   function renderStage() {
     const reel = reels[state.index];
+    const altText = `Sivan Eyal social media content - ${reel.tag}, ${reel.title}`;
+
+    // The placeholder is only for "nothing at all to show" - computed
+    // once up front so a stale state from the previous reel (e.g. it
+    // had neither thumbnail nor video) can't linger over a video-only
+    // reel that has no thumbnail of its own.
+    stagePlaceholder.classList.toggle("is-visible", !reel.thumbnail && !reel.video);
+
     if (reel.thumbnail) {
-      stagePlaceholder.classList.remove("is-visible");
       stageImg.classList.add("is-visible");
-      stageImg.alt = `Sivan Eyal social media content - ${reel.tag}, ${reel.title}`;
+      stageImg.alt = altText;
       stageImg.onerror = () => {
         stageImg.classList.remove("is-visible");
-        stagePlaceholder.classList.add("is-visible");
+        // A broken thumbnail still shouldn't cover a working video, nor
+        // hide the placeholder forever if there's truly nothing else.
+        if (!reel.video) stagePlaceholder.classList.add("is-visible");
       };
       stageImg.src = reel.thumbnail;
     } else {
       stageImg.classList.remove("is-visible");
-      stagePlaceholder.classList.add("is-visible");
+    }
+
+    if (reel.video) {
+      // reel.thumbnail (if any) doubles as the poster frame shown while
+      // the clip loads/buffers, and as the fallback stageImg already
+      // underneath it if the clip itself fails to load.
+      stageVideo.poster = reel.thumbnail || "";
+      stageVideo.setAttribute("aria-label", altText);
+      stageVideo.onerror = () => {
+        stageVideo.classList.remove("is-visible");
+        if (!reel.thumbnail) stagePlaceholder.classList.add("is-visible");
+      };
+      stageVideo.src = reel.video;
+      stageVideo.classList.add("is-visible");
+      // Reduced motion skips autoplay entirely - the poster frame (or
+      // stageImg beneath it) stands in as a static preview instead.
+      if (state.playing && !reducedMotion) {
+        stageVideo.play().catch(() => {});
+      } else {
+        stageVideo.pause();
+      }
+    } else {
+      stageVideo.classList.remove("is-visible");
+      stageVideo.pause();
+      stageVideo.removeAttribute("src");
+      stageVideo.load();
     }
   }
 
@@ -1605,6 +1660,14 @@ function buildSocialReelsPanel(items) {
     state.playing = playing;
     playPauseBtn.classList.toggle("is-paused", !playing);
     playPauseBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+    // An explicit play/pause click is deliberate user intent, unlike
+    // auto-starting a clip on reel change (see renderStage), so this
+    // always actually plays/pauses the video regardless of reduced
+    // motion - only the auto-advance progress bar below stays gated.
+    if (reels[state.index].video) {
+      if (playing) stageVideo.play().catch(() => {});
+      else stageVideo.pause();
+    }
     if (reducedMotion || reels.length < 2) return;
     progressFill.classList.toggle("is-paused", !playing);
   }

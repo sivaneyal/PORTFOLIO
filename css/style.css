@@ -2011,6 +2011,23 @@ section {
   opacity: 1;
 }
 
+/* Stacked on top of .reel-sq-stage-img (which stays underneath as its
+   poster/fallback) whenever a reel has a self-hosted preview clip. */
+.reel-sq-stage-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+.reel-sq-stage-video.is-visible {
+  opacity: 1;
+}
+
 .reel-sq-stage-placeholder {
   position: absolute;
   inset: 0;
