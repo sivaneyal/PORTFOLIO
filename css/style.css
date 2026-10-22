@@ -2146,6 +2146,39 @@ section {
   margin: 0 0 4px;
 }
 
+/* A hand-entered engagement snapshot (see the `stats` doc in main.js) -
+   collapsed to nothing when a reel has none set, rather than leaving a
+   visible gap. */
+.reel-sq-stats {
+  display: none;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--bone-dim);
+  margin-bottom: 4px;
+}
+
+.reel-sq-stats.is-visible {
+  display: flex;
+}
+
+@media (max-width: 760px) {
+  .reel-sq-stats {
+    justify-content: center;
+  }
+}
+
+.reel-sq-stats-field:not(:first-child) {
+  position: relative;
+  margin-left: 16px;
+}
+
+.reel-sq-stats-field:not(:first-child)::before {
+  content: "\00B7";
+  position: absolute;
+  left: -11px;
+  color: var(--bone-faint);
+}
+
 .reel-sq-controls {
   display: flex;
   align-items: center;

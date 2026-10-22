@@ -29,6 +29,15 @@
                   thumbnail - `thumbnail` still doubles as its poster
                   frame while it loads. Left unset, the stage just shows
                   `thumbnail` as a still image, same as before.
+     stats      — reels only: optional { views, likes, comments }, each
+                  a plain string typed exactly as Instagram shows it
+                  (e.g. "1.2K", "340"). This is a hand-entered snapshot,
+                  not a live/auto-updating count - there's no backend
+                  here to poll Instagram's API from, so update these by
+                  hand whenever there's something new to report. Any
+                  field can be left out; the row only shows whichever
+                  ones are actually set, and disappears entirely if none
+                  are.
 
    A group object (inside a category's `groups`) — or an item object
    inside a flat-item category's `items`, e.g. Content & Curation's
@@ -382,10 +391,15 @@ const CATEGORIES = [
         layout: "reels",
         items: [
           {
-            title: "Club Rafi",
+            title: "Moscoman at Club Rafi",
             tag: "Social content",
             links: [
-              { label: "Watch", url: "https://www.instagram.com/p/DdUCTDjswEY/", thumbnail: "PHOTOS/club-rafi-social-thumbnail.png" },
+              {
+                label: "Watch",
+                url: "https://www.instagram.com/p/DdUCTDjswEY/",
+                thumbnail: "PHOTOS/club-rafi-social-thumbnail.png",
+                video: "videos/moscoman-club-rafi-preview.mp4",
+              },
             ],
           },
           {
@@ -393,8 +407,16 @@ const CATEGORIES = [
             tag: "Teder.FM",
             // Real thumbnail not uploaded yet - swap this one path for
             // the real image once it lands, nothing else needs to change.
+            // (The preview clip itself is a captioned talking-head edit
+            // throughout, so there's no clean caption-free frame in it
+            // worth extracting as a poster the way Moscoman's was.)
             links: [
-              { label: "Watch", url: "https://www.instagram.com/p/DdoxTifsZ1t/", thumbnail: "PHOTOS/johnny-d-teder-social-thumbnail.png" },
+              {
+                label: "Watch",
+                url: "https://www.instagram.com/p/DdoxTifsZ1t/",
+                thumbnail: "PHOTOS/johnny-d-teder-social-thumbnail.png",
+                video: "videos/johnny-d-teder-preview.mp4",
+              },
             ],
           },
           {
@@ -1438,6 +1460,8 @@ function buildSocialReelsPanel(items) {
         // A short self-hosted preview clip (see the `video` doc above) -
         // most reels won't have one yet, so this is null until supplied.
         video: link.video || null,
+        // A hand-entered engagement snapshot (see the `stats` doc above).
+        stats: link.stats || null,
       });
     });
   });
@@ -1506,6 +1530,12 @@ function buildSocialReelsPanel(items) {
   const titleEl = document.createElement("h3");
   titleEl.className = "reel-sq-title";
   info.appendChild(titleEl);
+
+  // A hand-entered engagement snapshot (see the `stats` doc at the top
+  // of this file) - hidden entirely when a reel has none set.
+  const statsEl = document.createElement("div");
+  statsEl.className = "reel-sq-stats";
+  info.appendChild(statsEl);
 
   const controls = document.createElement("div");
   controls.className = "reel-sq-controls";
@@ -1623,6 +1653,20 @@ function buildSocialReelsPanel(items) {
     tagEl.textContent = reel.tag;
     titleEl.textContent = reel.title;
     openLink.href = reel.url;
+
+    statsEl.innerHTML = "";
+    const stats = reel.stats;
+    const parts = [];
+    if (stats && stats.views) parts.push(`${stats.views} views`);
+    if (stats && stats.likes) parts.push(`${stats.likes} likes`);
+    if (stats && stats.comments) parts.push(`${stats.comments} comments`);
+    parts.forEach((text) => {
+      const span = document.createElement("span");
+      span.className = "reel-sq-stats-field";
+      span.textContent = text;
+      statsEl.appendChild(span);
+    });
+    statsEl.classList.toggle("is-visible", parts.length > 0);
   }
 
   function updateQueueActive() {
