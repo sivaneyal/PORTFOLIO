@@ -554,7 +554,13 @@ const CATEGORIES = [
           {
             title: "Yoni Bloch - Live Session Teaser",
             tag: "Event teaser",
-            links: [{ label: "Watch", url: "https://youtu.be/PIhOwgrXQZI?si=7ml4pPbf_Un0m8D8" }],
+            links: [{
+              label: "Watch",
+              url: "https://youtu.be/PIhOwgrXQZI?si=7ml4pPbf_Un0m8D8",
+              // Thumbnail auto-generated from the preview clip's first frame.
+              thumbnail: "PHOTOS/yoni-bloch-live-session-thumbnail.jpg",
+              video: "videos/yoni-bloch-live-session-preview.mp4",
+            }],
           },
         ],
       },
