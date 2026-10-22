@@ -481,7 +481,13 @@ const CATEGORIES = [
             title: "Open Call for Focus",
             tag: "Focus",
             links: [
-              { label: "Open Call", url: "https://www.instagram.com/p/DRe_VzHAtGy/" },
+              {
+                label: "Open Call",
+                url: "https://www.instagram.com/p/DRe_VzHAtGy/",
+                // Thumbnail auto-generated from the preview clip's first frame.
+                thumbnail: "PHOTOS/open-call-focus-thumbnail.jpg",
+                video: "videos/open-call-focus-preview.mp4",
+              },
               { label: "Vibe Video", url: "https://www.instagram.com/p/DRZkbntCBqO/" },
             ],
           },
