@@ -393,7 +393,7 @@ const CATEGORIES = [
         layout: "reels",
         items: [
           {
-            title: "Moscoman at Club Rafi",
+            title: "Moscoman at Club Rafi - Teder.fm",
             tag: "Social content",
             links: [
               {
@@ -405,7 +405,7 @@ const CATEGORIES = [
             ],
           },
           {
-            title: "JOHNNY D - TEDER.FM",
+            title: "Johnny D at Club Rafi - Teder.fm",
             tag: "Teder.FM",
             // Thumbnail auto-generated from the preview clip's own first
             // frame (~0.1s in), same as the others below - no more
@@ -420,7 +420,7 @@ const CATEGORIES = [
             ],
           },
           {
-            title: "WHITESQUARE - TEDER.FM",
+            title: "WHITESQUARE at Club Rafi - Teder.fm",
             tag: "Teder.FM",
             // Thumbnail auto-generated from the preview clip's first frame.
             links: [
@@ -433,7 +433,7 @@ const CATEGORIES = [
             ],
           },
           {
-            title: "Teasers for \"Focus\" Youth Live Sessions Project",
+            title: "Youth Live Sessions Project",
             tag: "Focus",
             links: [
               {
@@ -453,7 +453,7 @@ const CATEGORIES = [
             ],
           },
           {
-            title: "Documentary for Jerusalem Youth",
+            title: "Micro Documentary",
             tag: "Documentary",
             links: [
               {
@@ -464,7 +464,7 @@ const CATEGORIES = [
                 video: "videos/tiferet-mea-shearim-preview.mp4",
               },
               {
-                label: "Interview with Gilad Lesser",
+                label: "Interview with Gilad",
                 url: "https://www.instagram.com/p/DVEFZt1CB8D/",
                 // Thumbnail auto-generated from the preview clip's first frame.
                 thumbnail: "PHOTOS/gilad-lesser-interview-thumbnail.jpg",
@@ -473,7 +473,7 @@ const CATEGORIES = [
             ],
           },
           {
-            title: "Studio Visit at Wild Kids Jerusalem",
+            title: "Studio Visit at \"Wild Kids\" studio Jerusalem",
             tag: "Social content",
             links: [{
               label: "Watch",
@@ -488,7 +488,7 @@ const CATEGORIES = [
             tag: "Focus",
             links: [
               {
-                label: "Open Call",
+                label: "Young talent platform",
                 url: "https://www.instagram.com/p/DRe_VzHAtGy/",
                 // Thumbnail auto-generated from the preview clip's first frame.
                 thumbnail: "PHOTOS/open-call-focus-thumbnail.jpg",
@@ -504,7 +504,7 @@ const CATEGORIES = [
             ],
           },
           {
-            title: "New Year's Eve Teaser - Snail Cinema",
+            title: "New Year's Eve screening Teaser",
             tag: "Event teaser",
             desc: "Comedic teaser for a New Year's Eve event with Snail Cinema.",
             links: [{
@@ -516,7 +516,7 @@ const CATEGORIES = [
             }],
           },
           {
-            title: "Longing - Short Film Screening Teaser",
+            title: "\"About Longing\" - Short Film Screening Teaser",
             tag: "Event teaser",
             desc: "Teaser for a short film screening event on the theme of longing.",
             links: [{
@@ -528,7 +528,7 @@ const CATEGORIES = [
             }],
           },
           {
-            title: "Liel Magen - Peace Delegations to Northern Ireland",
+            title: "Peace Delegations to Northern Ireland",
             tag: "Social content",
             desc: "Liel Magen talks about peace delegations to Northern Ireland.",
             links: [{
@@ -540,7 +540,7 @@ const CATEGORIES = [
             }],
           },
           {
-            title: "Cabaret in the Square",
+            title: "Jerusalem \"Cabaret\" Bts",
             tag: "Social content",
             desc: "\"Behind the scenes\" of a cabaret in the square.",
             links: [{
