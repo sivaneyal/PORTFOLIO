@@ -457,13 +457,25 @@ const CATEGORIES = [
                 thumbnail: "PHOTOS/tiferet-mea-shearim-thumbnail.jpg",
                 video: "videos/tiferet-mea-shearim-preview.mp4",
               },
-              { label: "Interview with Gilad Lesser", url: "https://www.instagram.com/p/DVEFZt1CB8D/" },
+              {
+                label: "Interview with Gilad Lesser",
+                url: "https://www.instagram.com/p/DVEFZt1CB8D/",
+                // Thumbnail auto-generated from the preview clip's first frame.
+                thumbnail: "PHOTOS/gilad-lesser-interview-thumbnail.jpg",
+                video: "videos/gilad-lesser-interview-preview.mp4",
+              },
             ],
           },
           {
             title: "Studio Visit at Wild Kids Jerusalem",
             tag: "Social content",
-            links: [{ label: "Watch", url: "https://www.instagram.com/p/DUYtmy0AkK9/" }],
+            links: [{
+              label: "Watch",
+              url: "https://www.instagram.com/p/DUYtmy0AkK9/",
+              // Thumbnail auto-generated from the preview clip's first frame.
+              thumbnail: "PHOTOS/wild-kids-studio-visit-thumbnail.jpg",
+              video: "videos/wild-kids-studio-visit-preview.mp4",
+            }],
           },
           {
             title: "Open Call for Focus",
