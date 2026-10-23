@@ -165,8 +165,8 @@ img { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 clamp(20px, 5vw, 56px);
-  height: var(--nav-h);
+  padding: env(safe-area-inset-top, 0px) max(clamp(20px, 5vw, 56px), env(safe-area-inset-right, 0px)) 0 max(clamp(20px, 5vw, 56px), env(safe-area-inset-left, 0px));
+  height: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
   background: linear-gradient(to bottom, rgba(10, 10, 10, 0.92), rgba(10, 10, 10, 0));
   transition: background 0.3s var(--ease);
 }
@@ -227,9 +227,10 @@ img { max-width: 100%; display: block; }
   display: none;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 5px;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   padding: 0;
@@ -238,6 +239,7 @@ img { max-width: 100%; display: block; }
 
 .nav-toggle span {
   display: block;
+  width: 24px;
   height: 1px;
   background: var(--bone);
   transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
@@ -431,7 +433,8 @@ img { max-width: 100%; display: block; }
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 5%;
+    top: 50%;
+    transform: translateY(-50%);
     padding: 0 clamp(20px, 6vw, 32px);
   }
 
@@ -723,8 +726,8 @@ section {
 
 .news-nav {
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: rgba(10, 10, 10, 0.6);
@@ -860,15 +863,18 @@ section {
 
 .overlay-close {
   position: fixed;
-  top: clamp(20px, 4vw, 36px);
-  right: clamp(20px, 5vw, 56px);
+  top: calc(clamp(20px, 4vw, 36px) + env(safe-area-inset-top, 0px));
+  right: calc(clamp(20px, 5vw, 56px) + env(safe-area-inset-right, 0px));
   z-index: 910;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  min-width: 44px;
+  min-height: 44px;
   background: none;
   border: none;
-  padding: 8px;
+  padding: 12px;
   color: var(--bone-dim);
   transition: color 0.3s var(--ease);
 }
@@ -909,6 +915,7 @@ section {
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: clamp(90px, 12vh, 140px) 0 100px;
 }
 
@@ -946,8 +953,13 @@ section {
   margin: 40px auto 0;
   padding: 18px clamp(20px, 5vw, 56px);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   position: sticky;
@@ -959,6 +971,31 @@ section {
      whatever's scrolling underneath, so it reads as a deliberate
      fixed header bar rather than a disconnected panel. */
   box-shadow: 0 16px 24px -12px rgba(0, 0, 0, 0.65);
+  /* Fade the row's own edges in/out via a mask (not an extra overlay
+     element) - js/main.js toggles .can-scroll-start/.can-scroll-end to
+     only show whichever side still has more pills to reveal. Both
+     start off (full opacity, no mask) until JS measures the row. */
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.overlay-subnav.can-scroll-start {
+  mask-image: linear-gradient(to right, transparent, black 28px, black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 28px, black 100%);
+}
+
+.overlay-subnav.can-scroll-end {
+  mask-image: linear-gradient(to left, transparent, black 28px, black 100%);
+  -webkit-mask-image: linear-gradient(to left, transparent, black 28px, black 100%);
+}
+
+.overlay-subnav.can-scroll-start.can-scroll-end {
+  mask-image: linear-gradient(to right, transparent, black 28px, black calc(100% - 28px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 28px, black calc(100% - 28px), transparent);
+}
+
+.overlay-subnav::-webkit-scrollbar {
+  display: none;
 }
 
 .overlay-subnav:empty {
@@ -966,6 +1003,7 @@ section {
 }
 
 .overlay-subnav-pill {
+  flex: 0 0 auto;
   font-size: 0.76rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -973,7 +1011,8 @@ section {
   background: none;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 8px 16px;
+  padding: 12px 16px;
+  min-height: 44px;
   transition: color 0.3s var(--ease), border-color 0.3s var(--ease), background 0.3s var(--ease);
 }
 
@@ -1664,10 +1703,6 @@ section {
   cursor: zoom-in;
 }
 
-.gallery-photo.is-zoomed {
-  cursor: zoom-out;
-}
-
 /* Both the placeholder and the two crossfading photo layers below stack
    on top of one another edge to edge, then toggle opacity via
    .is-visible - that overlap is what makes the swap a real crossfade
@@ -1700,11 +1735,6 @@ section {
   pointer-events: auto;
 }
 
-.gallery-photo.is-zoomed .gallery-photo-placeholder {
-  transform: scale(1.3);
-  border-color: var(--accent-soft);
-}
-
 .gallery-photo-img {
   position: absolute;
   inset: 0;
@@ -1725,16 +1755,92 @@ section {
   opacity: 1;
 }
 
-.gallery-photo.is-zoomed .gallery-photo-img {
-  transform: scale(1.3);
-}
-
 .gallery-photo-placeholder span {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--bone-faint);
 }
+
+/* ============================================================
+   Photo lightbox — full-screen viewer for the Photography gallery,
+   opened by tapping the stage photo (see openPhotoLightbox in
+   js/main.js). Real pinch-to-zoom and pan (JS-driven, via touch
+   events), not a fixed CSS scale - touch-action:none hands the whole
+   gesture to our own handlers instead of the browser's native
+   pinch-zoom/scroll. Sits above .category-overlay (z-index 900) and
+   its close button (910) since it's a layer on top of the overlay,
+   not part of it.
+   ============================================================ */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  overflow: hidden;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  touch-action: none;
+  overscroll-behavior: contain;
+  transition: opacity 0.3s var(--ease), visibility 0s linear 0.3s;
+}
+
+.photo-lightbox.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s var(--ease);
+}
+
+.photo-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  touch-action: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  will-change: transform;
+}
+
+.photo-lightbox-close {
+  position: fixed;
+  top: calc(20px + env(safe-area-inset-top, 0px));
+  right: calc(20px + env(safe-area-inset-right, 0px));
+  z-index: 951;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.55);
+  border: 1px solid rgba(242, 240, 236, 0.25);
+  border-radius: 50%;
+  color: var(--bone-dim);
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.photo-lightbox-close:hover,
+.photo-lightbox-close:focus-visible {
+  color: var(--bone);
+  border-color: var(--accent);
+}
+
+.photo-lightbox-close::before,
+.photo-lightbox-close::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+}
+
+.photo-lightbox-close::before { transform: rotate(45deg); }
+.photo-lightbox-close::after { transform: rotate(-45deg); }
 
 .gallery-nav {
   position: absolute;
@@ -2183,7 +2289,7 @@ section {
 }
 
 .reel-sq-tag {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--accent);
@@ -2444,7 +2550,7 @@ section {
 
   .nav-links.is-open { transform: translateX(0); }
 
-  .nav-links .nav-link { font-size: 1.4rem; }
+  .nav-links .nav-link { font-size: 1.4rem; display: inline-flex; align-items: center; padding-block: 10px; }
 
   .site-nav.is-open .nav-toggle span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
   .site-nav.is-open .nav-toggle span:nth-child(2) { opacity: 0; }

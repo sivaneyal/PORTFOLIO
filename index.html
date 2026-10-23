@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Sivan Eyal, Filmmaker &amp; Multidisciplinary Artist</title>
 <meta name="description" content="Sivan Eyal is a Berlin and Jerusalem based filmmaker, editor, photographer, and multidisciplinary artist. This portfolio showcases her work across directing, editing, photography, content &amp; curation, and performance.">
 
@@ -107,16 +107,24 @@
          since the video is always muted here anyway. silent-trailer.webm
          (VP9) is listed first so browsers that support it fetch the
          smaller file automatically; silent-trailer.mp4 (H.264) is the
-         universally-supported fallback. poster is a real still frame
-         extracted from this same re-encoded footage (see
-         assets/images/hero-poster.jpg) - shown until the video can
-         play, and as the fallback if it ever fails to load. autoplay +
-         muted + playsinline together are what iOS Safari requires for
-         inline (non-fullscreen) autoplay - all three are set below.
-         js/main.js also calls video.play() directly on load (see
-         initHeroVideoAutoplay), since a script-initiated play() after
-         load succeeds on some mobile browsers/OS versions where the
-         plain declarative attributes alone don't kick in. -->
+         universally-supported fallback. A 640x360 "-mobile" encode of
+         each (~750-860KB vs ~2.5-3MB for the full 720p files) is listed
+         ahead of its full-size counterpart with a max-width 760px media
+         query, so phones - most of this site's traffic - fetch the
+         much lighter pair instead; a source's `media` attribute is
+         honored before the browser ever requests that file, same as a
+         responsive <img srcset>. preload="metadata" (not "auto") so
+         nothing beyond the file's header downloads until playback
+         actually starts. poster is a real still frame extracted from
+         this same footage (see assets/images/hero-poster.jpg) - shown
+         until the video can play, and as the fallback if it ever fails
+         to load. autoplay + muted + playsinline together are what iOS
+         Safari requires for inline (non-fullscreen) autoplay - all
+         three are set below. js/main.js also calls video.play()
+         directly on load (see initHeroVideoAutoplay), since a
+         script-initiated play() after load succeeds on some mobile
+         browsers/OS versions where the plain declarative attributes
+         alone don't kick in. -->
     <video
       class="hero-video"
       autoplay
@@ -124,10 +132,12 @@
       loop
       playsinline
       webkit-playsinline
-      preload="auto"
+      preload="metadata"
       poster="assets/images/hero-poster.jpg"
       aria-hidden="true"
     >
+      <source src="videos/silent-trailer-mobile.webm" type="video/webm" media="(max-width: 760px)">
+      <source src="videos/silent-trailer-mobile.mp4" type="video/mp4" media="(max-width: 760px)">
       <source src="videos/silent-trailer.webm" type="video/webm">
       <source src="videos/silent-trailer.mp4" type="video/mp4">
     </video>
@@ -208,7 +218,7 @@
       <p class="section-kicker reveal">About</p>
       <div class="about-grid">
         <div class="about-photo reveal">
-          <img src="PHOTOS/BIO/BIO.jpeg" alt="Portrait of Sivan Eyal" loading="lazy">
+          <img src="PHOTOS/BIO/BIO.jpeg" alt="Portrait of Sivan Eyal" loading="lazy" decoding="async">
         </div>
         <p class="about-bio reveal">
           Sivan is a Berlin based filmmaker and multidisciplinary artist. Her work moves

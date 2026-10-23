@@ -792,6 +792,7 @@ function buildMediaEmbed(link, title, altText) {
     img.src = thumbnailSrc;
     img.alt = altText || title;
     img.loading = "lazy";
+    img.decoding = "async";
     // If the image 404s (e.g. a stale/deleted video ID), fall back to the
     // plain placeholder instead of leaving a broken-image icon on screen.
     img.addEventListener("error", () => {
@@ -846,7 +847,23 @@ function buildMediaEmbed(link, title, altText) {
   });
 
   wrap.appendChild(facade);
+  // Reinstated by resetHiddenEmbeds (see renderTabbedContent's showTab) so a
+  // playing embed's iframe/video and its audio stop the moment its tab is
+  // switched away from, instead of continuing to play out of sight.
+  wrap._embedFacade = facade;
   return wrap;
+}
+
+// Swaps every currently-playing embed inside `panel` back to its paused
+// poster/facade state - called on whichever panel showTab() is hiding, so
+// switching tabs always stops any audio/video that was left playing.
+function resetHiddenEmbeds(panel) {
+  panel.querySelectorAll(".media-embed").forEach((wrap) => {
+    if (wrap._embedFacade && !wrap.contains(wrap._embedFacade)) {
+      wrap.innerHTML = "";
+      wrap.appendChild(wrap._embedFacade);
+    }
+  });
 }
 
 // ---------------------------------------------------------------
@@ -869,6 +886,7 @@ function buildLinkPreview(link, altText) {
   img.src = link.thumbnail;
   img.alt = altText;
   img.loading = "lazy";
+  img.decoding = "async";
   // Screenshot services can fail/rate-limit - fall back to a plain
   // placeholder instead of a broken-image icon, same pattern as
   // buildMediaEmbed's thumbnail fallback.
@@ -971,6 +989,7 @@ function buildPasswordOnlyMedia(title, poster) {
     img.src = poster;
     img.alt = "";
     img.loading = "lazy";
+    img.decoding = "async";
     img.addEventListener("error", () => {
       img.remove();
       thumb.classList.remove("has-poster");
@@ -1154,6 +1173,7 @@ function buildProjectGallery(photos, title, options = {}) {
     img.src = realPhotos[i];
     img.alt = altText;
     img.loading = "lazy";
+    img.decoding = "async";
     // A missing/renamed file falls back to the placeholder frame
     // instead of a broken-image icon, same pattern used elsewhere.
     img.addEventListener("error", () => showPlaceholder(i), { once: true });
@@ -1197,6 +1217,7 @@ function buildProjectGallery(photos, title, options = {}) {
           timg.src = realPhotos[i];
           timg.alt = "";
           timg.loading = "lazy";
+          timg.decoding = "async";
           timg.addEventListener("error", () => timg.remove(), { once: true });
           t.appendChild(timg);
         }
@@ -1473,8 +1494,15 @@ function renderTabbedContent(cat, subnavEl, bodyEl, initialTabSlug, onTabChange)
 
   let initializing = true;
   function showTab(i) {
-    panels.forEach((panel, j) => { panel.hidden = j !== i; });
+    panels.forEach((panel, j) => {
+      if (j !== i && !panel.hidden) resetHiddenEmbeds(panel);
+      panel.hidden = j !== i;
+    });
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === i));
+    if (!initializing) {
+      pills[i].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      updateSubnavFade(subnavEl);
+    }
     activeGalleryStep = built[i].step || null;
     activeGalleryUnzoom = built[i].unzoom || null;
     if (onTabChange) onTabChange(slugify(tabs[i].label), initializing);
@@ -1671,6 +1699,7 @@ function buildSocialReelsPanel(items) {
       img.src = reel.thumbnail;
       img.alt = "";
       img.loading = "lazy";
+      img.decoding = "async";
       // A missing/renamed file falls back to the plain textured frame
       // instead of a broken-image icon, same pattern used elsewhere.
       img.addEventListener("error", () => {
@@ -1945,6 +1974,15 @@ function openCategoryOverlay(categoryId, triggerEl, options = {}) {
     renderTabbedContent(cat, subnavEl, bodyEl, tabSlug, onTabChange);
   }
 
+  // Sub-tab row is a single horizontally-scrolling row on narrow
+  // screens (see .overlay-subnav) - reset its scroll position for the
+  // newly-built pill set, bring the active one into view, then set the
+  // fade edges for wherever that leaves it.
+  subnavEl.scrollLeft = 0;
+  const activePill = subnavEl.querySelector(".overlay-subnav-pill.is-active");
+  if (activePill) activePill.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+  updateSubnavFade(subnavEl);
+
   // Only freeze the page on a genuine closed-to-open transition —
   // calling this again while already open (e.g. jumping straight
   // from one category's hash to another) would capture scrollY as 0
@@ -1975,6 +2013,10 @@ function closeCategoryOverlay(options = {}) {
   overlay.classList.remove("is-open");
   overlay.setAttribute("aria-hidden", "true");
   unlockBodyScroll();
+  resetHiddenEmbeds(overlay);
+  // Closes the photo lightbox too, if Photography's was left open -
+  // see unzoom() in renderGallery, which is what this actually points to.
+  if (activeGalleryUnzoom) activeGalleryUnzoom();
   activeGalleryStep = null;
   activeGalleryUnzoom = null;
 
@@ -2185,10 +2227,23 @@ function closeLightbox() {
   }
 }
 
+// Toggles .can-scroll-start/.can-scroll-end on the sub-tab row so its
+// fade edges (see .overlay-subnav in css/style.css) only show on
+// whichever side still has more pills to scroll to.
+function updateSubnavFade(el) {
+  if (!el) return;
+  el.classList.toggle("can-scroll-start", el.scrollLeft > 2);
+  el.classList.toggle("can-scroll-end", el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+}
+
 function initCategoryOverlay() {
   const closeBtn = document.getElementById("overlayClose");
   if (!closeBtn) return;
   closeBtn.addEventListener("click", closeCategoryOverlay);
+
+  const subnavEl = document.getElementById("overlaySubnav");
+  subnavEl.addEventListener("scroll", () => updateSubnavFade(subnavEl), { passive: true });
+  window.addEventListener("resize", () => updateSubnavFade(subnavEl));
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       // The lightbox, if open, is always the topmost layer - close it
@@ -2275,6 +2330,179 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   placeholderEl.appendChild(placeholderLabel);
   photoEl.appendChild(placeholderEl);
 
+  // ---------------------------------------------------------------
+  // Full-screen photo lightbox: real pinch-to-zoom and pan (not the
+  // old fixed 1.3x tap-to-scale), opened by tapping the stage photo.
+  // Shares `state`/`step()` with the inline viewer above it, so
+  // swiping to the next photo in here (while not zoomed) keeps the
+  // stage/strip underneath in sync too - syncLightboxImage() is
+  // called from renderStage() below, the single place every photo
+  // change (step, thumbnail click, series switch) already runs
+  // through, so the lightbox never needs its own navigation logic.
+  // ---------------------------------------------------------------
+  // renderGallery runs fresh every time the Photography overlay opens -
+  // drop any lightbox left over from a previous open instead of
+  // appending another one to document.body each time.
+  document.querySelectorAll(".photo-lightbox").forEach((el) => el.remove());
+
+  const lb = document.createElement("div");
+  lb.className = "photo-lightbox";
+  lb.setAttribute("aria-hidden", "true");
+
+  const lbImg = document.createElement("img");
+  lbImg.className = "photo-lightbox-img";
+  lbImg.alt = "";
+  deterImageDownload(lbImg);
+  lb.appendChild(lbImg);
+
+  const lbClose = document.createElement("button");
+  lbClose.type = "button";
+  lbClose.className = "photo-lightbox-close";
+  lbClose.setAttribute("aria-label", "Close");
+  lb.appendChild(lbClose);
+
+  document.body.appendChild(lb);
+
+  let lbScale = 1;
+  let lbX = 0;
+  let lbY = 0;
+
+  function applyLbTransform() {
+    lbImg.style.transform = `translate(${lbX}px, ${lbY}px) scale(${lbScale})`;
+  }
+
+  // Keeps a panned/zoomed image from being dragged off-screen - clamps
+  // to roughly how far the image can have grown past the lightbox's
+  // own bounds at the current scale.
+  function clampLbPan() {
+    const rect = lb.getBoundingClientRect();
+    const maxX = Math.max(0, (rect.width * (lbScale - 1)) / 2);
+    const maxY = Math.max(0, (rect.height * (lbScale - 1)) / 2);
+    lbX = Math.min(maxX, Math.max(-maxX, lbX));
+    lbY = Math.min(maxY, Math.max(-maxY, lbY));
+  }
+
+  function resetLbZoom() {
+    lbScale = 1;
+    lbX = 0;
+    lbY = 0;
+    applyLbTransform();
+  }
+
+  function isPhotoLightboxOpen() {
+    return lb.classList.contains("is-open");
+  }
+
+  function syncLightboxImage() {
+    if (!isPhotoLightboxOpen()) return;
+    const series = cat.series[state.seriesIndex];
+    const photoCount = seriesPhotoCount(series);
+    lbImg.alt = `${series.title} - photo ${state.photoIndex + 1} of ${photoCount}`;
+    lbImg.src = series.photos ? series.photos[state.photoIndex] : "";
+  }
+
+  function openPhotoLightbox() {
+    resetLbZoom();
+    lb.classList.add("is-open");
+    lb.setAttribute("aria-hidden", "false");
+    syncLightboxImage();
+  }
+
+  function closePhotoLightbox() {
+    lb.classList.remove("is-open");
+    lb.setAttribute("aria-hidden", "true");
+    resetLbZoom();
+  }
+
+  lbClose.addEventListener("click", closePhotoLightbox);
+  lb.addEventListener("click", (e) => {
+    if (e.target === lb) closePhotoLightbox();
+  });
+  // Mouse/trackpad fallback for non-touch visitors - no pinch gesture
+  // to reach for, so a plain click toggles a fixed zoom level instead.
+  lbImg.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (lbScale > 1.01) {
+      resetLbZoom();
+    } else {
+      lbScale = 2.2;
+      applyLbTransform();
+    }
+  });
+
+  // --- touch gestures: pinch-to-zoom, pan while zoomed, swipe to the
+  // next/previous photo while not zoomed, tap to toggle zoom. ---
+  let lbPinchStartDist = null;
+  let lbPinchStartScale = 1;
+  let lbMultiTouch = false;
+  let lbPanStart = null;
+  let lbTouchStart = null;
+
+  function lbTouchDist(touches) {
+    return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+  }
+
+  lb.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 2) {
+      lbMultiTouch = true;
+      lbPinchStartDist = lbTouchDist(e.touches);
+      lbPinchStartScale = lbScale;
+    } else if (e.touches.length === 1) {
+      lbMultiTouch = false;
+      const t = e.touches[0];
+      lbTouchStart = { x: t.clientX, y: t.clientY, t: Date.now() };
+      lbPanStart = { x: t.clientX, y: t.clientY, lbX, lbY };
+    }
+  }, { passive: true });
+
+  lb.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 2 && lbPinchStartDist) {
+      const dist = lbTouchDist(e.touches);
+      lbScale = Math.min(4, Math.max(1, lbPinchStartScale * (dist / lbPinchStartDist)));
+      clampLbPan();
+      applyLbTransform();
+    } else if (e.touches.length === 1 && lbScale > 1.01 && lbPanStart) {
+      const t = e.touches[0];
+      lbX = lbPanStart.lbX + (t.clientX - lbPanStart.x);
+      lbY = lbPanStart.lbY + (t.clientY - lbPanStart.y);
+      clampLbPan();
+      applyLbTransform();
+    }
+  }, { passive: true });
+
+  lb.addEventListener("touchend", (e) => {
+    if (lbMultiTouch) {
+      lbMultiTouch = false;
+      lbPinchStartDist = null;
+      if (lbScale < 1.05) resetLbZoom();
+      return;
+    }
+    if (!lbTouchStart) return;
+    const end = e.changedTouches[0];
+    const dx = end.clientX - lbTouchStart.x;
+    const dy = end.clientY - lbTouchStart.y;
+    const dist = Math.hypot(dx, dy);
+    const duration = Date.now() - lbTouchStart.t;
+    lbTouchStart = null;
+    lbPanStart = null;
+
+    if (lbScale <= 1.01 && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      step(dx < 0 ? 1 : -1);
+      resetLbZoom();
+      syncLightboxImage();
+      return;
+    }
+    if (dist < 10 && duration < 300) {
+      if (lbScale > 1.01) {
+        resetLbZoom();
+      } else {
+        lbScale = 2.2;
+        applyLbTransform();
+      }
+    }
+  }, { passive: true });
+
   const prevBtn = document.createElement("button");
   prevBtn.type = "button";
   prevBtn.className = "gallery-nav gallery-nav--prev";
@@ -2334,7 +2562,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   function renderStage(instant) {
     const series = cat.series[state.seriesIndex];
     const photoCount = seriesPhotoCount(series);
-    photoEl.classList.remove("is-zoomed");
+    syncLightboxImage();
 
     if (!series.photos) {
       showStagePlaceholder(series, photoCount);
@@ -2429,6 +2657,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
         img.src = series.photos[i];
         img.alt = "";
         img.loading = "lazy";
+        img.decoding = "async";
         deterImageDownload(img);
         // A missing/renamed file falls back to the plain numbered
         // placeholder instead of a broken-image icon.
@@ -2480,6 +2709,10 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     renderStrip();
     renderStage(true);
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
+    if (!initializing) {
+      pills[state.seriesIndex].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      updateSubnavFade(subnavEl);
+    }
     if (onTabChange) onTabChange(slugify(cat.series[state.seriesIndex].title), initializing);
     const activeThumb = stripThumbs[state.photoIndex];
     if (activeThumb) activeThumb.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
@@ -2510,17 +2743,19 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     }
   }
 
+  // Repurposed for the full-screen lightbox: the first Escape (see
+  // initCategoryOverlay) closes it before falling through to closing
+  // the whole category overlay, same priority the old inline zoom had.
   function unzoom() {
-    if (!photoEl.classList.contains("is-zoomed")) return false;
-    photoEl.classList.remove("is-zoomed");
+    if (!isPhotoLightboxOpen()) return false;
+    closePhotoLightbox();
     return true;
   }
 
   prevBtn.addEventListener("click", () => step(-1));
   nextBtn.addEventListener("click", () => step(1));
   photoEl.addEventListener("click", () => {
-    const nowZoomed = photoEl.classList.toggle("is-zoomed");
-    if (nowZoomed) stage.scrollIntoView({ behavior: "smooth", block: "center" });
+    openPhotoLightbox();
   });
 
   let touchStartX = null;
@@ -2568,6 +2803,7 @@ function renderNews() {
     img.src = item.image;
     img.alt = item.caption;
     img.loading = "lazy";
+    img.decoding = "async";
     // A missing/renamed image file falls back to a plain placeholder
     // instead of a broken-image icon, same pattern used elsewhere on
     // the site (see buildLinkPreview).
