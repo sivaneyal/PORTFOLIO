@@ -461,6 +461,12 @@ img { max-width: 100%; display: block; }
 
   .orbit-text {
     gap: 4px;
+    /* The slow bob under .hero-name's static underline read as two
+       unrelated ideas fighting each other on a narrow screen (an
+       animated row directly under a plain rule) - this was always a
+       hover-adjacent flourish for a pointer anyway, not something a
+       touch visitor was triggering, so it's off below this width. */
+    animation: none;
   }
 }
 
@@ -536,6 +542,16 @@ section {
 @media (max-width: 720px) {
   .about-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Stretched to the full column width (minus only the section's own
+     side padding), the photo was rendering taller than the whole bio
+     paragraph next to/under it - caps it back down to a portrait
+     snapshot size and centers it instead. */
+  .about-photo {
+    width: 180px;
+    max-width: 180px;
+    margin: 0 auto;
   }
 }
 
@@ -921,7 +937,7 @@ section {
 
 .overlay-head {
   max-width: 1180px;
-  margin: 0 auto;
+  margin: 0 auto 40px;
   padding: 0 clamp(20px, 5vw, 56px);
 }
 
@@ -950,7 +966,7 @@ section {
 
 .overlay-subnav {
   max-width: 1180px;
-  margin: 40px auto 0;
+  margin: 0 auto;
   padding: 18px clamp(20px, 5vw, 56px);
   display: flex;
   flex-wrap: nowrap;
@@ -960,6 +976,7 @@ section {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
+  scroll-snap-type: x proximity;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   position: sticky;
@@ -1004,9 +1021,9 @@ section {
 
 .overlay-subnav-pill {
   flex: 0 0 auto;
-  font-size: 0.76rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  scroll-snap-align: center;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
   color: var(--bone-dim);
   background: none;
   border: 1px solid var(--line);
@@ -2533,6 +2550,11 @@ section {
    ============================================================ */
 @media (max-width: 720px) {
   .nav-toggle { display: flex; }
+
+  /* The hero already states the name prominently right below this bar -
+     repeating it here just reads as a duplicate on a narrow screen,
+     where the top bar has no room to make the two look intentional. */
+  .nav-mark { display: none; }
 
   .nav-links {
     position: fixed;

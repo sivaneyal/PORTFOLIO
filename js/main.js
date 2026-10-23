@@ -1500,7 +1500,7 @@ function renderTabbedContent(cat, subnavEl, bodyEl, initialTabSlug, onTabChange)
     });
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === i));
     if (!initializing) {
-      pills[i].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      scrollIntoViewHorizontal(subnavEl, pills[i], "smooth");
       updateSubnavFade(subnavEl);
     }
     activeGalleryStep = built[i].step || null;
@@ -1980,7 +1980,7 @@ function openCategoryOverlay(categoryId, triggerEl, options = {}) {
   // fade edges for wherever that leaves it.
   subnavEl.scrollLeft = 0;
   const activePill = subnavEl.querySelector(".overlay-subnav-pill.is-active");
-  if (activePill) activePill.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+  if (activePill) scrollIntoViewHorizontal(subnavEl, activePill, "auto");
   updateSubnavFade(subnavEl);
 
   // Only freeze the page on a genuine closed-to-open transition —
@@ -2225,6 +2225,53 @@ function closeLightbox() {
   if (lightboxLastFocused && typeof lightboxLastFocused.focus === "function") {
     lightboxLastFocused.focus();
   }
+}
+
+// Runs fn(), then undoes any vertical scroll #overlayScroll picks up
+// as a side effect of it - specifically, the browser scrolling the
+// whole overlay to "reveal" a button that was already fully visible
+// the moment a click moves focus onto it (seen on Photography's
+// prev/next and its series/thumbnail buttons), which was dragging the
+// stage photo up and clipping it at the top. That adjustment lands
+// ~100-150ms after the click, well after fn() itself has returned -
+// not timed to any single animation frame - so this watches every
+// scroll event on the container for a short window afterward instead
+// of guessing how many frames to wait, and snaps back only if
+// something actually moved it off the pinned position.
+function withScrollPin(fn) {
+  const scrollEl = document.getElementById("overlayScroll");
+  fn();
+  if (!scrollEl) return;
+  const pinned = scrollEl.scrollTop;
+  // A single scroll-event-driven restore kept losing the race - whatever
+  // re-applies this (observed ~130ms after the click, well outside a
+  // couple of animation frames) can still win after one correction. This
+  // just keeps re-asserting the pinned position on every frame for half
+  // a second, which costs nothing once nothing is actually fighting it.
+  const until = performance.now() + 500;
+  function tick() {
+    // The page sets html { scroll-behavior: smooth }, which also
+    // governs the plain scrollTop setter - an instant correction
+    // needs scrollTo's own behavior option to actually override that
+    // per frame instead of kicking off a competing smooth animation.
+    if (scrollEl.scrollTop !== pinned) scrollEl.scrollTo({ top: pinned, behavior: "instant" });
+    if (performance.now() < until) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// A horizontal-only stand-in for el.scrollIntoView(): the native
+// version walks every scrollable ancestor, including the overlay's
+// main vertical scroll container, which can drag the whole page down
+// just to reveal a pill/thumbnail that's simply below the fold in a
+// row that was only ever meant to scroll sideways - visible as the
+// page jumping and the stage photo getting cut off when stepping
+// through Photography's filmstrip. This only ever touches the one
+// horizontally-scrolling container's own scrollLeft.
+function scrollIntoViewHorizontal(container, el, behavior) {
+  if (!container || !el) return;
+  const target = el.offsetLeft - (container.clientWidth - el.offsetWidth) / 2;
+  container.scrollTo({ left: Math.max(0, target), behavior });
 }
 
 // Toggles .can-scroll-start/.can-scroll-end on the sub-tab row so its
@@ -2535,7 +2582,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     btn.type = "button";
     btn.className = "overlay-subnav-pill";
     btn.textContent = series.title;
-    btn.addEventListener("click", () => setSeries(i));
+    btn.addEventListener("click", () => withScrollPin(() => setSeries(i)));
     subnavEl.appendChild(btn);
     return btn;
   });
@@ -2674,7 +2721,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
         thumb.appendChild(label);
       }
       thumb.setAttribute("aria-label", `Show photo ${i + 1} of ${photoCount}`);
-      thumb.addEventListener("click", () => selectPhoto(i));
+      thumb.addEventListener("click", () => withScrollPin(() => selectPhoto(i)));
       stripEl.appendChild(thumb);
       stripThumbs.push(thumb);
     }
@@ -2685,7 +2732,7 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
       const active = j === state.photoIndex;
       btn.classList.toggle("is-active", active);
       if (active && scrollIntoView) {
-        btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        scrollIntoViewHorizontal(stripEl, btn, "smooth");
       }
     });
   }
@@ -2710,12 +2757,12 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     renderStage(true);
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
     if (!initializing) {
-      pills[state.seriesIndex].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      scrollIntoViewHorizontal(subnavEl, pills[state.seriesIndex], "smooth");
       updateSubnavFade(subnavEl);
     }
     if (onTabChange) onTabChange(slugify(cat.series[state.seriesIndex].title), initializing);
     const activeThumb = stripThumbs[state.photoIndex];
-    if (activeThumb) activeThumb.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+    if (activeThumb) scrollIntoViewHorizontal(stripEl, activeThumb, "auto");
   }
 
   function setSeries(i) {
@@ -2726,21 +2773,23 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
   // the next/previous series — one continuous swipe/arrow gesture
   // covers both "move within a series" and "move between series".
   function step(direction) {
-    const series = cat.series[state.seriesIndex];
-    const photoCount = seriesPhotoCount(series);
-    const newPhoto = state.photoIndex + direction;
+    withScrollPin(() => {
+      const series = cat.series[state.seriesIndex];
+      const photoCount = seriesPhotoCount(series);
+      const newPhoto = state.photoIndex + direction;
 
-    if (newPhoto >= photoCount) {
-      setSeries(state.seriesIndex + 1);
-    } else if (newPhoto < 0) {
-      const count = cat.series.length;
-      const prevIndex = ((state.seriesIndex - 1) % count + count) % count;
-      activateSeries(prevIndex, seriesPhotoCount(cat.series[prevIndex]) - 1);
-    } else {
-      state.photoIndex = newPhoto;
-      renderStage(false);
-      updateActiveThumb(true);
-    }
+      if (newPhoto >= photoCount) {
+        setSeries(state.seriesIndex + 1);
+      } else if (newPhoto < 0) {
+        const count = cat.series.length;
+        const prevIndex = ((state.seriesIndex - 1) % count + count) % count;
+        activateSeries(prevIndex, seriesPhotoCount(cat.series[prevIndex]) - 1);
+      } else {
+        state.photoIndex = newPhoto;
+        renderStage(false);
+        updateActiveThumb(true);
+      }
+    });
   }
 
   // Repurposed for the full-screen lightbox: the first Escape (see
