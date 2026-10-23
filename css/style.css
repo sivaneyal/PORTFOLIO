@@ -969,14 +969,8 @@ section {
   margin: 0 auto;
   padding: 18px clamp(20px, 5vw, 56px);
   display: flex;
-  flex-wrap: nowrap;
-  gap: 10px 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  scroll-snap-type: x proximity;
+  flex-wrap: wrap;
+  gap: 8px 10px;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   position: sticky;
@@ -988,31 +982,6 @@ section {
      whatever's scrolling underneath, so it reads as a deliberate
      fixed header bar rather than a disconnected panel. */
   box-shadow: 0 16px 24px -12px rgba(0, 0, 0, 0.65);
-  /* Fade the row's own edges in/out via a mask (not an extra overlay
-     element) - js/main.js toggles .can-scroll-start/.can-scroll-end to
-     only show whichever side still has more pills to reveal. Both
-     start off (full opacity, no mask) until JS measures the row. */
-  mask-image: none;
-  -webkit-mask-image: none;
-}
-
-.overlay-subnav.can-scroll-start {
-  mask-image: linear-gradient(to right, transparent, black 28px, black 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 28px, black 100%);
-}
-
-.overlay-subnav.can-scroll-end {
-  mask-image: linear-gradient(to left, transparent, black 28px, black 100%);
-  -webkit-mask-image: linear-gradient(to left, transparent, black 28px, black 100%);
-}
-
-.overlay-subnav.can-scroll-start.can-scroll-end {
-  mask-image: linear-gradient(to right, transparent, black 28px, black calc(100% - 28px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 28px, black calc(100% - 28px), transparent);
-}
-
-.overlay-subnav::-webkit-scrollbar {
-  display: none;
 }
 
 .overlay-subnav:empty {
@@ -1021,14 +990,13 @@ section {
 
 .overlay-subnav-pill {
   flex: 0 0 auto;
-  scroll-snap-align: center;
   font-size: 0.82rem;
   letter-spacing: 0.01em;
   color: var(--bone-dim);
   background: none;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   min-height: 44px;
   transition: color 0.3s var(--ease), border-color 0.3s var(--ease), background 0.3s var(--ease);
 }

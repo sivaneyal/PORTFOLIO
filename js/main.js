@@ -1499,10 +1499,6 @@ function renderTabbedContent(cat, subnavEl, bodyEl, initialTabSlug, onTabChange)
       panel.hidden = j !== i;
     });
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === i));
-    if (!initializing) {
-      scrollIntoViewHorizontal(subnavEl, pills[i], "smooth");
-      updateSubnavFade(subnavEl);
-    }
     activeGalleryStep = built[i].step || null;
     activeGalleryUnzoom = built[i].unzoom || null;
     if (onTabChange) onTabChange(slugify(tabs[i].label), initializing);
@@ -1974,15 +1970,6 @@ function openCategoryOverlay(categoryId, triggerEl, options = {}) {
     renderTabbedContent(cat, subnavEl, bodyEl, tabSlug, onTabChange);
   }
 
-  // Sub-tab row is a single horizontally-scrolling row on narrow
-  // screens (see .overlay-subnav) - reset its scroll position for the
-  // newly-built pill set, bring the active one into view, then set the
-  // fade edges for wherever that leaves it.
-  subnavEl.scrollLeft = 0;
-  const activePill = subnavEl.querySelector(".overlay-subnav-pill.is-active");
-  if (activePill) scrollIntoViewHorizontal(subnavEl, activePill, "auto");
-  updateSubnavFade(subnavEl);
-
   // Only freeze the page on a genuine closed-to-open transition —
   // calling this again while already open (e.g. jumping straight
   // from one category's hash to another) would capture scrollY as 0
@@ -2274,23 +2261,11 @@ function scrollIntoViewHorizontal(container, el, behavior) {
   container.scrollTo({ left: Math.max(0, target), behavior });
 }
 
-// Toggles .can-scroll-start/.can-scroll-end on the sub-tab row so its
-// fade edges (see .overlay-subnav in css/style.css) only show on
-// whichever side still has more pills to scroll to.
-function updateSubnavFade(el) {
-  if (!el) return;
-  el.classList.toggle("can-scroll-start", el.scrollLeft > 2);
-  el.classList.toggle("can-scroll-end", el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
-}
-
 function initCategoryOverlay() {
   const closeBtn = document.getElementById("overlayClose");
   if (!closeBtn) return;
   closeBtn.addEventListener("click", closeCategoryOverlay);
 
-  const subnavEl = document.getElementById("overlaySubnav");
-  subnavEl.addEventListener("scroll", () => updateSubnavFade(subnavEl), { passive: true });
-  window.addEventListener("resize", () => updateSubnavFade(subnavEl));
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       // The lightbox, if open, is always the topmost layer - close it
@@ -2756,10 +2731,6 @@ function renderGallery(cat, subnavEl, bodyEl, initialTabSlug, onTabChange) {
     renderStrip();
     renderStage(true);
     pills.forEach((btn, j) => btn.classList.toggle("is-active", j === state.seriesIndex));
-    if (!initializing) {
-      scrollIntoViewHorizontal(subnavEl, pills[state.seriesIndex], "smooth");
-      updateSubnavFade(subnavEl);
-    }
     if (onTabChange) onTabChange(slugify(cat.series[state.seriesIndex].title), initializing);
     const activeThumb = stripThumbs[state.photoIndex];
     if (activeThumb) scrollIntoViewHorizontal(stripEl, activeThumb, "auto");
