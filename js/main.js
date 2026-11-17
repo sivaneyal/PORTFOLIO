@@ -369,6 +369,19 @@ const CATEGORIES = [
         layout: "reels",
         items: [
           {
+            title: "JAZZSTEPPA",
+            tag: "Social content",
+            links: [
+              {
+                label: "Watch",
+                url: "https://www.instagram.com/reel/Dfz5tjnNx45/",
+                // Thumbnail auto-generated from the preview clip's first frame.
+                thumbnail: "PHOTOS/jazzsteppa-social-thumbnail.jpg",
+                video: "videos/jazzsteppa-preview.mp4",
+              },
+            ],
+          },
+          {
             title: "Moscoman at Club Rafi - Teder.fm",
             tag: "Social content",
             links: [
