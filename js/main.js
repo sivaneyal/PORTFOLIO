@@ -369,8 +369,9 @@ const CATEGORIES = [
         layout: "reels",
         items: [
           {
-            title: "JAZZSTEPPA",
-            tag: "Social content",
+            title: "Jazzsteppa - Tel Aviv Jazz Festival 2026",
+            tag: "Teder.FM",
+            desc: "Social content for the Tel Aviv Jazz Festival 2026, made for Teder.FM.",
             links: [
               {
                 label: "Watch",
